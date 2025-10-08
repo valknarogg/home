@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+
+set -e
+set -o pipefail
+
+if [ $# -ne 2 ]; then
+  echo "usage: $0 VERSION RELEASE_DIRECTORY"
+  exit 1
+fi
+
+version="$1"
+release_directory="$2"
+file="share/ruby-build/truffleruby+graalvm-${version}"
+
+add_platform() {
+  platform="$1"
+  basename="truffleruby-jvm-${version}-${platform}.tar.gz"
+  url="https://github.com/oracle/truffleruby/releases/download/graal-${version}/${basename}"
+  sha256=$(sha256sum "$release_directory/$basename" | cut -d ' ' -f 1)
+
+  cat >> "$file" <<EOS
+  install_package "truffleruby+graalvm-${version}" "${url}#${sha256}" truffleruby
+  ;;
+EOS
+}
+
+cat > "$file" <<EOS
+platform="\$(uname -s)-\$(uname -m)"
+case \$platform in
+Linux-x86_64)
+EOS
+add_platform "linux-amd64"
+cat >> "$file" <<EOS
+Linux-aarch64)
+EOS
+add_platform "linux-aarch64"
+cat >> "$file" <<EOS
+Darwin-x86_64)
+EOS
+add_platform "macos-amd64"
+cat >> "$file" <<EOS
+Darwin-arm64)
+EOS
+add_platform "macos-aarch64"
+cat >> "$file" <<EOS
+*)
+  colorize 1 "Unsupported platform: \$platform"
+  return 1
+  ;;
+esac
+EOS

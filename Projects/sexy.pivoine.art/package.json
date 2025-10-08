@@ -1,0 +1,32 @@
+{
+	"name": "sexy.pivoine.art",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"build:bundle": "git pull && pnpm install && pnpm --filter @sexy.pivoine.art/bundle build",
+		"build:frontend": "git pull && pnpm install && pnpm --filter @sexy.pivoine.art/frontend build",
+		"dev:data": "cd ../compose/data && docker compose up -d",
+		"dev:directus": "cd ../compose/sexy && docker compose --env-file=.env.local up -d directus",
+		"dev": "pnpm dev:data && pnpm dev:directus && pnpm --filter @sexy.pivoine.art/frontend dev",
+		"format": "biome format --write"
+	},
+	"keywords": [],
+	"author": "",
+	"license": "ISC",
+	"packageManager": "pnpm@10.17.0+sha512.fce8a3dd29a4ed2ec566fb53efbb04d8c44a0f05bc6f24a73046910fb9c3ce7afa35a0980500668fa3573345bd644644fa98338fa168235c80f4aa17aa17fbef",
+	"pnpm": {
+		"onlyBuiltDependencies": [
+			"svelte-preprocess",
+			"vue-demi"
+		],
+		"ignoredBuiltDependencies": [
+			"@tailwindcss/oxide",
+			"node-sass"
+		]
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.2.4"
+	}
+}

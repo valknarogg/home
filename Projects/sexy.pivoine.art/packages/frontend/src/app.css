@@ -1,0 +1,226 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@plugin "@iconify/tailwind4";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+	--animate-vibrate: vibrate 0.3s linear infinite;
+	--animate-fade-in: fadeIn 0.3s ease-out;
+	--animate-slide-up: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+	--animate-zoom-in: zoomIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+	--animate-pulse-glow: pulseGlow 2s infinite;
+
+	@keyframes vibrate {
+		0% {
+			transform: translate(0);
+		}
+
+		20% {
+			transform: translate(-2px, 2px);
+		}
+
+		40% {
+			transform: translate(-2px, -2px);
+		}
+
+		60% {
+			transform: translate(2px, 2px);
+		}
+
+		80% {
+			transform: translate(2px, -2px);
+		}
+
+		100% {
+			transform: translate(0);
+		}
+	}
+
+	@keyframes fadeIn {
+		0% {
+			opacity: 0;
+		}
+
+		100% {
+			opacity: 1;
+		}
+	}
+
+	@keyframes slideUp {
+		0% {
+			opacity: 0;
+			transform: translateY(30px) scale(0.95);
+		}
+
+		100% {
+			opacity: 1;
+			transform: translateY(0) scale(1);
+		}
+	}
+
+	@keyframes zoomIn {
+		0% {
+			opacity: 0;
+			transform: scale(0.9);
+		}
+
+		100% {
+			opacity: 1;
+			transform: scale(1);
+		}
+	}
+
+	@keyframes pulseGlow {
+		0%,
+		100% {
+			boxShadow: 0 0 20px rgba(183, 0, 217, 0.3);
+		}
+
+		50% {
+			boxShadow: 0 0 40px rgba(183, 0, 217, 0.6);
+		}
+	}
+}
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so weve added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+	* {
+		@supports (color: color-mix(in lab, red, red)) {
+			outline-color: color-mix(in oklab, var(--ring) 50%, transparent);
+		}
+	}
+
+	* {
+		border-color: var(--border);
+		outline-color: var(--ring);
+	}
+
+	.prose h2 {
+		@apply text-2xl font-bold mt-8 mb-4 text-foreground;
+	}
+
+	.prose h3 {
+		@apply text-xl font-semibold mt-6 mb-3 text-foreground;
+	}
+
+	.prose p {
+		@apply mb-4 leading-relaxed;
+	}
+
+	.prose ul {
+		@apply mb-4 pl-6;
+	}
+
+	.prose li {
+		@apply mb-2;
+	}
+}
+
+:root {
+	--default-font-family: "Noto Sans", sans-serif;
+	--background: oklch(0.98 0.01 320);
+	--foreground: oklch(0.08 0.02 280);
+	--muted: oklch(0.95 0.01 280);
+	--muted-foreground: oklch(0.4 0.02 280);
+	--popover: oklch(1 0 0);
+	--popover-foreground: oklch(0.145 0 0);
+	--card: oklch(0.99 0.005 320);
+	--card-foreground: oklch(0.08 0.02 280);
+	--border: oklch(0.85 0.02 280);
+	--input: oklch(0.922 0 0);
+	--primary: oklch(56.971% 0.27455 319.257);
+	--primary-foreground: oklch(0.98 0.01 320);
+	--secondary: oklch(0.92 0.02 260);
+	--secondary-foreground: oklch(0.15 0.05 260);
+	--accent: oklch(0.45 0.35 280);
+	--accent-foreground: oklch(0.98 0.01 280);
+	--destructive: oklch(0.577 0.245 27.325);
+	--destructive-foreground: oklch(0.985 0 0);
+	--ring: oklch(0.55 0.3 320);
+	--sidebar: oklch(0.985 0 0);
+	--sidebar-foreground: oklch(0.145 0 0);
+	--sidebar-primary: oklch(0.205 0 0);
+	--sidebar-primary-foreground: oklch(0.985 0 0);
+	--sidebar-accent: oklch(0.97 0 0);
+	--sidebar-accent-foreground: oklch(0.205 0 0);
+	--sidebar-border: oklch(0.922 0 0);
+	--sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+	--background: oklch(0.08 0.02 280);
+	--foreground: oklch(0.98 0.01 280);
+	--muted: oklch(0.12 0.03 280);
+	--muted-foreground: oklch(0.6 0.02 280);
+	--popover: oklch(0.205 0 0);
+	--popover-foreground: oklch(0.985 0 0);
+	--card: oklch(0.1 0.02 280);
+	--card-foreground: oklch(0.95 0.01 280);
+	--border: oklch(0.2 0.05 280);
+	--input: oklch(1 0 0 / 0.15);
+	--primary: oklch(0.65 0.25 320);
+	--primary-foreground: oklch(0.98 0.01 320);
+	--secondary: oklch(0.15 0.05 260);
+	--secondary-foreground: oklch(0.9 0.02 260);
+	--accent: oklch(0.55 0.3 280);
+	--accent-foreground: oklch(0.98 0.01 280);
+	--destructive: oklch(0.704 0.191 22.216);
+	--destructive-foreground: oklch(0.985 0 0);
+	--ring: oklch(0.65 0.25 320);
+	--sidebar: oklch(0.205 0 0);
+	--sidebar-foreground: oklch(0.985 0 0);
+	--sidebar-primary: oklch(0.488 0.243 264.376);
+	--sidebar-primary-foreground: oklch(0.985 0 0);
+	--sidebar-accent: oklch(0.269 0 0);
+	--sidebar-accent-foreground: oklch(0.985 0 0);
+	--sidebar-border: oklch(1 0 0 / 0.1);
+	--sidebar-ring: oklch(0.556 0 0);
+}
+
+@theme inline {
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--color-card: var(--card);
+	--color-card-foreground: var(--card-foreground);
+	--color-popover: var(--popover);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-secondary: var(--secondary);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-destructive: var(--destructive);
+	--color-destructive-foreground: var(--destructive-foreground);
+	--color-border: var(--border);
+	--color-input: var(--input);
+	--color-ring: var(--ring);
+	--color-chart-1: var(--chart-1);
+	--color-chart-2: var(--chart-2);
+	--color-chart-3: var(--chart-3);
+	--color-chart-4: var(--chart-4);
+	--color-chart-5: var(--chart-5);
+	--color-sidebar: var(--sidebar);
+	--color-sidebar-foreground: var(--sidebar-foreground);
+	--color-sidebar-primary: var(--sidebar-primary);
+	--color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+	--color-sidebar-accent: var(--sidebar-accent);
+	--color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+	--color-sidebar-border: var(--sidebar-border);
+	--color-sidebar-ring: var(--sidebar-ring);
+
+	--font-sans: var(--font-sans);
+	--font-mono: var(--font-mono);
+	--font-serif: var(--font-serif);
+}

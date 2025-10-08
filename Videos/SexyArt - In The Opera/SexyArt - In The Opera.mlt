@@ -1,0 +1,314 @@
+<?xml version="1.0" standalone="no"?>
+<mlt LC_NUMERIC="C" version="7.33.0" title="Shotcut version 25.08.16" producer="main_bin">
+  <profile description="automatic" width="1888" height="1080" progressive="1" sample_aspect_num="1" sample_aspect_den="1" display_aspect_num="236" display_aspect_den="135" frame_rate_num="30" frame_rate_den="1" colorspace="709"/>
+  <producer id="producer0" in="00:00:00.000" out="03:59:59.967">
+    <property name="length">04:00:00.000</property>
+    <property name="eof">pause</property>
+    <property name="resource">/home/valknar/Bilder/freepik__the-fabolous-beautiful-gingerhaired-and-really-fat__28305.png</property>
+    <property name="ttl">1</property>
+    <property name="aspect_ratio">1</property>
+    <property name="meta.media.progressive">1</property>
+    <property name="seekable">1</property>
+    <property name="format">2</property>
+    <property name="meta.media.width">1320</property>
+    <property name="meta.media.height">744</property>
+    <property name="mlt_service">qimage</property>
+    <property name="creation_time">2025-10-07T11:01:29</property>
+    <property name="shotcut:skipConvert">1</property>
+    <property name="xml">was here</property>
+    <property name="shotcut:hash">4c84ab0f4f0fcf53484e20f6cc4e4676</property>
+  </producer>
+  <playlist id="main_bin">
+    <property name="xml_retain">1</property>
+    <entry producer="producer0" in="00:00:00.000" out="00:00:03.967"/>
+  </playlist>
+  <producer id="black" in="00:00:00.000" out="00:01:09.000">
+    <property name="length">00:01:09.033</property>
+    <property name="eof">pause</property>
+    <property name="resource">0</property>
+    <property name="aspect_ratio">1</property>
+    <property name="mlt_service">color</property>
+    <property name="mlt_image_format">rgba</property>
+    <property name="set.test_audio">0</property>
+  </producer>
+  <playlist id="background">
+    <entry producer="black" in="00:00:00.000" out="00:01:09.000"/>
+  </playlist>
+  <chain id="chain0" out="00:01:09.000">
+    <property name="length">00:01:09.033</property>
+    <property name="eof">pause</property>
+    <property name="resource">/home/valknar/Musik/In The Opera.mp3</property>
+    <property name="mlt_service">avformat-novalidate</property>
+    <property name="meta.media.nb_streams">2</property>
+    <property name="meta.media.0.stream.type">audio</property>
+    <property name="meta.media.0.codec.sample_fmt">fltp</property>
+    <property name="meta.media.0.codec.sample_rate">48000</property>
+    <property name="meta.media.0.codec.channels">2</property>
+    <property name="meta.media.0.codec.layout">stereo</property>
+    <property name="meta.media.0.codec.name">mp3float</property>
+    <property name="meta.media.0.codec.long_name">MP3 (MPEG audio layer 3)</property>
+    <property name="meta.media.0.codec.bit_rate">189232</property>
+    <property name="meta.attr.0.stream.encoder.markup">Lavc58.13</property>
+    <property name="meta.media.1.stream.type">video</property>
+    <property name="meta.media.1.stream.frame_rate">90000</property>
+    <property name="meta.media.1.stream.sample_aspect_ratio">0</property>
+    <property name="meta.media.1.codec.width">360</property>
+    <property name="meta.media.1.codec.height">360</property>
+    <property name="meta.media.1.codec.rotate">0</property>
+    <property name="meta.media.1.codec.pix_fmt">yuvj420p</property>
+    <property name="meta.media.1.codec.sample_aspect_ratio">1</property>
+    <property name="meta.media.1.codec.colorspace">601</property>
+    <property name="meta.media.1.codec.name">mjpeg</property>
+    <property name="meta.media.1.codec.long_name">MJPEG (Motion JPEG)</property>
+    <property name="meta.media.1.codec.bit_rate">0</property>
+    <property name="meta.attr.1.stream.title.markup">Cover</property>
+    <property name="meta.attr.1.stream.comment.markup">Cover (front)</property>
+    <property name="meta.attr.title.markup">In The Opera</property>
+    <property name="meta.attr.artist.markup">valknarogg</property>
+    <property name="seekable">1</property>
+    <property name="meta.media.sample_aspect_num">1</property>
+    <property name="meta.media.sample_aspect_den">1</property>
+    <property name="format">3</property>
+    <property name="audio_index">0</property>
+    <property name="video_index">1</property>
+    <property name="creation_time">2025-10-07T10:49:17</property>
+    <property name="vstream">0</property>
+    <property name="meta.media.frame_rate_num">90000</property>
+    <property name="meta.media.frame_rate_den">1</property>
+    <property name="meta.media.colorspace">601</property>
+    <property name="meta.media.color_trc">2</property>
+    <property name="meta.media.has_b_frames">0</property>
+    <property name="meta.media.width">360</property>
+    <property name="meta.media.height">360</property>
+    <property name="meta.media.aspect_ratio">1</property>
+    <property name="meta.media.color_range">full</property>
+    <property name="astream">0</property>
+    <property name="shotcut:skipConvert">0</property>
+    <property name="meta.media.top_field_first">0</property>
+    <property name="meta.media.progressive">1</property>
+    <property name="shotcut:hash">400a92313bd21cb541eedb1677a39f5d</property>
+    <property name="ignore_points">0</property>
+    <property name="shotcut:caption">In The Opera.mp3</property>
+    <property name="xml">was here</property>
+  </chain>
+  <playlist id="playlist0">
+    <property name="shotcut:video">1</property>
+    <property name="shotcut:name">V1</property>
+    <entry producer="chain0" in="00:00:00.000" out="00:01:09.000"/>
+  </playlist>
+  <producer id="producer1" in="00:00:00.000" out="03:59:59.967">
+    <property name="length">04:00:00.000</property>
+    <property name="eof">pause</property>
+    <property name="resource">/home/valknar/Bilder/freepik__enhance__55004.png</property>
+    <property name="ttl">1</property>
+    <property name="aspect_ratio">1</property>
+    <property name="meta.media.progressive">1</property>
+    <property name="seekable">1</property>
+    <property name="format">1</property>
+    <property name="meta.media.width">2160</property>
+    <property name="meta.media.height">1232</property>
+    <property name="mlt_service">qimage</property>
+    <property name="creation_time">2025-10-07T20:19:56</property>
+    <property name="shotcut:skipConvert">1</property>
+    <property name="shotcut:hash">d18ce3e09b83e9dadb07779cf76e6933</property>
+    <property name="shotcut:caption">freepik__enhance__55004.png</property>
+    <property name="xml">was here</property>
+    <filter id="filter0" out="00:00:04.967">
+      <property name="start">1</property>
+      <property name="level">00:00:00.000=0;00:00:04.967=1</property>
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeInBrightness</property>
+      <property name="alpha">1</property>
+      <property name="shotcut:animIn">00:00:05.000</property>
+    </filter>
+  </producer>
+  <producer id="producer2" in="00:00:00.000" out="03:59:59.967">
+    <property name="length">04:00:00.000</property>
+    <property name="eof">pause</property>
+    <property name="resource">/home/valknar/Bilder/freepik__enhance__55004.png</property>
+    <property name="ttl">1</property>
+    <property name="aspect_ratio">1</property>
+    <property name="meta.media.progressive">1</property>
+    <property name="seekable">1</property>
+    <property name="format">1</property>
+    <property name="meta.media.width">2160</property>
+    <property name="meta.media.height">1232</property>
+    <property name="mlt_service">qimage</property>
+    <property name="creation_time">2025-10-07T20:19:56</property>
+    <property name="shotcut:skipConvert">1</property>
+    <property name="shotcut:hash">d18ce3e09b83e9dadb07779cf76e6933</property>
+    <property name="shotcut:caption">freepik__enhance__55004.png</property>
+    <property name="xml">was here</property>
+  </producer>
+  <playlist id="playlist1">
+    <property name="shotcut:video">1</property>
+    <property name="shotcut:name">V2</property>
+    <entry producer="producer1" in="00:00:00.000" out="00:00:04.967"/>
+    <entry producer="producer2" in="00:00:05.000" out="00:01:03.967"/>
+  </playlist>
+  <producer id="producer3" in="00:00:00.000" out="03:59:59.967">
+    <property name="length">04:00:00.000</property>
+    <property name="eof">pause</property>
+    <property name="resource">/home/valknar/Bilder/freepik__a-beautiful-slogan-with-text-sexy-art-in-the-front__55005.png</property>
+    <property name="ttl">1</property>
+    <property name="aspect_ratio">1</property>
+    <property name="meta.media.progressive">1</property>
+    <property name="seekable">1</property>
+    <property name="format">1</property>
+    <property name="meta.media.width">1312</property>
+    <property name="meta.media.height">736</property>
+    <property name="mlt_service">qimage</property>
+    <property name="creation_time">2025-10-07T20:58:20</property>
+    <property name="shotcut:skipConvert">0</property>
+    <property name="shotcut:caption">freepik__a-beautiful-slogan-with-text-sexy-art-in-the-front__55005.png</property>
+    <property name="shotcut:hash">ea6f3d4e20f9e82263a98950220c03cd</property>
+    <property name="ignore_points">0</property>
+    <property name="xml">was here</property>
+    <property name="meta.shotcut.vui">1</property>
+    <filter id="filter1" out="00:00:04.967">
+      <property name="background">color:#00000000</property>
+      <property name="mlt_service">affine</property>
+      <property name="shotcut:filter">affineSizePosition</property>
+      <property name="transition.fix_rotate_x">0</property>
+      <property name="transition.fill">1</property>
+      <property name="transition.distort">0</property>
+      <property name="transition.rect">-43.8689 -3.76563 1931.87 1083.73 1</property>
+      <property name="transition.valign">middle</property>
+      <property name="transition.halign">center</property>
+      <property name="shotcut:animIn">00:00:00.000</property>
+      <property name="shotcut:animOut">00:00:00.000</property>
+      <property name="transition.threads">0</property>
+    </filter>
+    <filter id="filter2" out="00:00:04.967">
+      <property name="mode">screen</property>
+      <property name="mlt_service">cairoblend_mode</property>
+      <property name="shotcut:filter">blendMode</property>
+    </filter>
+    <filter id="filter3" out="00:00:04.967">
+      <property name="start">1</property>
+      <property name="level">00:00:04.000=1;00:00:04.967=0</property>
+      <property name="mlt_service">brightness</property>
+      <property name="shotcut:filter">fadeOutBrightness</property>
+      <property name="alpha">1</property>
+      <property name="shotcut:animOut">00:00:01.000</property>
+    </filter>
+  </producer>
+  <playlist id="playlist2">
+    <property name="shotcut:video">1</property>
+    <property name="shotcut:name">V3</property>
+    <entry producer="producer3" in="00:00:00.000" out="00:00:04.967"/>
+  </playlist>
+  <producer id="producer4" in="00:00:00.000" out="03:59:59.967">
+    <property name="length">04:00:00.000</property>
+    <property name="eof">pause</property>
+    <property name="resource">/home/valknar/Bilder/freepik__the-style-is-dark-and-mysterious-inspired-by-neoex__10337 (1).png</property>
+    <property name="ttl">1</property>
+    <property name="aspect_ratio">1</property>
+    <property name="meta.media.progressive">1</property>
+    <property name="seekable">1</property>
+    <property name="format">1</property>
+    <property name="meta.media.width">4096</property>
+    <property name="meta.media.height">4096</property>
+    <property name="mlt_service">qimage</property>
+    <property name="creation_time">2025-10-07T23:15:01</property>
+    <property name="shotcut:skipConvert">0</property>
+    <property name="shotcut:caption">freepik__the-style-is-dark-and-mysterious-inspired-by-neoex__10337 (1).png</property>
+    <property name="shotcut:hash">292285b80940db3faf1a978b8e75a629</property>
+    <property name="ignore_points">0</property>
+    <property name="xml">was here</property>
+    <property name="meta.shotcut.vui">1</property>
+    <filter id="filter4" out="00:00:03.967">
+      <property name="background">color:#00000000</property>
+      <property name="mlt_service">affine</property>
+      <property name="shotcut:filter">affineSizePosition</property>
+      <property name="transition.fix_rotate_x">0</property>
+      <property name="transition.fill">1</property>
+      <property name="transition.distort">0</property>
+      <property name="transition.rect">-5.69532 -305 1859.6 1859.6 1</property>
+      <property name="transition.valign">middle</property>
+      <property name="transition.halign">center</property>
+      <property name="shotcut:animIn">00:00:00.000</property>
+      <property name="shotcut:animOut">00:00:00.000</property>
+      <property name="transition.threads">0</property>
+    </filter>
+  </producer>
+  <playlist id="playlist3">
+    <property name="shotcut:video">1</property>
+    <property name="shotcut:name">V4</property>
+    <blank length="00:01:04.000"/>
+    <entry producer="producer4" in="00:00:00.000" out="00:00:03.967"/>
+  </playlist>
+  <tractor id="tractor0" title="Shotcut version 25.08.16" in="00:00:00.000" out="00:01:09.000">
+    <property name="shotcut">1</property>
+    <property name="shotcut:projectAudioChannels">2</property>
+    <property name="shotcut:projectFolder">0</property>
+    <property name="shotcut:skipConvert">0</property>
+    <property name="shotcut:trackHeaderWidth">150</property>
+    <property name="shotcut:trackHeight">10</property>
+    <track producer="background"/>
+    <track producer="playlist0" hide="video"/>
+    <track producer="playlist1"/>
+    <track producer="playlist2"/>
+    <track producer="playlist3"/>
+    <transition id="transition0">
+      <property name="a_track">0</property>
+      <property name="b_track">1</property>
+      <property name="mlt_service">mix</property>
+      <property name="always_active">1</property>
+      <property name="sum">1</property>
+    </transition>
+    <transition id="transition1">
+      <property name="a_track">0</property>
+      <property name="b_track">1</property>
+      <property name="version">0.1</property>
+      <property name="mlt_service">frei0r.cairoblend</property>
+      <property name="threads">0</property>
+      <property name="disable">1</property>
+    </transition>
+    <transition id="transition2">
+      <property name="a_track">0</property>
+      <property name="b_track">2</property>
+      <property name="mlt_service">mix</property>
+      <property name="always_active">1</property>
+      <property name="sum">1</property>
+    </transition>
+    <transition id="transition3">
+      <property name="a_track">1</property>
+      <property name="b_track">2</property>
+      <property name="version">0.1</property>
+      <property name="mlt_service">frei0r.cairoblend</property>
+      <property name="threads">0</property>
+      <property name="disable">0</property>
+    </transition>
+    <transition id="transition4">
+      <property name="a_track">0</property>
+      <property name="b_track">3</property>
+      <property name="mlt_service">mix</property>
+      <property name="always_active">1</property>
+      <property name="sum">1</property>
+    </transition>
+    <transition id="transition5">
+      <property name="a_track">1</property>
+      <property name="b_track">3</property>
+      <property name="version">0.1</property>
+      <property name="mlt_service">frei0r.cairoblend</property>
+      <property name="threads">0</property>
+      <property name="disable">0</property>
+    </transition>
+    <transition id="transition6">
+      <property name="a_track">0</property>
+      <property name="b_track">4</property>
+      <property name="mlt_service">mix</property>
+      <property name="always_active">1</property>
+      <property name="sum">1</property>
+    </transition>
+    <transition id="transition7">
+      <property name="a_track">1</property>
+      <property name="b_track">4</property>
+      <property name="version">0.1</property>
+      <property name="mlt_service">frei0r.cairoblend</property>
+      <property name="threads">0</property>
+      <property name="disable">0</property>
+    </transition>
+  </tractor>
+</mlt>

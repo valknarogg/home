@@ -1,0 +1,47 @@
+name: auth
+
+services:
+  keycloak:
+    image: ${DOCKER_IMAGE}
+    container_name: ${COMPOSE_PROJECT_NAME}_keycloak
+    restart: unless-stopped
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
+      KC_DB_USERNAME: ${DB_USER}
+      KC_DB_PASSWORD: ${DB_PASSWORD}
+      KC_DB_SCHEMA: public
+      KC_HOSTNAME: https://$TRAEFIK_HOST
+      KC_HTTP_ENABLED: true
+      HTTP_ADDRESS_FORWARDING: true
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_ADMIN_USERNAME}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_ADMIN_PASSWORD}
+      KC_PROXY: edge
+      KC_FEATURES: docker
+    command: start
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+    #   interval: 30s
+    #   timeout: 5s
+    #   retries: 3
+    #   start_period: 60s
+    networks:
+      - kompose_network
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.middlewares.$COMPOSE_PROJECT_NAME-redirect-web-secure.redirectscheme.scheme=https'
+      - 'traefik.http.routers.$COMPOSE_PROJECT_NAME-web.middlewares=$COMPOSE_PROJECT_NAME-redirect-web-secure'
+      - 'traefik.http.routers.$COMPOSE_PROJECT_NAME-web.rule=Host(`$TRAEFIK_HOST`)'
+      - 'traefik.http.routers.$COMPOSE_PROJECT_NAME-web.entrypoints=web'
+      - 'traefik.http.routers.$COMPOSE_PROJECT_NAME-web-secure.rule=Host(`$TRAEFIK_HOST`)'
+      - 'traefik.http.routers.$COMPOSE_PROJECT_NAME-web-secure.tls.certresolver=resolver'
+      - 'traefik.http.routers.$COMPOSE_PROJECT_NAME-web-secure.entrypoints=web-secure'
+      - 'traefik.http.middlewares.$COMPOSE_PROJECT_NAME-web-secure-compress.compress=true'
+      - 'traefik.http.routers.$COMPOSE_PROJECT_NAME-web-secure.middlewares=$COMPOSE_PROJECT_NAME-web-secure-compress'
+      - 'traefik.http.services.$COMPOSE_PROJECT_NAME-web-secure.loadbalancer.server.port=8080'
+      - 'traefik.docker.network=${NETWORK_NAME:-kompose}'
+
+networks:
+  kompose_network:
+    name: ${NETWORK_NAME:-kompose}
+    external: true

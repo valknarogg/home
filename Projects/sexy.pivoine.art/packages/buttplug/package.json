@@ -1,0 +1,27 @@
+{
+	"name": "@sexy.pivoine.art/buttplug",
+	"version": "1.0.0",
+	"type": "module",
+	"main": "./dist/index.js",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"files": [
+		"dist"
+	],
+	"scripts": {
+		"build": "vite build",
+		"build:wasm": "wasm-pack build --out-dir wasm --out-name index --target bundler --release"
+	},
+	"dependencies": {
+		"class-transformer": "^0.5.1",
+		"eventemitter3": "^5.0.1",
+		"reflect-metadata": "^0.2.2",
+		"typescript": "^5.9.2",
+		"vite": "^7.1.4",
+		"vite-plugin-wasm": "3.5.0",
+		"ws": "^8.18.3"
+	},
+	"devDependencies": {
+		"wasm-pack": "^0.13.1"
+	}
+}

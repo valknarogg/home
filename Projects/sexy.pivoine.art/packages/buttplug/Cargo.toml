@@ -1,0 +1,63 @@
+[package]
+name = "buttplug_wasm"
+version = "9.0.9"
+authors = ["Nonpolynomial Labs, LLC <kyle@nonpolynomial.com>"]
+description = "WASM Interop for the Buttplug Intimate Hardware Control Library"
+license = "BSD-3-Clause"
+homepage = "http://buttplug.io"
+repository = "https://github.com/buttplugio/buttplug.git"
+readme = "./README.md"
+keywords = ["usb", "serial", "hardware", "bluetooth", "teledildonics"]
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+name = "buttplug_wasm"
+path = "src/lib.rs"
+
+[dependencies]
+buttplug = { version = "9.0.9", default-features = false, features = ["wasm"] }
+# buttplug = { path = "../../../buttplug/buttplug", default-features = false, features = ["wasm"] }
+# buttplug_derive = { path = "../buttplug_derive" }
+js-sys = "0.3.80"
+tracing-wasm = "0.2.1"
+log-panics = { version = "2.1.0", features = ["with-backtrace"] }
+console_error_panic_hook = "0.1.7"
+wasmtimer = "0.4.3"
+wasm-bindgen = { version = "0.2.103", features = ["serde-serialize"] }
+tokio = { version = "1.47.1", features = ["sync", "macros", "io-util"] }
+tokio-stream = "0.1.17"
+tracing = "0.1.41"
+tracing-futures = "0.2.5"
+tracing-subscriber = { version = "0.3.20", features = ["json"] }
+futures = "0.3.31"
+futures-util = "0.3.31"
+async-trait = "0.1.89"
+wasm-bindgen-futures = "0.4.53"
+getrandom = { version = "0.3", features = ["wasm_js"] }
+parking_lot = { version = "0.11.1", features = ["wasm-bindgen"]}
+
+[dependencies.web-sys]
+version = "0.3.80"
+# path = "../../wasm-bindgen/crates/web-sys"
+#git = "https://github.com/rustwasm/wasm-bindgen"
+features = [
+  "Navigator",
+  "Bluetooth",
+  "BluetoothDevice",
+  "BluetoothLeScanFilterInit",
+  "BluetoothRemoteGattCharacteristic",
+  "BluetoothRemoteGattServer",
+  "BluetoothRemoteGattService",
+  "BinaryType",
+  "Blob",
+  "console",
+  "ErrorEvent",
+  "Event",
+  "FileReader",
+  "MessageEvent",
+  "ProgressEvent",
+  "RequestDeviceOptions",
+  "WebSocket",
+  "Window"
+]

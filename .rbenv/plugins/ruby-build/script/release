@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+# Usage: script/release
+#
+# - checks out the master branch
+# - changes version in `bin/ruby-build` to current date
+# - commits and tags the change
+# - pushes master & the new tag to GitHub
+# - creates a new Release on GitHub
+# - [automated] a GitHub Action will create a Homebrew PR for the new release
+
+set -e
+
+git fetch -q --tags origin master
+git checkout -q master
+git merge --ff-only '@{upstream}'
+
+existing="$(git tag --points-at HEAD)"
+if [ -n "$existing" ]; then
+  echo "Aborting: HEAD is already tagged as '${existing}'" >&2
+  exit 1
+fi
+
+binfile="bin/ruby-build"
+new_version="$(date '+%Y%m%d')"
+
+version_suffix=""
+while git show-ref --verify --quiet -- "refs/tags/v${new_version}${version_suffix}"; do
+  version_suffix=".$(( ${version_suffix#.} + 1 ))"
+done
+
+new_version="${new_version}${version_suffix}"
+version_tag="v${new_version}"
+previous_tag="$(git describe --tags HEAD --abbrev=0)"
+
+if git diff --quiet "${previous_tag}..HEAD" -- bin share; then
+  echo "Aborting: No features to release since '${previous_tag}'" >&2
+  exit 1
+fi
+
+sed -i.bak -E "s!^(RUBY_BUILD_VERSION=).+!\\1\"${new_version}\"!" "$binfile"
+rm -f "${binfile}.bak"
+make share/man/man1/ruby-build.1
+
+git commit -m "ruby-build ${new_version}" -- "$binfile" share/man/man1/ruby-build.1
+
+git tag "$version_tag"
+git push origin master "${version_tag}"
+
+gh release create "$version_tag" --title "ruby-build ${new_version}" --generate-notes

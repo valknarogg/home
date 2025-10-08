@@ -1,0 +1,167 @@
+= ruby-build(1)
+Mislav Marohnić
+:doctype: manpage
+:man manual: ruby-build Manual
+:man source: ruby-build {version}
+:man-linkstyle: pass:[blue R < >]
+
+== Name
+
+ruby-build - Download, compile, and install a version of Ruby
+
+== Synopsis
+
+ruby-build [-dvpk] _<definition>_ _<prefix>_ [-- _<configure-args>_...] +
+ruby-build {--list|--definitions} +
+ruby-build --version
+
+== Description
+
+ruby-build downloads, compiles, and installs a Ruby version named by the
+_definition_ argument into the location specified by _prefix_.
+
+The _definition_ argument can optionally start with "ruby-", in which case
+it resolves to a CRuby that matches the version number that follows.
+
+The _definition_ argument can be a path to a file on disk, in which case
+it is sourced into ruby-build as a bash script.
+
+Optionally, extra Ruby _configure-args_ may be listed after "--" and
+will get forwarded to the `./configure` invocation.
+
+By default, all compile output is redirected to a log file at
+`$TMPDIR/ruby-build.*.log`. Activate the verbose mode to skip the log file
+and print everything to standard streams.
+
+== Options
+
+*-l, --list*::
+  List latest stable releases for each Ruby
+
+*--definitions*::
+  List all local definitions, including outdated ones
+
+*--version*::
+  Show version of ruby-build
+
+*-d, --dir*::
+  Install the Ruby in the _prefix/definition_ destination instead of directly in _prefix_
+
+*-v, --verbose*::
+  Verbose mode: forward all build output to stdout/stderr
+
+*-p, --patch*::
+  Apply a patch from stdin before building
+
+*-k, --keep*::
+  Do not remove source tree after installation
+
+*-4, --ipv4*::
+  Resolve names to IPv4 addresses only
+
+*-6, --ipv6*::
+  Resolve names to IPv6 addresses only
+
+== Examples
+
+Install a Ruby version while tweaking some configuration options:
+----
+$ ruby-build 3.2.2 /path/to/destination -- --disable-install-doc --with-openssl-dir=/opt/openssl
+----
+
+Install a Ruby version to `~/.rubies/ruby-3.2.2`:
+----
+$ ruby-build --dir ruby-3.2.2 ~/.rubies
+----
+
+Install a Ruby version to `~/.rbenv/versions/3.3.5`:
+----
+$ ruby-build --dir 3.3.5 ~/.rbenv/versions
+----
+
+Usage as rbenv plugin, accomplishes the same as the previous example:
+----
+$ rbenv install 3.3.5
+----
+
+== Environment Variables
+
+*TMPDIR*::
+  The location to write temporary files on disk
+
+*RUBY_BUILD_BUILD_PATH* (default: a timestamped subdirectory of _TMPDIR_)::
+  The build location for downloading source files to and compiling
+
+*RUBY_BUILD_CACHE_PATH* (default: "~/.rbenv/cache" if invoked as rbenv plugin)::
+  Where to cache downloaded package files
+
+*RUBY_BUILD_HTTP_CLIENT* (default: first tool found in PATH)::
+  One of "aria2c", "curl", or "wget" to use for downloading
+
+*RUBY_BUILD_ARIA2_OPTS*::
+  Additional options to pass to aria2c for downloading
+
+*RUBY_BUILD_CURL_OPTS*::
+  Additional options to pass to curl for downloading
+
+*RUBY_BUILD_WGET_OPTS*::
+  Additional options to pass to wget for downloading
+
+*RUBY_BUILD_MIRROR_URL* (default: a sponsored Amazon CloudFront mirror)::
+  Custom mirror URL root to download packages from
+
+*RUBY_BUILD_MIRROR_PACKAGE_URL*::
+  Custom complete mirror URL
+
+*RUBY_BUILD_SKIP_MIRROR*::
+  Bypass the download mirror and fetch all package files from their original URLs
+
+*RUBY_BUILD_ROOT* (default: "share/ruby-build" within ruby-build install location)::
+  Custom build definition directory
+
+*RUBY_BUILD_TARBALL_OVERRIDE*::
+  Override the URL to fetch the ruby tarball from, optionally followed by "#<checksum>"
+
+*RUBY_BUILD_DEFINITIONS*::
+  Paths to search for build definitions in addition to _RUBY_BUILD_ROOT_
+
+*CC*::
+  Path to the C compiler
+
+*RUBY_CFLAGS*::
+  Additional `CFLAGS` options to use for Ruby compilation
+
+*CONFIGURE_OPTS*::
+  Additional "./configure" arguments
+
+*MAKE* (default: "make")::
+  Custom make command (e.g., "gmake")
+
+*MAKE_OPTS*, *MAKEOPTS*::
+  Additional arguments for "make"
+
+*MAKE_INSTALL_OPTS*::
+  Additional arguments for "make install"
+
+*RUBY_CONFIGURE_OPTS*::
+  Additional "./configure" arguments that apply only to Ruby source
+
+*RUBY_MAKE_OPTS*::
+  Additional make arguments that apply only to Ruby source
+
+*RUBY_MAKE_INSTALL_OPTS*::
+  Additional "make install" arguments that apply only to Ruby source
+
+*NO_COLOR* (default: allow colors when connected to terminal)::
+  Disable ANSI colors in output
+
+*CLICOLOR_FORCE*::
+  Use ANSI colors in output even when not connected to a terminal
+
+== Notes
+
+* https://github.com/rbenv/ruby-build#readme
+
+* https://github.com/rbenv/ruby-build/wiki
+
+* https://github.com/rbenv/ruby-build/discussions

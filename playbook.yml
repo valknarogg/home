@@ -1,0 +1,348 @@
+- hosts: localhost
+  connection: local
+  tasks:
+    - name: Install base packages
+      become: true
+
+      ansible.builtin.apt:
+        pkg:
+          - make
+          - build-essential
+          - git
+          - curl
+          - wget
+          - rsync
+          - zsh
+          - imagemagick
+          - ffmpeg
+          - yt-dlp
+          - fzf
+          - icoutils
+          - postgresql-common
+      tags:
+        - base
+        - python
+        - ruby
+        - rust
+        - zsh
+        - postgres
+
+    - name: Prepare postgresql
+      ansible.builtin.shell: /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh
+      args:
+        executable: /bin/bash
+      tags:
+        - postgres
+
+    - name: Install postgres package
+      become: true
+      ansible.builtin.apt:
+        pkg:
+          - postgresql-18
+        update_cache: true
+      tags:
+        - postgres
+
+    - name: Change root shell to zsh
+      become: true
+      ansible.builtin.user:
+        name: root
+        shell: /bin/zsh
+      tags:
+        - oh-my-posh
+
+    - name: Give permissions to /root/bin
+      become: true
+      ansible.builtin.file:
+        path: /root/bin
+        state: directory
+      tags:
+        - oh-my-posh
+
+    - name: Install oh-my-posh for root
+      become: true
+      ansible.builtin.shell: curl -s https://ohmyposh.dev/install.sh | bash -s -- -d /root/bin
+      args:
+        executable: /bin/bash
+      tags:
+        - oh-my-posh
+
+    - name: Ensure root shell loads user bin
+      become: true
+      ansible.builtin.lineinfile:
+        path: /root/.zshrc
+        line: |
+          export PATH="$PATH:/root/bin"
+          if [ "$TERM_PROGRAM" != "Apple_Terminal" ]; then
+            eval "$(oh-my-posh init zsh)"
+          fi
+        create: yes
+      tags:
+        - oh-my-posh
+        
+    - name: Install node
+      ansible.builtin.shell: source ~/.init/init.sh && nvm install
+      args:
+        executable: /bin/bash
+      tags:
+        - node
+
+    - name: Enable node corepack
+      ansible.builtin.shell: source ~/.init/init.sh && corepack enable
+      args:
+        executable: /bin/bash
+      tags:
+        - node
+
+    - name: Install node packages
+      ansible.builtin.shell: source ~/.init/init.sh && cd ~ && pnpm install
+      args:
+        executable: /bin/bash
+      tags:
+        - node
+
+    - name: Install python required packages
+      become: true
+      ansible.builtin.apt:
+        pkg:
+          - libssl-dev
+          - zlib1g-dev
+          - libbz2-dev
+          - libreadline-dev
+          - libsqlite3-dev
+          - llvm
+          - libncurses5-dev
+      tags:
+        - python
+
+    - name: Install python
+      ansible.builtin.shell:
+        source ~/.init/init.sh && pyenv install --skip-existing
+      args:
+        executable: /bin/bash
+      tags:
+        - python
+
+    - name: Install python packages
+      ansible.builtin.shell:
+        source ~/.init/init.sh && pip install -r ~/requirements.txt
+      args:
+        executable: /bin/bash
+      tags:
+        - python
+
+    - name: Init python pre-commit
+      ansible.builtin.shell:
+        source ~/.init/init.sh && cd ~ && pre-commit install
+      args:
+        executable: /bin/bash
+      tags:
+        - python
+
+    - name: Install ruby required packages
+      become: true
+      ansible.builtin.apt:
+        pkg:
+          - libssl-dev
+          - libffi-dev
+          - libyaml-dev
+          - zlib1g-dev
+      tags:
+        - ruby
+
+    - name: Install ruby
+      ansible.builtin.shell:
+        source ~/.init/init.sh && rbenv install --skip-existing
+      args:
+        executable: /bin/bash
+      tags:
+        - ruby
+
+    - name: Install ruby base packages
+      ansible.builtin.shell: source ~/.init/init.sh && gem install {{ item }}
+      args:
+        executable: /bin/bash
+      with_items:
+        - bundler
+      tags:
+        - ruby
+
+    - name: Install ruby packages
+      ansible.builtin.shell: source ~/.init/init.sh && cd ~ && bundle install
+      args:
+        executable: /bin/bash
+      tags:
+        - ruby
+
+    - name: Install rust required packages
+      become: true
+      ansible.builtin.apt:
+        pkg:
+          - libudev-dev
+          - libusb-1.0-0-dev
+          - libdbus-1-dev
+          - pkg-config
+          - cmake
+      tags:
+        - rust
+
+    - name: Download Installer for rust
+      ansible.builtin.get_url:
+        url: https://sh.rustup.rs
+        dest: /tmp/sh.rustup.rs
+        mode: '0755'
+        force: 'yes'
+      tags:
+        - rust
+
+    - name: Install rust
+      ansible.builtin.shell: /tmp/sh.rustup.rs -y
+      tags:
+        - rust
+
+    - name: Load rust package dependencies
+      include_vars:
+        file: crates.yml
+        name: crates
+      tags:
+        - rust
+
+    - name: Install rust git packages
+      ansible.builtin.shell:
+        source ~/.init/init.sh && cd ~ && cargo install --locked --git {{ item
+        }} --branch main
+      with_items: '{{ crates.git }}'
+      args:
+        executable: /bin/bash
+      tags:
+        - rust
+
+    - name: Change user shell to zsh
+      become: true
+      ansible.builtin.user:
+        name: '{{ ansible_user_id }}'
+        shell: /bin/zsh
+      tags:
+        - zsh
+
+    - name: Update font cache
+      ansible.builtin.shell: fc-cache -f -v
+      tags:
+        - fonts
+
+    - name: Install flatpak required packages
+      become: true
+      ansible.builtin.apt:
+        pkg:
+          - flatpak
+          - gnome-software-plugin-flatpak
+          - libgtk-3-dev
+      tags:
+        - flatpak
+
+    - name: Add flathub repo
+      ansible.builtin.shell:
+        flatpak remote-add --if-not-exists flathub
+        https://dl.flathub.org/repo/flathub.flatpakrepo
+      tags:
+        - flatpak
+
+    - name: Load flatpak package dependencies
+      include_vars:
+        file: flatpaks.yml
+        name: flatpaks
+      tags:
+        - flatpak
+
+    # - name: Install flatpak packages
+    #   ansible.builtin.shell:
+    #     source ~/.init/init.sh && cd ~ && flatpak install flathub {{ item }}
+    #   with_items: '{{ flatpaks.flatpaks }}'
+    #   args:
+    #     executable: /bin/bash
+    #   tags:
+    #     - flatpak
+
+    - name: Install github required packages
+      become: true
+      ansible.builtin.apt:
+        pkg:
+          - gh
+      tags:
+        - github
+
+    # - name: Add github copilot extension
+    #   ansible.builtin.shell: gh extension install github/gh-copilot
+    #   tags:
+    #     - github
+
+    - name: Install Docker required packages
+      become: true
+      ansible.builtin.apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg2
+          - postgresql-client
+      tags:
+        - docker
+    - name: Add Docker repository
+      ansible.builtin.deb822_repository:
+        name: docker
+        uris: https://download.docker.com/linux/debian
+        types: deb
+        suites: trixie
+        architectures: amd64
+        components: stable
+        signed_by: https://download.docker.com/linux/debian/gpg
+      tags:
+        - docker
+    - name: Install Docker Engine
+      become: true
+      ansible.builtin.apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+        update_cache: true
+      tags:
+        - docker
+
+    - name: Add user to docker group
+      become: true
+      ansible.builtin.user:
+        name: '{{ ansible_user_id }}'
+        groups: docker
+      tags:
+        - docker
+
+    - name: Start Docker service
+      become: true
+      ansible.builtin.service:
+        name: docker
+        state: started
+      tags:
+        - docker
+
+    # - name: Download Installer for awscli
+    #   ansible.builtin.get_url:
+    #     url: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+    #     dest: /tmp/awscliv2.zip
+    #     mode: '0755'
+    #     force: 'yes'
+    #   tags:
+    #     - aws
+
+    # - name: Extract awscli
+    #   ansible.builtin.unarchive:
+    #     src: /tmp/awscliv2.zip
+    #     dest: /tmp
+    #   tags:
+    #     - aws
+
+    # - name: Install awscli
+    #   become: true
+    #   ansible.builtin.shell: /tmp/aws/install
+    #   tags:
+    #     - aws

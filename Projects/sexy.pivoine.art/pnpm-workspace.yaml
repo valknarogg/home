@@ -1,0 +1,8 @@
+packages:
+    - packages/*
+
+ignoredBuiltDependencies:
+    - "@tailwindcss/oxide"
+
+onlyBuiltDependencies:
+    - svelte-preprocess

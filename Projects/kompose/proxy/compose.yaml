@@ -1,0 +1,40 @@
+name: proxy
+
+services:
+  traefik:
+    image: ${DOCKER_IMAGE}
+    container_name: ${COMPOSE_PROJECT_NAME}_app
+    restart: unless-stopped
+    command:
+      - '--api.dashboard=true'
+      - '--api.insecure=true'
+      - '--log.level=DEBUG'
+      - '--global.sendAnonymousUsage=false'
+      - '--global.checkNewVersion=true'
+      - '--providers.docker=true'
+      - '--providers.docker.exposedbydefault=false'
+      - '--providers.docker.network=${NETWORK_NAME}'
+      - '--entrypoints.web.address=:80'
+      - '--entryPoints.web-secure.address=:443'
+      - '--certificatesresolvers.resolver.acme.tlschallenge=true'
+      - '--certificatesresolvers.resolver.acme.email=${ADMIN_EMAIL}'
+      - '--certificatesresolvers.resolver.acme.storage=/letsencrypt/acme.json'
+    healthcheck:
+      test: ["CMD", "traefik", "healthcheck", "--ping"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - kompose_network
+    ports:
+      - 80:80
+      - 443:443
+      - 8080:8080
+    volumes:
+      - /var/local/data/traefik/letsencrypt:/letsencrypt
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+networks:
+  kompose_network:
+    name: ${NETWORK_NAME}
+    external: true

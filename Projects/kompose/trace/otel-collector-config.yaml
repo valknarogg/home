@@ -1,0 +1,326 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+  # hostmetrics:
+  #   root_path: /hostfs
+  #   scrapers:
+  #     cpu:
+  #     disk:
+  #     filesystem:
+  #     load:
+  #     memory:
+  #     network:
+  #     process:
+  #     processes:
+  #     paging:
+  prometheus:
+    config:
+      global:
+        scrape_interval: 60s
+      scrape_configs:
+        - job_name: otel-collector
+          static_configs:
+          - targets:
+              - localhost:8888
+            labels:
+              job_name: otel-collector
+  postgresql:
+    # The endpoint of the postgresql server. Whether using TCP or Unix sockets, this value should be host:port. If transport is set to unix, the endpoint will internally be translated from host:port to /host.s.PGSQL.port
+    endpoint: postgres:5432
+    # The frequency at which to collect metrics from the Postgres instance.
+    collection_interval: 60s
+    # The username used to access the postgres instance
+    username: valknar
+    # The password used to access the postgres instance
+    password: ragnarok98
+    # The list of databases for which the receiver will attempt to collect statistics. If an empty list is provided, the receiver will attempt to collect statistics for all non-template databases
+    databases: []
+    # # Defines the network to use for connecting to the server. Valid Values are `tcp` or `unix`
+    # transport: tcp
+    tls:
+      # set to false if SSL is enabled on the server
+      insecure: true
+    #   ca_file: /etc/ssl/certs/ca-certificates.crt
+    #   cert_file: /etc/ssl/certs/postgres.crt
+    #   key_file: /etc/ssl/certs/postgres.key
+    metrics:
+      postgresql.database.locks:
+        enabled: true
+      postgresql.deadlocks:
+        enabled: true
+      postgresql.sequential_scans:
+        enabled: true
+  # filelog/postgresql:
+  #   include: ["/var/log/postgresql/postgresql.log"]
+  #   operators:
+  #     # Parse default postgresql text log format.
+  #     # `log_line_prefix` postgres setting defaults to '%m [%p] ' which logs the timestamp and the process ID
+  #     # See https://www.postgresql.org/docs/current/runtime-config-logging.html#GUC-LOG-LINE-PREFIX for more details
+  #     - type: regex_parser
+  #       if: body matches '^(?P<ts>\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}.?[0-9]*? [A-Z]*) \\[(?P<pid>[0-9]+)\\] (?P<log_level>[A-Z]*). (?P<message>.*)$'
+  #       parse_from: body
+  #       regex: '^(?P<ts>\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}.?[0-9]*? [A-Z]*) \[(?P<pid>[0-9]+)\] (?P<log_level>[A-Z]*). (?P<message>.*)$'
+  #       timestamp:
+  #         parse_from: attributes.ts
+  #         layout: '%Y-%m-%d %H:%M:%S %Z'
+  #       severity:
+  #         parse_from: attributes.log_level
+  #         mapping:
+  #           debug:
+  #             - DEBUG1
+  #             - DEBUG2
+  #             - DEBUG3
+  #             - DEBUG4
+  #             - DEBUG5
+  #           info:
+  #             - INFO
+  #             - LOG
+  #             - NOTICE
+  #             - DETAIL
+  #           warn: WARNING
+  #           error: ERROR
+  #           fatal:
+  #             - FATAL
+  #             - PANIC
+  #       on_error: send
+  #     - type: move
+  #       if: attributes.message != nil
+  #       from: attributes.message
+  #       to: body
+  #     - type: remove
+  #       if: attributes.log_level != nil
+  #       field: attributes.log_level
+  #     - type: remove
+  #       if: attributes.ts != nil
+  #       field: attributes.ts
+  #     - type: add
+  #       field: attributes.source
+  #       value: postgres
+  redis:
+    # The hostname and port of the Redis instance, separated by a colon.
+    endpoint: "redis:6379"
+    # The frequency at which to collect metrics from the Redis instance.
+    collection_interval: 60s
+    # # The password used to access the Redis instance; must match the password specified in the requirepass server configuration option.
+    # password: ${env:REDIS_PASSWORD}
+    # # Defines the network to use for connecting to the server. Valid Values are `tcp` or `Unix`
+    # transport: tcp
+    # tls:
+    #   insecure: false
+    #   ca_file: /etc/ssl/certs/ca-certificates.crt
+    #   cert_file: /etc/ssl/certs/redis.crt
+    #   key_file: /etc/ssl/certs/redis.key
+    metrics:
+      redis.maxmemory:
+        enabled: true
+      redis.cmd.latency:
+        enabled: true
+  # filelog/redis:
+  #   include: ["/var/log/redis/redis-server.log"]
+  #   operators:
+  #     # Parse default redis log format
+  #     # pid:role timestamp log_level message
+  #     - type: regex_parser
+  #       if: body matches '^(?P<pid>\\d+):(?P<role>\\w+) (?P<ts>\\d{2} \\w+ \\d{4} \\d{2}:\\d{2}:\\d{2}\\.\\d+) (?P<log_level>[.\\-*#]) (?P<message>.*)$'
+  #       parse_from: body
+  #       regex: '^(?P<pid>\d+):(?P<role>\w+) (?P<ts>\d{2} \w+ \d{4} \d{2}:\d{2}:\d{2}\.\d+) (?P<log_level>[.\-*#]) (?P<message>.*)$'
+  #       timestamp:
+  #         parse_from: attributes.ts
+  #         layout: '02 Jan 2006 15:04:05.000'
+  #         layout_type: gotime
+  #       severity:
+  #         parse_from: attributes.log_level
+  #         overwrite_text: true
+  #         mapping:
+  #           debug: '.'
+  #           info:
+  #             - '-'
+  #             - '*'
+  #           warn: '#'
+  #       on_error: send
+  #     - type: move
+  #       if: attributes.message != nil
+  #       from: attributes.message
+  #       to: body
+  #     - type: remove
+  #       if: attributes.log_level != nil
+  #       field: attributes.log_level
+  #     - type: remove
+  #       if: attributes.ts != nil
+  #       field: attributes.ts
+  #     - type: add
+  #       field: attributes.source
+  #       value: redis  
+  docker_stats:
+    endpoint: unix:///var/run/docker.sock
+    metrics:
+      container.cpu.utilization:
+        enabled: true
+      container.memory.percent:
+        enabled: true
+      container.network.io.usage.rx_bytes:
+        enabled: true
+      container.network.io.usage.tx_bytes:
+        enabled: true
+      container.network.io.usage.rx_dropped:
+        enabled: true
+      container.network.io.usage.tx_dropped:
+        enabled: true
+      container.memory.usage.limit:
+        enabled: true
+      container.memory.usage.total:
+        enabled: true
+      container.blockio.io_service_bytes_recursive:
+        enabled: true
+  filelog/docker:
+    include: [/var/lib/docker/containers/*/*-json.log]
+    poll_interval: 200ms
+    start_at: end
+    include_file_name: false
+    include_file_path: false
+    operators:
+      - type: json_parser
+        timestamp:
+          parse_from: attributes.time
+          layout: '%Y-%m-%dT%H:%M:%S.%LZ'
+      - type: move
+        from: attributes.log
+        to: body
+      - type: remove
+        field: attributes.time
+      # - id: container-parser
+      #   add_metadata_from_filepath: true
+      #   type: container
+      #   format: docker
+      #   on_error: drop_quiet
+        # if: "body.log.file.path != nil"
+      # - id: recombine
+      #   type: recombine
+      #   combine_field: body
+      #   is_first_entry: body matches "^\\d{4}-\\d{2}-\\d{2}T\\d{2}"
+processors:
+  batch:
+    send_batch_size: 10000
+    send_batch_max_size: 11000
+    timeout: 10s
+  resourcedetection:
+    detectors: [env, system]
+    timeout: 2s
+  resourcedetection/docker:
+    detectors: [env, system, docker]
+    timeout: 2s
+  resource:
+    attributes:
+      - key: service.name
+        value: vps
+        action: upsert
+  resource/docker:
+    attributes:
+      - key: service.name
+        value: vps-docker
+        action: upsert
+  resource/redis:
+    attributes:
+      - key: service.name
+        value: vps-redis
+        action: upsert
+  resource/postgresql:
+    attributes:
+      - key: service.name
+        value: vps-postgresql
+        action: upsert
+  signozspanmetrics/delta:
+    metrics_exporter: signozclickhousemetrics
+    metrics_flush_interval: 60s
+    latency_histogram_buckets: [100us, 1ms, 2ms, 6ms, 10ms, 50ms, 100ms, 250ms, 500ms, 1000ms, 1400ms, 2000ms, 5s, 10s, 20s, 40s, 60s ]
+    dimensions_cache_size: 100000
+    aggregation_temporality: AGGREGATION_TEMPORALITY_DELTA
+    enable_exp_histogram: true
+    dimensions:
+      - name: service.namespace
+        default: default
+      - name: deployment.environment
+        default: default
+      # This is added to ensure the uniqueness of the timeseries
+      # Otherwise, identical timeseries produced by multiple replicas of
+      # collectors result in incorrect APM metrics
+      - name: signoz.collector.id
+      - name: service.version
+      - name: browser.platform
+      - name: browser.mobile
+      - name: k8s.cluster.name
+      - name: k8s.node.name
+      - name: k8s.namespace.name
+      - name: host.name
+      - name: host.type
+      - name: container.name
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+  pprof:
+    endpoint: 0.0.0.0:1777
+  zpages:
+exporters:
+  clickhousetraces:
+    datasource: tcp://clickhouse:9000/signoz_traces
+    low_cardinal_exception_grouping: ${env:LOW_CARDINAL_EXCEPTION_GROUPING}
+    use_new_schema: true
+  signozclickhousemetrics:
+    dsn: tcp://clickhouse:9000/signoz_metrics
+  clickhouselogsexporter:
+    dsn: tcp://clickhouse:9000/signoz_logs
+    timeout: 10s
+    use_new_schema: true
+service:
+  # telemetry:
+  #   logs:
+  #     encoding: json
+  extensions:
+    - health_check
+    - pprof
+    - zpages
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [signozspanmetrics/delta, batch]
+      exporters: [clickhousetraces]
+    metrics:
+      receivers: [otlp]
+      processors: [resource, resourcedetection, batch]
+      exporters: [signozclickhousemetrics]
+    metrics/prometheus:
+      receivers: [prometheus]
+      processors: [resource, resourcedetection, batch]
+      exporters: [signozclickhousemetrics]
+    metrics/docker:
+      receivers: [docker_stats]
+      processors: [resource, resourcedetection/docker, batch]
+      exporters: [signozclickhousemetrics]
+    metrics/redis:
+      receivers: [redis]
+      processors: [resource, resourcedetection, resource/redis, batch]
+      exporters: [signozclickhousemetrics]
+    metrics/postgresql:
+      receivers: [postgresql]
+      processors: [resource, resourcedetection, resource/postgresql, batch]
+      exporters: [signozclickhousemetrics]
+    logs:
+      receivers: [otlp]
+      processors: [resource, resourcedetection, batch]
+      exporters: [clickhouselogsexporter]
+    logs/docker:
+      receivers: [filelog/docker]
+      processors: [resource, resourcedetection/docker, resource/docker, batch]
+      exporters: [clickhouselogsexporter]
+    # logs/redis:
+    #   receivers: [filelog/redis]
+    #   processors: [resource, resourcedetection, resource/redis, batch]
+    #   exporters: [clickhouselogsexporter]
+    # logs/postgresql:
+    #   receivers: [filelog/postgresql]
+    #   processors: [resource, resourcedetection, resource/postgresql, batch]
+    #   exporters: [clickhouselogsexporter]

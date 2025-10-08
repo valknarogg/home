@@ -1,0 +1,29 @@
+#!/usr/bin/env bash
+
+set -e
+set -o pipefail
+
+if [ $# -ne 2 ]; then
+  echo "usage: $0 VERSION RELEASE_DIRECTORY"
+  exit 1
+fi
+
+version="$1"
+release_directory="$2"
+file="share/ruby-build/jruby-${version}"
+
+basename="jruby-dist-${version}-bin.tar.gz"
+url="https://repo1.maven.org/maven2/org/jruby/jruby-dist/${version}/${basename}"
+archive="$release_directory/$basename"
+[ -e "$archive" ] || wget -O "$archive" "$url"
+sha256=$(sha256sum "$archive" | cut -d ' ' -f 1)
+
+min_java_version="8"
+if [ "${version%%.*}" -ge 10 ]; then
+  min_java_version="21"
+fi
+
+cat > "$file" <<EOS
+require_java ${min_java_version}
+install_package "jruby-${version}" "${url}#${sha256}" jruby
+EOS

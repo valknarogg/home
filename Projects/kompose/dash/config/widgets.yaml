@@ -1,0 +1,33 @@
+---
+# Search widget
+- search:
+    provider: duckduckgo
+    target: _blank
+    focus: true
+
+# Date & Time
+- datetime:
+    text_size: xl
+    format:
+      dateStyle: short
+      timeStyle: short
+      hourCycle: h23
+
+# System Resources
+- resources:
+    label: System
+    cpu: true
+    memory: true
+    cputemp: true
+    tempmin: 0
+    tempmax: 100
+    uptime: true
+    units: metric
+    refresh: 3000
+
+# Disk Usage
+- resources:
+    label: Storage
+    expanded: false
+    disk:
+      - /

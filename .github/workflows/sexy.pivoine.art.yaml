@@ -1,0 +1,70 @@
+name: Build and Deploy Sexy.Art via SSH
+
+on:
+  workflow_dispatch: # Allows workflow to be run manually
+  push:
+    branches:
+      - main # Or your default branch
+    paths:
+      - 'Projects/sexy.pivoine.art/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./Projects/sexy.pivoine.art
+    environment: ionos
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+      - name: Install wasm-build
+        run: cargo install wasm-bindgen-cli
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+      - name: Install dependencies
+        run: pnpm install
+      - name: Build JavaScript
+        run: |
+          RUSTFLAGS='--cfg getrandom_backend="wasm_js" --cfg=web_sys_unstable_apis' pnpm --filter @sexy.pivoine.art/buttplug build:wasm
+          pnpm --filter @sexy.pivoine.art/buttplug build
+          pnpm --filter @sexy.pivoine.art/frontend build
+          pnpm --filter @sexy.pivoine.art/bundle build
+      - name: 🏗️ Prepare Svelte site
+        run: |
+          mkdir -p ${{ github.workspace }}/_site/packages/frontend
+          mkdir -p ${{ github.workspace }}/_site/packages/bundle
+          mv packages/frontend/build ${{ github.workspace }}/_site/packages/frontend/
+          mv packages/frontend/node_modules ${{ github.workspace }}/_site/packages/frontend/
+          mv packages/frontend/package.json ${{ github.workspace }}/_site/packages/frontend/
+          mv packages/bundle/dist ${{ github.workspace }}/_site/packages/bundle/
+          mv packages/bundle/node_modules ${{ github.workspace }}/_site/packages/bundle/
+          mv packages/bundle/package.json ${{ github.workspace }}/_site/packages/bundle/
+          mv packages/buttplug/dist ${{ github.workspace }}/_site/packages/buttplug/
+          mv packages/buttplug/node_modules ${{ github.workspace }}/_site/packages/buttplug/
+          mv packages/buttplug/package.json ${{ github.workspace }}/_site/packages/buttplug/
+          mv node_modules ${{ github.workspace }}/_site/
+          mv package.json ${{ github.workspace }}/_site/
+      - name: 🚀 Deploy via SSH
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          source: _site/* # Adjust if required
+          target: /var/www/sexy.pivoine.art # Set to your deployment directory (for example /public_html)
+          strip_components: 1 # This ensures that a subdirectory is not created
+          rm: 1
+      - name: Docker compose restart
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd Projects/kompose/sexy
+            docker compose restart

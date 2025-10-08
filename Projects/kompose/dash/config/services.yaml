@@ -1,0 +1,129 @@
+---
+# Infrastructure
+- Infrastructure:
+    - Traefik:
+        icon: traefik.png
+        href: http://pivoine.art:8080
+        description: Reverse proxy and load balancer
+        siteMonitor: http://pivoine.art:8080
+        widget:
+          type: traefik
+          url: http://pivoine.art:8080
+
+    - Docker:
+        icon: docker.png
+        href: http://pivoine.art:5001
+        description: Container management
+        siteMonitor: http://pivoine.art:5001
+
+    - Database:
+        icon: postgres.png
+        href: http://pivoine.art:8088
+        description: PostgreSQL database
+        siteMonitor: http://pivoine.art:8088
+
+# Authentication & Security
+- Authentication:
+    - Keycloak:
+        icon: keycloak.png
+        href: https://auth.pivoine.art
+        description: Identity and access management
+        siteMonitor: https://auth.pivoine.art
+
+    - Vault:
+        icon: vaultwarden.png
+        href: https://vault.pivoine.art
+        description: Password manager
+        siteMonitor: https://vault.pivoine.art
+
+# Applications
+- Applications:
+    - Blog:
+        icon: si-hugo.svg
+        href: https://pivoine.art
+        description: Personal blog
+        siteMonitor: https://pivoine.art
+
+    - Newsletter:
+        icon: si-mailgun.svg
+        href: https://news.pivoine.art
+        description: Email newsletter service
+        siteMonitor: https://news.pivoine.art
+
+    - Chat:
+        icon: gotify.png
+        href: https://chat.pivoine.art
+        description: Push notification service
+        siteMonitor: https://chat.pivoine.art
+        widget:
+          type: gotify
+          url: https://chat.pivoine.art
+          # key: your-gotify-app-token
+
+# Development & Git
+- Development:
+    - Git:
+        icon: gitea.png
+        href: https://git.localhost
+        description: Gitea self-hosted Git service
+        siteMonitor: http://git:3000
+
+    - Workflows:
+        icon: si-n8n.svg
+        href: https://chain.localhost
+        description: n8n workflow automation
+        siteMonitor: http://chain:5678
+
+# Content & Media
+- Content:
+    - CMS:
+        icon: directus.png
+        href: https://sexy.localhost
+        description: Directus headless CMS
+        siteMonitor: http://sexy:8055
+
+    - Bookmarks:
+        icon: si-linktree.svg
+        href: https://link.localhost
+        description: Linkwarden bookmark manager
+        siteMonitor: http://link:3000
+
+# Home & IoT
+- Home:
+    - Home Assistant:
+        icon: home-assistant.png
+        href: https://home.localhost
+        description: Smart home automation
+        siteMonitor: http://homeassistant:8123
+        widget:
+          type: homeassistant
+          url: http://homeassistant:8123
+          # key: your-long-lived-access-token
+
+# Monitoring & Analytics
+- Monitoring:
+    - Analytics:
+        icon: umami.png
+        href: https://umami.pivoine.art
+        description: Web analytics
+        siteMonitor: https://umami.pivoine.art
+
+    - Observability:
+        icon: si-prometheus.svg
+        href: http://pivoine.art:7070
+        description: Application monitoring (SigNoz)
+        siteMonitor: http://pivoine.art:7070
+
+    - VPN:
+        icon: wireguard.png
+        href: https://vpn.pivoine.art
+        description: Secure network access
+        siteMonitor: https://vpn.pivoine.art
+
+# Automation
+- Automation:
+    - Auto:
+        icon: si-automattic.svg
+        href: http://pivoine.art:3000
+        description: Automation services
+        siteMonitor: http://pivoine.art:3000

@@ -1,0 +1,54 @@
+{
+	"name": "@sexy.pivoine.art/bundle",
+	"description": "Please enter a description for your extension",
+	"icon": "extension",
+	"version": "1.0.0",
+	"keywords": [
+		"directus",
+		"directus-extension",
+		"directus-extension-bundle"
+	],
+	"type": "module",
+	"files": [
+		"dist"
+	],
+	"directus:extension": {
+		"type": "bundle",
+		"path": {
+			"app": "dist/app.js",
+			"api": "dist/api.js"
+		},
+		"entries": [
+			{
+				"name": "endpoint",
+				"type": "endpoint",
+				"source": "src/endpoint"
+			},
+			{
+				"name": "hook",
+				"type": "hook",
+				"source": "src/hook"
+			},
+			{
+				"name": "theme",
+				"type": "theme",
+				"source": "src/theme"
+			}
+		],
+		"host": "^11.11.0"
+	},
+	"scripts": {
+		"build": "directus-extension build",
+		"dev": "directus-extension build -w --no-minify",
+		"link": "directus-extension link",
+		"validate": "directus-extension validate",
+		"add": "directus-extension add"
+	},
+	"devDependencies": {
+		"@directus/extensions-sdk": "16.0.2"
+	},
+	"dependencies": {
+		"@sindresorhus/slugify": "^3.0.0",
+		"fluent-ffmpeg": "^2.1.3"
+	}
+}

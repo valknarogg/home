@@ -1,0 +1,22 @@
+{
+  "name": "game-icons",
+  "style": "css/game-icons.css",
+  "sass": "scss/game-icons.scss",
+  "version": "0.1.1",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/nagoshiashumari/game-icons.git"
+  },
+  "devDependencies": {
+    "grunt": "^1.6.1",
+    "grunt-contrib-cssmin": "^5.0.0",
+    "grunt-webfont": "^1.7.2"
+  },
+  "scripts": {
+    "build": "grunt",
+    "test": "grunt scsslint"
+  },
+  "dependencies": {
+    "grunt-cli": "^1.5.0"
+  }
+}
