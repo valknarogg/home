@@ -1,86 +1,237 @@
-<template>
-  <svg
-    width="280"
-    height="80"
-    viewBox="0 0 280 80"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <defs>
-      <!-- Soft shadow filter -->
-      <filter id="softShadow" x="-50%" y="-50%" width="200%" height="200%">
-        <feGaussianBlur in="SourceAlpha" stdDeviation="3"/>
-        <feOffset dx="0" dy="3" result="offsetblur"/>
-        <feComponentTransfer>
-          <feFuncA type="linear" slope="0.3"/>
-        </feComponentTransfer>
-        <feMerge>
-          <feMergeNode/>
-          <feMergeNode in="SourceGraphic"/>
-        </feMerge>
-      </filter>
-      
-      <!-- Subtle glow for extra depth -->
-      <filter id="glow">
-        <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-        <feMerge>
-          <feMergeNode in="coloredBlur"/>
-          <feMergeNode in="SourceGraphic"/>
-        </feMerge>
-      </filter>
-    </defs>
+<script setup>
+import { ref, computed } from 'vue'
 
-    <g filter="url(#softShadow)">
-      <!-- K -->
-      <path 
-        d="M 20,20 L 20,60 M 20,40 L 48,20 M 20,40 L 48,60" 
-        stroke="currentColor" 
-        stroke-width="12" 
-        stroke-linecap="round" 
-        stroke-linejoin="round"
-        filter="url(#glow)"
-      />
+const props = defineProps({
+  size: {
+    type: String,
+    default: '42px' // Can be: '24px', '32px', '42px', '56px', etc.
+  }
+})
+
+const isHovered = ref(false)
+
+// Load Google Font
+if (typeof document !== 'undefined') {
+  const link = document.createElement('link')
+  link.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@800;900&display=swap'
+  link.rel = 'stylesheet'
+  document.head.appendChild(link)
+}
+</script>
+
+<template>
+  <div 
+    class="logo-wrapper"
+    :style="{ fontSize: size }"
+    @mouseenter="isHovered = true"
+    @mouseleave="isHovered = false"
+  >
+    <div class="logo-container">
+      <!-- Main brand text -->
+      <span class="brand-text">kompose</span>
       
-      <!-- M -->
-      <path 
-        d="M 68,60 L 68,20 L 86,42 L 104,20 L 104,60" 
-        stroke="currentColor" 
-        stroke-width="12" 
-        stroke-linecap="round" 
-        stroke-linejoin="round"
-        filter="url(#glow)"
-      />
-      
-      <!-- P -->
-      <path 
-        d="M 124,60 L 124,20 L 148,20 C 156,20 162,26 162,34 C 162,42 156,48 148,48 L 124,48" 
-        stroke="currentColor" 
-        stroke-width="12" 
-        stroke-linecap="round" 
-        stroke-linejoin="round"
-        filter="url(#glow)"
-      />
-      
-      <!-- S -->
-      <path 
-        d="M 196,24 C 192,20 186,20 182,24 C 178,28 178,32 182,36 C 186,39 190,39 194,42 C 198,45 202,45 206,49 C 210,53 210,57 206,61 C 202,65 196,65 192,61" 
-        stroke="currentColor" 
-        stroke-width="12" 
-        stroke-linecap="round" 
-        stroke-linejoin="round"
-        fill="none"
-        filter="url(#glow)"
-      />
-      
-      <!-- E -->
-      <path 
-        d="M 260,20 L 226,20 L 226,60 L 260,60 M 226,40 L 254,40" 
-        stroke="currentColor" 
-        stroke-width="12" 
-        stroke-linecap="round" 
-        stroke-linejoin="round"
-        filter="url(#glow)"
-      />
-    </g>
-  </svg>
+      <!-- Tech domain extension with animated dot -->
+      <span class="domain-wrapper">
+        <span class="animated-dot-wrapper">
+          <span class="animated-dot" :class="{ active: isHovered }"></span>
+        </span>
+        <span class="domain-text-wrapper">
+          <span class="domain-text">sh</span>
+          <span class="underline" :class="{ active: isHovered }"></span>
+        </span>
+      </span>
+    </div>
+    
+    <!-- Floating particles on hover -->
+    <transition name="fade">
+      <div v-if="isHovered" class="particles">
+        <span v-for="i in 3" :key="i" class="particle" :style="{ animationDelay: `${i * 0.15}s` }"></span>
+      </div>
+    </transition>
+  </div>
 </template>
+
+<style scoped>
+.logo-wrapper {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+  font-size: 42px; /* Default size, can be overridden */
+}
+
+.logo-container {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-weight: 900;
+  font-size: 1em; /* Relative to wrapper */
+  letter-spacing: -0.05em;
+  color: currentColor;
+  text-shadow: 0 0.07em 0.19em rgba(0, 0, 0, 0.25);
+  line-height: 1;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: transform 0.3s ease;
+}
+
+.logo-wrapper:hover .logo-container {
+  transform: translateY(-0.05em);
+}
+
+.brand-text {
+  position: relative;
+  z-index: 2;
+}
+
+.domain-wrapper {
+  display: inline-flex;
+  align-items: center;
+  margin-left: -0.02em;
+  gap: 0;
+}
+
+/* Animated pulsing dot (replacing the regular dot) */
+.animated-dot-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.3em;
+  height: 1em;
+  position: relative;
+}
+
+.animated-dot {
+  width: 0.15em;
+  height: 0.15em;
+  border-radius: 50%;
+  background: var(--ui-primary, #00DC82);
+  opacity: 0.7;
+  transition: all 0.3s ease;
+  animation: pulse 2s ease-in-out infinite;
+  position: relative;
+  top: 0.15em; /* Align as a period baseline */
+}
+
+.animated-dot.active {
+  opacity: 1;
+  box-shadow: 0 0 0.3em var(--ui-primary, #00DC82);
+  animation: pulse-fast 1s ease-in-out infinite;
+}
+
+.domain-text-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.domain-text {
+  position: relative;
+  z-index: 2;
+  color: var(--ui-primary, #00DC82);
+  opacity: 0.8;
+  font-weight: 800;
+  transition: opacity 0.3s ease;
+}
+
+.logo-wrapper:hover .domain-text {
+  opacity: 1;
+}
+
+/* Animated underline - only under "sh" */
+.underline {
+  position: absolute;
+  bottom: -0.1em;
+  left: 0;
+  width: 0%;
+  height: 0.07em;
+  background: var(--ui-primary, #00DC82);
+  opacity: 0.8;
+  border-radius: 0.05em;
+  transition: width 0.4s ease;
+}
+
+.underline.active {
+  width: 100%;
+}
+
+/* Floating particles */
+.particles {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  width: 0.1em;
+  height: 0.1em;
+  background: var(--ui-primary, #00DC82);
+  border-radius: 50%;
+  opacity: 0.5;
+  animation: float-particle 1.5s ease-out forwards;
+  box-shadow: 0 0 0.2em var(--ui-primary, #00DC82);
+}
+
+.particle:nth-child(1) {
+  left: 20%;
+  top: 30%;
+}
+
+.particle:nth-child(2) {
+  left: 50%;
+  top: 20%;
+}
+
+.particle:nth-child(3) {
+  left: 80%;
+  top: 40%;
+}
+
+/* Animations */
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse-fast {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.8;
+  }
+}
+
+@keyframes float-particle {
+  0% {
+    transform: translateY(0) scale(1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: translateY(-0.7em) scale(0);
+    opacity: 0;
+  }
+}
+
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.3s;
+}
+
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+}
+</style>
