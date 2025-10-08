@@ -64,15 +64,15 @@
 - Development:
     - Git:
         icon: gitea.png
-        href: https://git.localhost
+        href: https://code.pivoine.art
         description: Gitea self-hosted Git service
-        siteMonitor: http://git:3000
+        siteMonitor: https://code.pivoine.art
 
     - Workflows:
         icon: si-n8n.svg
-        href: https://chain.localhost
+        href: https://chain.pivoine.art
         description: n8n workflow automation
-        siteMonitor: http://chain:5678
+        siteMonitor: https://chain.pivoine.art
 
 # Content & Media
 - Content:
@@ -92,12 +92,12 @@
 - Home:
     - Home Assistant:
         icon: home-assistant.png
-        href: https://home.localhost
+        href: https://home.pivoine.art
         description: Smart home automation
-        siteMonitor: http://homeassistant:8123
+        siteMonitor: https://home.pivoine.art
         widget:
           type: homeassistant
-          url: http://homeassistant:8123
+          url: https://home.pivoine.art
           # key: your-long-lived-access-token
 
 # Monitoring & Analytics
