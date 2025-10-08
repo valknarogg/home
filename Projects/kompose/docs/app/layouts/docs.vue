@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { ContentNavigationItem } from '@nuxt/content'
-import OgImageDocs from '~/components/OgImage/OgImageDocs.vue';
 
 const navigation = inject<Ref<ContentNavigationItem[]>>('navigation')
 </script>
@@ -14,7 +13,6 @@ const navigation = inject<Ref<ContentNavigationItem[]>>('navigation')
             highlight
             :navigation="navigation"
           />
-          <OgImageDocs />
         </UPageAside>
       </template>
 
