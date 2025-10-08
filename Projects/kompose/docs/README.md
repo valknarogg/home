@@ -1,257 +1,75 @@
-# Kompose Documentation
+# Nuxt Minimal Starter
 
-Modern, stylish documentation site for Kompose built with Nuxt Content and featuring a funky dark theme with orange and purple gradients.
+Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
 
-## 🎨 Features
+## Setup
 
-- ✨ **Modern Dark Theme** - Funky design with orange and purple gradients
-- 📝 **Markdown Support** - Write documentation in Markdown
-- 🔍 **Full-Text Search** - Search through all documentation
-- 📱 **Responsive Design** - Works perfectly on all devices
-- 🎯 **Table of Contents** - Auto-generated navigation
-- 🎨 **Syntax Highlighting** - Beautiful code blocks with multiple language support
-- 🚀 **Static Generation** - Fast, SEO-friendly static site
-- 📊 **PWA Ready** - Progressive Web App capabilities
-
-## 🚀 Quick Start
-
-### Development
+Make sure to install dependencies:
 
 ```bash
-# Install dependencies
+# npm
+npm install
+
+# pnpm
 pnpm install
 
-# Start development server
-pnpm run dev
+# yarn
+yarn install
 
-# Open http://localhost:3000
+# bun
+bun install
 ```
 
-### Production Build
+## Development Server
+
+Start the development server on `http://localhost:3000`:
 
 ```bash
-# Generate static site
-pnpm run generate
+# npm
+npm run dev
 
-# Preview production build
-pnpm run preview
+# pnpm
+pnpm dev
+
+# yarn
+yarn dev
+
+# bun
+bun run dev
 ```
 
-### Docker Deployment
+## Production
+
+Build the application for production:
 
 ```bash
-# Build and start the docs container
-cd /path/to/kompose
-./kompose.sh docs up -d --build
+# npm
+npm run build
 
-# View logs
-./kompose.sh docs logs -f
+# pnpm
+pnpm build
+
+# yarn
+yarn build
+
+# bun
+bun run build
 ```
 
-## 📁 Project Structure
-
-```
-docs/
-├── assets/              # Static assets and global CSS
-│   └── css/
-│       └── main.css     # Custom Tailwind styles
-├── components/          # Vue components
-├── content/            # Markdown documentation
-│   └── docs/           # Documentation pages
-│       └── index.md
-├── layouts/            # Page layouts
-│   └── default.vue     # Main layout with sidebar
-├── pages/              # Application pages
-│   ├── index.vue       # Homepage
-│   └── docs/
-│       └── [...slug].vue  # Documentation pages
-├── public/             # Static files
-├── app.vue            # App entry point
-├── nuxt.config.ts     # Nuxt configuration
-├── tailwind.config.js # Tailwind configuration
-├── package.json       # Dependencies
-├── Dockerfile         # Docker build configuration
-├── nginx.conf         # Nginx configuration
-└── compose.yaml       # Docker Compose configuration
-```
-
-## 📝 Writing Documentation
-
-Documentation files are stored in `content/docs/` directory as Markdown files.
-
-### Creating a New Page
-
-1. Create a new `.md` file in `content/docs/`:
-
-```markdown
----
-title: Your Page Title
-description: Brief description of the page
----
-
-# Your Page Title
-
-Your content goes here...
-```
-
-2. The page will be automatically available at `/docs/your-file-name`
-
-### Frontmatter Options
-
-```yaml
----
-title: Page Title          # Required: Page title
-description: Description   # Optional: Meta description
----
-```
-
-### Markdown Features
-
-#### Code Blocks
-
-\`\`\`bash
-./kompose.sh "*" up -d
-\`\`\`
-
-#### Alerts
-
-> 💡 **Tip:** This is a helpful tip!
-
-#### Tables
-
-| Column 1 | Column 2 |
-|----------|----------|
-| Value 1  | Value 2  |
-
-#### Links
-
-[Link Text](/docs/page)
-
-## 🎨 Customizing the Theme
-
-### Colors
-
-Edit `tailwind.config.js` to customize colors:
-
-```js
-theme: {
-  extend: {
-    colors: {
-      primary: {
-        500: '#f97316',  // Orange
-        // ... other shades
-      },
-      accent: {
-        500: '#a855f7',  // Purple
-        // ... other shades
-      }
-    }
-  }
-}
-```
-
-### Styles
-
-Global styles are in `assets/css/main.css`. You can modify:
-- Gradient effects
-- Typography
-- Component styles
-- Animations
-
-## 🔍 Search Configuration
-
-Search is powered by Nuxt Content's built-in search. To customize:
-
-```ts
-// nuxt.config.ts
-content: {
-  experimental: {
-    search: {
-      indexed: true,
-      // Add search configuration
-    }
-  }
-}
-```
-
-## 🌐 Deployment
-
-The site is automatically built and deployed via Docker when using Kompose:
+Locally preview production build:
 
 ```bash
-# Rebuild and redeploy
-./kompose.sh docs down
-./kompose.sh docs up -d --build
+# npm
+npm run preview
+
+# pnpm
+pnpm preview
+
+# yarn
+yarn preview
+
+# bun
+bun run preview
 ```
 
-### Environment Variables
-
-Configure in `docs/.env`:
-
-```env
-COMPOSE_PROJECT_NAME=docs
-TRAEFIK_HOST=docs.example.com
-APP_PORT=80
-```
-
-## 📦 Dependencies
-
-- **Nuxt 3** - Vue framework
-- **Nuxt Content** - File-based CMS
-- **Tailwind CSS** - Utility-first CSS framework
-- **@nuxt/icon** - Icon component
-- **@vueuse/nuxt** - Vue composition utilities
-
-## 🛠️ Development Tips
-
-### Hot Reload
-
-The development server supports hot module replacement. Changes to components, pages, and markdown files will be reflected immediately.
-
-### TypeScript
-
-The project uses TypeScript. Type definitions are automatically generated by Nuxt.
-
-### Adding Components
-
-Create components in `components/` directory. They'll be auto-imported:
-
-```vue
-<!-- components/MyComponent.vue -->
-<template>
-  <div>My Component</div>
-</template>
-```
-
-Use in pages:
-
-```vue
-<template>
-  <MyComponent />
-</template>
-```
-
-## 🎯 Features Roadmap
-
-- [ ] Advanced search with filters
-- [ ] Dark/light mode toggle
-- [ ] API documentation generator
-- [ ] Interactive code examples
-- [ ] Version selector
-- [ ] Multi-language support
-
-## 📄 License
-
-MIT License - see the main Kompose repository for details.
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create your feature branch: `git checkout -b feature/amazing-feature`
-3. Commit your changes: `git commit -m 'Add amazing feature'`
-4. Push to the branch: `git push origin feature/amazing-feature`
-5. Open a Pull Request
-
----
-
-Made with ❤️ and ☕ by the Kompose Community
+Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.

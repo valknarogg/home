@@ -120,3 +120,11 @@ source $ZSH/oh-my-zsh.sh
 # _home_pull
 
 cd "$HOME/$(cat $HOME/.last_pwd)" &>/dev/null
+
+# pnpm
+export PNPM_HOME="/home/valknar/.local/share/pnpm"
+case ":$PATH:" in
+  *":$PNPM_HOME:"*) ;;
+  *) export PATH="$PNPM_HOME:$PATH" ;;
+esac
+# pnpm end

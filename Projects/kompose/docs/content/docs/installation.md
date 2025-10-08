@@ -237,7 +237,7 @@ sudo systemctl enable docker
 
 Now that Kompose is installed, you can:
 
-1. [Start with the Quick Start Guide](/docs/quick-start)
+1. [Start with the Quick Start Guide](/docs/guide/quick-start)
 2. [Learn about Stack Management](/docs/guide/stack-management)
 3. [Explore Database Operations](/docs/guide/database)
 4. [Set up Custom Hooks](/docs/guide/hooks)
@@ -277,4 +277,4 @@ rm -rf /path/to/kompose
 
 ---
 
-**Need Help?** Check out the [Troubleshooting Guide](/docs/troubleshooting) or [open an issue](https://github.com/yourusername/kompose/issues) on GitHub.
+**Need Help?** Check out the [Troubleshooting Guide](/docs/guide/troubleshooting) or [open an issue](https://github.com/yourusername/kompose/issues) on GitHub.
