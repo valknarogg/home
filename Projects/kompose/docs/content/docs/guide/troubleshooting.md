@@ -7,7 +7,7 @@ description: Common issues and solutions
 
 ### Common Issues
 
-#### 🚫 404 Error from Traefik
+#### <img src="https://game-icons.net/icons/000000/transparent/1x1/delapouite/cancel.svg" alt="error" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;"> 404 Error from Traefik
 
 **Problem:** Websites return 404 even though containers are running
 
@@ -33,7 +33,7 @@ http://your-server:8080
 docker inspect blog_app | grep traefik
 ```
 
-#### 💾 Database Import Fails
+#### <img src="https://game-icons.net/icons/000000/transparent/1x1/delapouite/save.svg" alt="database" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;"> Database Import Fails
 
 **Problem:** `db:import` command fails
 
@@ -55,7 +55,7 @@ ls -lh news/*.sql
 ./kompose.sh news db:import 2>&1 | tee import.log
 ```
 
-#### 🔌 Container Won't Connect to Network
+#### <img src="https://game-icons.net/icons/000000/transparent/1x1/delapouite/plug.svg" alt="connection" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;"> Container Won't Connect to Network
 
 **Problem:** Container fails to join kompose network
 
@@ -70,7 +70,7 @@ docker network create kompose
 ./kompose.sh "*" up -d
 ```
 
-#### 🪝 Hooks Not Executing
+#### <img src="https://game-icons.net/icons/000000/transparent/1x1/lorc/meat-hook.svg" alt="hook" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;"> Hooks Not Executing
 
 **Problem:** Custom hooks aren't running
 

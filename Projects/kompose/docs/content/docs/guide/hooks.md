@@ -77,14 +77,14 @@ The `sexy` stack uses hooks for Directus schema management:
 
 ### Hook Best Practices
 
-✅ **DO:**
+<img src="https://game-icons.net/icons/000000/transparent/1x1/delapouite/check-mark.svg" alt="check" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;"> **DO:**
 - Return 0 for success, 1 for failure
 - Use indented output: `echo "  Message"`
 - Make non-critical operations return 0
 - Check container status before `docker exec`
 - Test in dry-run mode first
 
-❌ **DON'T:**
+<img src="https://game-icons.net/icons/000000/transparent/1x1/delapouite/cancel.svg" alt="cancel" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;"> **DON'T:**
 - Assume containers are running
 - Use blocking operations without timeouts
 - Forget error handling

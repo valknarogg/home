@@ -3,7 +3,7 @@ title: Auth Stack - The Bouncer at Your Digital Club
 description: "You shall not pass... without proper credentials!"
 ---
 
-# 🔐 Auth Stack - The Bouncer at Your Digital Club
+# <img src="https://game-icons.net/icons/000000/transparent/1x1/lorc/padlock.svg" alt="lock" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;"> Auth Stack - The Bouncer at Your Digital Club
 
 > *"You shall not pass... without proper credentials!"* - Keycloak, probably
 
@@ -13,18 +13,18 @@ This stack is your authentication and identity management powerhouse. Think of i
 
 ## The Star of the Show
 
-### 🎭 Keycloak
+### <img src="https://game-icons.net/icons/000000/transparent/1x1/delapouite/theater.svg" alt="theater" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;"> Keycloak
 
 **Container**: `auth_keycloak`  
 **Image**: `quay.io/keycloak/keycloak:latest`  
 **Home**: https://auth.pivoine.art
 
 Keycloak is like having a Swiss Army knife for authentication. It handles:
-- 👤 **Single Sign-On (SSO)**: Log in once, access everything. Magic!
-- 🎫 **Identity Brokering**: Connect with Google, GitHub, and other OAuth providers
-- 👥 **User Management**: Keep track of who's who in your digital zoo
-- 🔒 **OAuth 2.0 & OpenID Connect**: Industry-standard security protocols (the fancy stuff)
-- 🛡️ **Authorization Services**: Fine-grained control over who can do what
+- <img src="https://game-icons.net/icons/000000/transparent/1x1/delapouite/person.svg" alt="user" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;"> **Single Sign-On (SSO)**: Log in once, access everything. Magic!
+- <img src="https://game-icons.net/icons/000000/transparent/1x1/delapouite/ticket.svg" alt="ticket" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;"> **Identity Brokering**: Connect with Google, GitHub, and other OAuth providers
+- <img src="https://game-icons.net/icons/000000/transparent/1x1/delapouite/three-friends.svg" alt="users" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;"> **User Management**: Keep track of who's who in your digital zoo
+- <img src="https://game-icons.net/icons/000000/transparent/1x1/lorc/locked-fortress.svg" alt="security" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;"> **OAuth 2.0 & OpenID Connect**: Industry-standard security protocols (the fancy stuff)
+- <img src="https://game-icons.net/icons/000000/transparent/1x1/lorc/shield.svg" alt="shield" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;"> **Authorization Services**: Fine-grained control over who can do what
 
 ## Configuration Breakdown
 
@@ -53,11 +53,11 @@ Running in `edge` mode because we're living on the edge (behind Traefik)! This t
 
 | Variable | What It Does | Cool Factor |
 |----------|-------------|-------------|
-| `KC_DB` | Database type (postgres) | 🐘 Elephants never forget |
-| `KC_DB_URL` | JDBC connection string | 🔌 The digital umbilical cord |
-| `KC_HOSTNAME` | Public-facing URL | 🌐 Your internet identity |
-| `KC_PROXY` | Proxy mode setting | 🎭 Trust the middleman |
-| `KC_FEATURES` | Enabled features (docker) | 🐳 Whale hello there! |
+| `KC_DB` | Database type (postgres) | <img src="https://game-icons.net/icons/000000/transparent/1x1/delapouite/elephant.svg" alt="elephant" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;"> Elephants never forget |
+| `KC_DB_URL` | JDBC connection string | <img src="https://game-icons.net/icons/000000/transparent/1x1/delapouite/plug.svg" alt="plug" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;"> The digital umbilical cord |
+| `KC_HOSTNAME` | Public-facing URL | <img src="https://game-icons.net/icons/000000/transparent/1x1/delapouite/globe.svg" alt="globe" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;"> Your internet identity |
+| `KC_PROXY` | Proxy mode setting | <img src="https://game-icons.net/icons/000000/transparent/1x1/delapouite/theater.svg" alt="proxy" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;"> Trust the middleman |
+| `KC_FEATURES` | Enabled features (docker) | <img src="https://game-icons.net/icons/000000/transparent/1x1/lorc/whale-tail.svg" alt="docker" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;"> Whale hello there! |
 
 ## Ports & Networking
 
@@ -119,13 +119,13 @@ A: Clear your browser cache, Keycloak loves to cache things
 **Q: Database connection issues?**  
 A: Ensure the `data` stack is running and healthy
 
-## Security Notes 🔒
+## Security Notes <img src="https://game-icons.net/icons/000000/transparent/1x1/lorc/locked-fortress.svg" alt="security" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;">
 
-- 🚨 **Change the default admin password** (seriously, do it now)
-- 🔐 Database credentials are shared via root `.env`
-- 🌐 Always access via HTTPS in production
-- 📝 Enable audit logging for compliance
-- 🎯 Use realms to separate different applications/teams
+- <img src="https://game-icons.net/icons/000000/transparent/1x1/delapouite/siren.svg" alt="alert" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;"> **Change the default admin password** (seriously, do it now)
+- <img src="https://game-icons.net/icons/000000/transparent/1x1/lorc/padlock.svg" alt="lock" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;"> Database credentials are shared via root `.env`
+- <img src="https://game-icons.net/icons/000000/transparent/1x1/delapouite/globe.svg" alt="globe" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;"> Always access via HTTPS in production
+- <img src="https://game-icons.net/icons/000000/transparent/1x1/delapouite/scroll-unfurled.svg" alt="log" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;"> Enable audit logging for compliance
+- <img src="https://game-icons.net/icons/000000/transparent/1x1/delapouite/archery-target.svg" alt="target" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;"> Use realms to separate different applications/teams
 
 ## Fun Facts
 
@@ -142,4 +142,4 @@ A: Ensure the `data` stack is running and healthy
 
 ---
 
-*Remember: With great authentication power comes great responsibility. Don't be the person who uses "admin/admin" in production.* 🦸‍♂️
+*Remember: With great authentication power comes great responsibility. Don't be the person who uses "admin/admin" in production.* <img src="https://game-icons.net/icons/000000/transparent/1x1/lorc/superhero.svg" alt="hero" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;">

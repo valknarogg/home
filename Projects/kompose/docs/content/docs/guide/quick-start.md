@@ -25,5 +25,5 @@ chmod +x kompose.sh
 # Export all databases
 ./kompose.sh "*" db:export
 
-# That's it! 🎉
+# That's it! <img src="https://game-icons.net/icons/000000/transparent/1x1/delapouite/firework-rocket.svg" alt="celebration" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;">
 ```

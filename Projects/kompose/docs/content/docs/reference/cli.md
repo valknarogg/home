@@ -116,7 +116,7 @@ Import PostgreSQL database from SQL dump file.
 ./kompose.sh <stack> db:import path/to/dump.sql
 ```
 
-**⚠️ WARNING:** Drops and recreates the database!
+**<img src="https://game-icons.net/icons/000000/transparent/1x1/delapouite/warning-sign.svg" alt="warning" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;"> WARNING:** Drops and recreates the database!
 
 ### db:cleanup
 

@@ -107,17 +107,17 @@ DB_HOST=news-postgres  # Overrides root
 
 ### Security
 
-- ✅ Use strong, random passwords
-- ✅ Never commit `.env` files to version control
-- ✅ Use `.env.example` as template
-- ✅ Rotate secrets regularly
+- <img src="https://game-icons.net/icons/000000/transparent/1x1/delapouite/check-mark.svg" alt="check" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;"> Use strong, random passwords
+- <img src="https://game-icons.net/icons/000000/transparent/1x1/delapouite/check-mark.svg" alt="check" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;"> Never commit `.env` files to version control
+- <img src="https://game-icons.net/icons/000000/transparent/1x1/delapouite/check-mark.svg" alt="check" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;"> Use `.env.example` as template
+- <img src="https://game-icons.net/icons/000000/transparent/1x1/delapouite/check-mark.svg" alt="check" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;"> Rotate secrets regularly
 
 ### Organization
 
-- ✅ Document custom variables
-- ✅ Group related variables
-- ✅ Use consistent naming
-- ✅ Keep defaults in root `.env`
+- <img src="https://game-icons.net/icons/000000/transparent/1x1/delapouite/check-mark.svg" alt="check" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;"> Document custom variables
+- <img src="https://game-icons.net/icons/000000/transparent/1x1/delapouite/check-mark.svg" alt="check" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;"> Group related variables
+- <img src="https://game-icons.net/icons/000000/transparent/1x1/delapouite/check-mark.svg" alt="check" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;"> Use consistent naming
+- <img src="https://game-icons.net/icons/000000/transparent/1x1/delapouite/check-mark.svg" alt="check" style="display:inline; width:1.2em; height:1.2em; vertical-align:-0.15em;"> Keep defaults in root `.env`
 
 ## Generating Secrets
 
