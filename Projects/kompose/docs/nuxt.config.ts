@@ -1,38 +1,100 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  compatibilityDate: '2025-07-15',
-  devtools: { enabled: true },
+  modules: [
+    '@nuxt/eslint',
+    '@nuxt/image',
+    '@nuxt/ui',
+    '@nuxt/content',
+    'nuxt-og-image',
+    'nuxt-llms'
+  ],
+
+  // content: {
+  //   build: {
+  //     markdown: {
+  //       // Object syntax can be used to override default options
+  //       remarkPlugins: {
+  //         // Override remark-emoji options
+  //         'remark-emoji': {
+  //           options: {
+  //             emoticon: true
+  //           }
+  //         },
+  //         // Disable remark-gfm
+  //         'remark-gfm': false,
+  //         // Add remark-oembed
+  //         'remark-oembed': {
+  //           // Options
+  //         }
+  //       },
+  //     }
+  //   }
+  // },
+
+  devtools: {
+    enabled: false
+  },
+
+  css: ['~/assets/css/main.css'],
+
   content: {
-    experimental: { nativeSqlite: true },
     build: {
       markdown: {
-        // Object syntax can be used to override default options
-        remarkPlugins: {
-          // Override remark-emoji options
-          'remark-emoji': {
-            options: {
-              emoticon: true
-            }
-          },
-          // Disable remark-gfm
-          'remark-gfm': false,
-          // Add remark-oembed
-          'remark-oembed': {
-            // Options
-          }
-        },
+        toc: {
+          searchDepth: 1
+        }
       }
     }
   },
-  modules: [
-    '@nuxt/content',
-    '@nuxt/eslint',
-    '@nuxt/image',
-    '@nuxt/icon',
-    '@nuxt/fonts',
-    '@nuxt/scripts',
-    'nuxt-zod-i18n', 
-    '@nuxtjs/i18n'
-  ],
-  extends: ['docus']
+
+  compatibilityDate: '2024-07-11',
+
+  nitro: {
+    prerender: {
+      routes: [
+        '/'
+      ],
+      crawlLinks: true,
+      autoSubfolderIndex: false
+    }
+  },
+
+  eslint: {
+    config: {
+      stylistic: {
+        commaDangle: 'never',
+        braceStyle: '1tbs'
+      }
+    }
+  },
+
+  icon: {
+    provider: 'iconify'
+  },
+
+  llms: {
+    domain: 'https://docs-template.nuxt.dev/',
+    title: 'Nuxt Docs Template',
+    description: 'A template for building documentation with Nuxt UI and Nuxt Content.',
+    full: {
+      title: 'Nuxt Docs Template - Full Documentation',
+      description: 'This is the full documentation for the Nuxt Docs Template.'
+    },
+    sections: [
+      {
+        title: 'Getting Started',
+        contentCollection: 'docs',
+        contentFilters: [
+          { field: 'path', operator: 'LIKE', value: '/getting-started%' }
+        ]
+      },
+      {
+        title: 'Essentials',
+        contentCollection: 'docs',
+        contentFilters: [
+          { field: 'path', operator: 'LIKE', value: '/essentials%' }
+        ]
+      }
+    ]
+  }
 })
