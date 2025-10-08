@@ -23,3 +23,7 @@
 :root {
   --ui-container: var(--container-8xl);
 }
+
+h3 .iconify {
+  @apply size-6;
+}

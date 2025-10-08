@@ -13,7 +13,7 @@ SigNoz is your all-in-one observability platform! Think of it as having X-ray vi
 
 ## The Observability Avengers
 
-### :icon{name="lucide:target"} SigNoz
+### :icon{name="lucide:target" :size="32"} SigNoz
 
 **Container**: `trace_app`  
 **Image**: `signoz/signoz:v0.96.1`  
@@ -27,8 +27,8 @@ Your main dashboard and query engine:
 - :icon{name="lucide:file-text"} **Logs**: Centralized log management
 - :icon{name="lucide:target"} **Alerting**: Get notified when things break
 - :icon{name="lucide:link"} **Service Maps**: Visualize your architecture
-- ⏱️ **Performance**: Find bottlenecks
-- 🐛 **Error Tracking**: Catch and debug errors
+- :icon{name="lucide:clock"} **Performance**: Find bottlenecks
+- :icon{name="lucide:bug"} **Error Tracking**: Catch and debug errors
 
 ### :icon{name="lucide:database"} ClickHouse
 
