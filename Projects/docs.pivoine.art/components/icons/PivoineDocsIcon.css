@@ -1,4 +1,6 @@
-/* Pivoine Docs Icon Styles */
+/* ================================================
+   Pivoine Docs Icon - Enhanced Peony Blossom
+   ================================================ */
 
 .pivoine-docs-icon-wrapper {
   position: relative;
@@ -7,7 +9,7 @@
   align-items: center;
   gap: 1rem;
   cursor: pointer;
-  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
   transform-style: preserve-3d;
 }
 
@@ -19,321 +21,456 @@
   width: 100%;
   height: 100%;
   display: block;
-  filter: drop-shadow(0 10px 40px rgba(168, 85, 247, 0.3));
-  transition: filter 0.4s ease;
+  filter: drop-shadow(0 8px 32px rgba(236, 72, 153, 0.2));
+  transition: filter 0.6s ease;
 }
 
-/* Background pulse */
-.bg-circle {
-  animation: bg-pulse 4s ease-in-out infinite;
+/* ================================================
+   NORMAL STATE - Gentle Breathing Animation
+   ================================================ */
+
+/* Background glow pulse */
+.bg-glow {
+  animation: bg-breathe 6s ease-in-out infinite;
 }
 
-/* CLOSED STATE - Petals start small and close to center */
+/* Base state: Petals in semi-closed bud position */
 .outer-petal {
   transform-origin: 128px 128px;
-  transform: scale(0.3);
+  transform: scale(0.3) translateX(8px);
   opacity: 0.5;
-  transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: petal-breathe 6s ease-in-out infinite;
 }
 
 .middle-petal {
   transform-origin: 128px 128px;
-  transform: scale(0.4);
+  transform: scale(0.4) translateX(6px);
   opacity: 0.6;
-  transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.05s;
+  transition: all 1s cubic-bezier(0.34, 1.56, 0.64, 1) 0.08s;
+  animation: petal-breathe 6s ease-in-out infinite 0.3s;
 }
 
 .inner-petal {
   transform-origin: 128px 128px;
-  transform: scale(0.5);
+  transform: scale(0.5) translateX(4px);
   opacity: 0.7;
-  transition: all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s;
+  transition: all 1s cubic-bezier(0.34, 1.56, 0.64, 1) 0.16s;
+  animation: petal-breathe 6s ease-in-out infinite 0.6s;
 }
 
-/* Non-interactive version stays slightly more open */
+/* Non-interactive version shows a beautiful semi-open bloom */
 .pivoine-docs-icon-wrapper:not(.is-interactive) .outer-petal {
-  transform: scale(0.85);
-  opacity: 0.85;
+  transform: scale(0.75) translateX(20px);
+  opacity: 0.75;
+  animation: petal-float 8s ease-in-out infinite;
 }
 
 .pivoine-docs-icon-wrapper:not(.is-interactive) .middle-petal {
-  transform: scale(0.88);
-  opacity: 0.9;
+  transform: scale(0.8) translateX(14px);
+  opacity: 0.85;
+  animation: petal-float 8s ease-in-out infinite 0.5s;
 }
 
 .pivoine-docs-icon-wrapper:not(.is-interactive) .inner-petal {
-  transform: scale(0.9);
-  opacity: 0.95;
+  transform: scale(0.85) translateX(8px);
+  opacity: 0.92;
+  animation: petal-float 8s ease-in-out infinite 1s;
 }
 
-/* Sparkles twinkle */
-.sparkle {
-  animation: twinkle 2s ease-in-out infinite;
+/* Center breathes gently */
+.center-circle-outer {
+  animation: center-breathe 5s ease-in-out infinite;
+  transform-origin: center;
 }
 
-.sparkle-1 {
-  animation-delay: 0s;
+.center-circle-inner {
+  animation: center-breathe-inner 5s ease-in-out infinite 0.3s;
+  transform-origin: center;
 }
 
-.sparkle-2 {
-  animation-delay: 0.5s;
-}
-
-.sparkle-3 {
-  animation-delay: 1s;
-}
-
-.sparkle-4 {
-  animation-delay: 1.5s;
-}
-
-/* Particles orbit */
-.particle {
-  animation: orbit 8s linear infinite;
+/* Stamens rotate gently */
+.center-stamens {
+  animation: stamens-rotate 20s linear infinite;
   transform-origin: 128px 128px;
 }
 
-.particle-1 {
-  animation-delay: 0s;
+.stamen {
+  animation: stamen-pulse 3s ease-in-out infinite;
 }
 
-.particle-2 {
-  animation-delay: 2s;
+.stamen-0 { animation-delay: 0s; }
+.stamen-1 { animation-delay: 0.2s; }
+.stamen-2 { animation-delay: 0.4s; }
+.stamen-3 { animation-delay: 0.6s; }
+.stamen-4 { animation-delay: 0.8s; }
+.stamen-5 { animation-delay: 1s; }
+.stamen-6 { animation-delay: 1.2s; }
+.stamen-7 { animation-delay: 1.4s; }
+
+/* Sparkles twinkle */
+.sparkle {
+  animation: sparkle-twinkle 3s ease-in-out infinite;
+  transform-origin: center;
 }
 
-.particle-3 {
-  animation-delay: 4s;
-}
+.sparkle-1 { animation-delay: 0s; }
+.sparkle-2 { animation-delay: 0.4s; }
+.sparkle-3 { animation-delay: 0.8s; }
+.sparkle-4 { animation-delay: 1.2s; }
+.sparkle-5 { animation-delay: 1.6s; }
+.sparkle-6 { animation-delay: 2s; }
+.sparkle-7 { animation-delay: 2.4s; }
+.sparkle-8 { animation-delay: 2.8s; }
 
-.particle-4 {
-  animation-delay: 6s;
-}
-
-/* Center circle pulse */
-.center-circle {
-  animation: center-pulse 3s ease-in-out infinite;
-}
-
-/* Pages subtle movement */
+/* Pages subtle floating */
 .page {
   transform-origin: center;
-  animation: page-float 3s ease-in-out infinite;
+  animation: page-float 4s ease-in-out infinite;
 }
 
-.page-1 {
-  animation-delay: 0s;
-}
+.page-1 { animation-delay: 0s; }
+.page-2 { animation-delay: 0.3s; }
+.page-3 { animation-delay: 0.6s; }
 
-.page-2 {
-  animation-delay: 0.3s;
-}
-
-.page-3 {
-  animation-delay: 0.6s;
-}
-
-/* Text lines appear */
+/* Text lines subtle shimmer */
 .text-line {
-  stroke-dasharray: 30;
-  stroke-dashoffset: 30;
-  animation: line-appear 2s ease-out forwards;
+  animation: text-shimmer 4s ease-in-out infinite;
 }
 
-.line-1 {
-  animation-delay: 0.2s;
+.line-1 { animation-delay: 0s; }
+.line-2 { animation-delay: 0.3s; }
+.line-3 { animation-delay: 0.6s; }
+.line-4 { animation-delay: 0.9s; }
+.line-5 { animation-delay: 1.2s; }
+
+/* Bloom particles hidden in normal state */
+.bloom-particle {
+  opacity: 0;
+  transition: opacity 0.3s ease;
 }
 
-.line-2 {
-  animation-delay: 0.4s;
+/* ================================================
+   HOVER STATE - Beautiful Full Bloom
+   ================================================ */
+
+.pivoine-docs-icon-wrapper.is-interactive.is-hovered {
+  transform: scale(1.1) translateY(-8px);
 }
 
-.line-3 {
-  animation-delay: 0.6s;
+.pivoine-docs-icon-wrapper.is-interactive.is-hovered .pivoine-docs-icon {
+  filter: drop-shadow(0 16px 48px rgba(236, 72, 153, 0.4))
+          drop-shadow(0 8px 24px rgba(168, 85, 247, 0.3));
 }
 
-.line-4 {
-  animation-delay: 0.8s;
-}
-
-.line-5 {
-  animation-delay: 1s;
-}
-
-/* HOVER - BLOOM OPEN! */
-.pivoine-docs-icon-wrapper.is-interactive:hover {
-  transform: scale(1.08) translateY(-8px);
-}
-
-.pivoine-docs-icon-wrapper.is-interactive:hover .pivoine-docs-icon {
-  filter: drop-shadow(0 20px 60px rgba(168, 85, 247, 0.6));
-}
-
-/* Petals bloom open on hover */
-.pivoine-docs-icon-wrapper.is-interactive:hover .outer-petal {
-  transform: scale(1);
-  opacity: 0.85;
-  filter: url(#intense-glow);
-}
-
-.pivoine-docs-icon-wrapper.is-interactive:hover .middle-petal {
-  transform: scale(1);
+/* Petals bloom outward beautifully */
+.pivoine-docs-icon-wrapper.is-interactive.is-hovered .outer-petal {
+  transform: scale(0.55) translateX(38px);
   opacity: 0.9;
   filter: url(#intense-glow);
+  animation: petal-bloom-hover 2s ease-in-out infinite;
 }
 
-.pivoine-docs-icon-wrapper.is-interactive:hover .inner-petal {
-  transform: scale(1);
+.pivoine-docs-icon-wrapper.is-interactive.is-hovered .middle-petal {
+  transform: scale(0.525) translateX(26px);
+  opacity: 0.92;
+  filter: url(#petal-glow);
+  animation: petal-bloom-hover 2s ease-in-out infinite 0.2s;
+}
+
+.pivoine-docs-icon-wrapper.is-interactive.is-hovered .inner-petal {
+  transform: scale(0.5) translateX(16px);
   opacity: 0.95;
+  filter: url(#petal-glow);
+  animation: petal-bloom-hover 2s ease-in-out infinite 0.4s;
+}
+
+/* Center grows with intense glow */
+.pivoine-docs-icon-wrapper.is-interactive.is-hovered .center-circle-outer {
+  animation: center-bloom-glow 1.5s ease-in-out infinite;
   filter: url(#intense-glow);
 }
 
-.pivoine-docs-icon-wrapper.is-interactive:hover .center-circle {
-  animation: center-glow 1s ease-in-out infinite;
+.pivoine-docs-icon-wrapper.is-interactive.is-hovered .center-circle-inner {
+  animation: center-bloom-inner 1.5s ease-in-out infinite;
 }
 
-.pivoine-docs-icon-wrapper.is-interactive:hover .sparkle {
-  animation: sparkle-burst 0.8s ease-out infinite;
+/* Stamens dance */
+.pivoine-docs-icon-wrapper.is-interactive.is-hovered .stamen {
+  animation: stamen-dance 0.8s ease-in-out infinite;
 }
 
-.pivoine-docs-icon-wrapper.is-interactive:hover .page {
-  animation: page-fan 0.8s ease-out forwards;
+/* Sparkles burst with energy */
+.pivoine-docs-icon-wrapper.is-interactive.is-hovered .sparkle {
+  animation: sparkle-burst 1s ease-out infinite;
 }
 
-/* Click effects */
+/* Bloom particles fly around! */
+.pivoine-docs-icon-wrapper.is-interactive.is-hovered .bloom-particle {
+  opacity: 0.7;
+  animation: bloom-particle-fly 3s ease-in-out infinite;
+}
+
+/* Background glows intensely */
+.pivoine-docs-icon-wrapper.is-interactive.is-hovered .bg-glow {
+  animation: bg-bloom-glow 2s ease-in-out infinite;
+}
+
+/* Pages fan out */
+.pivoine-docs-icon-wrapper.is-interactive.is-hovered .page {
+  animation: page-fan-out 0.8s ease-out forwards;
+}
+
+/* ================================================
+   CLICK STATE - Smooth Closing Animation
+   ================================================ */
+
 .pivoine-docs-icon-wrapper.is-clicked {
-  animation: icon-bounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: icon-press 1.2s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .pivoine-docs-icon-wrapper.is-clicked .pivoine-docs-icon {
-  animation: icon-spin 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
-  filter: drop-shadow(0 25px 80px rgba(168, 85, 247, 0.9));
+  animation: icon-pulse 1.2s ease-out;
+  filter: drop-shadow(0 20px 60px rgba(236, 72, 153, 0.6))
+          drop-shadow(0 10px 30px rgba(168, 85, 247, 0.4));
 }
 
-.pivoine-docs-icon-wrapper.is-clicked .petal {
-  animation: petal-explode 0.8s ease-out;
+/* Petals close inward smoothly */
+.pivoine-docs-icon-wrapper.is-clicked .outer-petal {
+  animation: petal-close-outer 1.2s cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
 
-.pivoine-docs-icon-wrapper.is-clicked .center-circle {
-  animation: center-burst 0.8s ease-out;
+.pivoine-docs-icon-wrapper.is-clicked .middle-petal {
+  animation: petal-close-middle 1.2s cubic-bezier(0.68, -0.55, 0.27, 1.55) 0.05s;
 }
 
-/* Ripple effect */
-.ripple-effect {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.6) 0%, rgba(168, 85, 247, 0) 70%);
-  transform: translate(-50%, -50%) scale(0);
-  animation: ripple-expand 1s ease-out;
-  pointer-events: none;
+.pivoine-docs-icon-wrapper.is-clicked .inner-petal {
+  animation: petal-close-inner 1.2s cubic-bezier(0.68, -0.55, 0.27, 1.55) 0.1s;
 }
 
-/* Label */
-.icon-label {
-  margin-top: 0.5rem;
+/* Center contracts */
+.pivoine-docs-icon-wrapper.is-clicked .center-circle-outer {
+  animation: center-close 1.2s cubic-bezier(0.68, -0.55, 0.27, 1.55);
 }
 
-.label-text {
-  font-size: 1.25rem;
-  font-weight: 700;
-  background: linear-gradient(135deg, #a855f7, #ec4899);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: label-shimmer 3s ease-in-out infinite;
+.pivoine-docs-icon-wrapper.is-clicked .center-circle-inner {
+  animation: center-close-inner 1.2s cubic-bezier(0.68, -0.55, 0.27, 1.55) 0.1s;
 }
 
-/* Keyframes */
-@keyframes bg-pulse {
-  0%,
-  100% {
-    opacity: 0.4;
+/* Sparkles implode */
+.pivoine-docs-icon-wrapper.is-clicked .sparkle {
+  animation: sparkle-implode 1.2s ease-out;
+}
+
+/* Bloom particles burst then fade */
+.pivoine-docs-icon-wrapper.is-clicked .bloom-particle {
+  animation: bloom-particle-burst 1.2s ease-out;
+}
+
+/* ================================================
+   KEYFRAME ANIMATIONS
+   ================================================ */
+
+/* Normal State Animations */
+@keyframes bg-breathe {
+  0%, 100% {
+    opacity: 0.06;
     transform: scale(1);
   }
   50% {
-    opacity: 0.7;
-    transform: scale(1.05);
+    opacity: 0.12;
+    transform: scale(1.02);
   }
 }
 
-@keyframes twinkle {
-  0%,
-  100% {
-    opacity: 0.4;
-    transform: scale(1);
+@keyframes petal-breathe {
+  0%, 100% {
+    transform: scale(0.3) translateX(8px);
   }
   50% {
+    transform: scale(0.35) translateX(10px);
+  }
+}
+
+@keyframes petal-float {
+  0%, 100% {
+    transform: scale(0.75) translateX(20px) translateY(0);
+  }
+  50% {
+    transform: scale(0.77) translateX(21px) translateY(-2px);
+  }
+}
+
+@keyframes center-breathe {
+  0%, 100% {
+    transform: scale(1);
     opacity: 1;
-    transform: scale(1.3);
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 0.95;
   }
 }
 
-@keyframes orbit {
+@keyframes center-breathe-inner {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.12);
+    opacity: 0.95;
+  }
+}
+
+@keyframes stamens-rotate {
   from {
-    transform: rotate(0deg) translateX(80px) rotate(0deg);
+    transform: rotate(0deg);
   }
   to {
-    transform: rotate(360deg) translateX(80px) rotate(-360deg);
+    transform: rotate(360deg);
   }
 }
 
-@keyframes center-pulse {
-  0%,
-  100% {
-    opacity: 0.6;
+@keyframes stamen-pulse {
+  0%, 100% {
     transform: scale(1);
+    opacity: 0.8;
   }
   50% {
+    transform: scale(1.3);
     opacity: 1;
-    transform: scale(1.15);
+  }
+}
+
+@keyframes sparkle-twinkle {
+  0%, 100% {
+    transform: scale(0.8);
+    opacity: 0.4;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 1;
   }
 }
 
 @keyframes page-float {
-  0%,
-  100% {
-    transform: translateY(0);
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
   }
   50% {
-    transform: translateY(-2px);
+    transform: translateY(-2px) rotate(0.5deg);
   }
 }
 
-@keyframes line-appear {
-  to {
-    stroke-dashoffset: 0;
+@keyframes text-shimmer {
+  0%, 100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 0.9;
   }
 }
 
-@keyframes center-glow {
-  0%,
-  100% {
-    opacity: 0.8;
-    transform: scale(1);
+/* Hover State Animations */
+@keyframes petal-bloom-hover {
+  0%, 100% {
+    transform: scale(0.55) translateX(38px) rotate(0deg);
   }
   50% {
+    transform: scale(0.56) translateX(40px) rotate(1deg);
+  }
+}
+
+@keyframes center-bloom-glow {
+  0%, 100% {
+    transform: scale(1.3);
     opacity: 1;
-    transform: scale(1.2);
-    filter: url(#intense-glow);
+  }
+  50% {
+    transform: scale(1.5);
+    opacity: 0.95;
+  }
+}
+
+@keyframes center-bloom-inner {
+  0%, 100% {
+    transform: scale(1.4);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.6);
+    opacity: 0.95;
+  }
+}
+
+@keyframes stamen-dance {
+  0%, 100% {
+    transform: scale(1) translateY(0);
+  }
+  50% {
+    transform: scale(1.5) translateY(-2px);
   }
 }
 
 @keyframes sparkle-burst {
-  0%,
-  100% {
-    opacity: 0.8;
+  0% {
     transform: scale(1);
+    opacity: 0.8;
   }
   50% {
+    transform: scale(2.5);
     opacity: 1;
-    transform: scale(1.8);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
   }
 }
 
-@keyframes page-fan {
+@keyframes bloom-particle-fly {
+  0% {
+    transform: translate(0, 0) scale(0.5);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.7;
+  }
+  50% {
+    transform: 
+      translate(
+        calc(cos(var(--particle-angle)) * var(--particle-distance)),
+        calc(sin(var(--particle-angle)) * var(--particle-distance))
+      ) 
+      scale(1);
+    opacity: 0.8;
+  }
+  80% {
+    opacity: 0.5;
+  }
+  100% {
+    transform: 
+      translate(
+        calc(cos(var(--particle-angle)) * var(--particle-distance) * 1.5),
+        calc(sin(var(--particle-angle)) * var(--particle-distance) * 1.5)
+      ) 
+      scale(0.3);
+    opacity: 0;
+  }
+}
+
+@keyframes bg-bloom-glow {
+  0%, 100% {
+    opacity: 0.15;
+    transform: scale(1.05);
+  }
+  50% {
+    opacity: 0.25;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes page-fan-out {
   0% {
     transform: translateY(0) rotate(0deg);
   }
@@ -342,136 +479,313 @@
   }
 }
 
-@keyframes icon-bounce {
+/* Click State Animations */
+@keyframes icon-press {
   0% {
-    transform: scale(1) translateY(0) rotateZ(0deg);
+    transform: scale(1.1) translateY(-8px);
   }
-  30% {
-    transform: scale(0.9) translateY(0) rotateZ(0deg);
+  20% {
+    transform: scale(0.95) translateY(-4px);
+  }
+  40% {
+    transform: scale(1.05) translateY(-6px);
   }
   60% {
-    transform: scale(1.15) translateY(-15px) rotateZ(180deg);
-  }
-  80% {
-    transform: scale(0.95) translateY(0) rotateZ(360deg);
+    transform: scale(0.98) translateY(-5px);
   }
   100% {
-    transform: scale(1) translateY(0) rotateZ(360deg);
+    transform: scale(1) translateY(0);
   }
 }
 
-@keyframes icon-spin {
-  0% {
-    transform: perspective(1000px) rotateY(0deg);
-  }
-  50% {
-    transform: perspective(1000px) rotateY(180deg);
-  }
-  100% {
-    transform: perspective(1000px) rotateY(360deg);
-  }
-}
-
-@keyframes petal-explode {
-  0% {
+@keyframes icon-pulse {
+  0%, 100% {
     transform: scale(1);
-    opacity: 1;
   }
   50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes petal-close-outer {
+  0% {
+    transform: scale(1.1) translateX(38px);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(0.2) translateX(5px);
+    opacity: 0.4;
+  }
+  100% {
+    transform: scale(0.3) translateX(8px);
+    opacity: 0.5;
+  }
+}
+
+@keyframes petal-close-middle {
+  0% {
+    transform: scale(1.05) translateX(26px);
+    opacity: 0.92;
+  }
+  50% {
+    transform: scale(0.25) translateX(4px);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(0.4) translateX(6px);
+    opacity: 0.6;
+  }
+}
+
+@keyframes petal-close-inner {
+  0% {
+    transform: scale(1) translateX(16px);
+    opacity: 0.95;
+  }
+  50% {
+    transform: scale(0.35) translateX(3px);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(0.5) translateX(4px);
+    opacity: 0.7;
+  }
+}
+
+@keyframes center-close {
+  0% {
     transform: scale(1.3);
-    opacity: 0.8;
-    filter: url(#intense-glow);
-  }
-  100% {
-    transform: scale(1);
     opacity: 1;
-    filter: url(#petal-glow);
-  }
-}
-
-@keyframes center-burst {
-  0% {
-    transform: scale(1);
-    opacity: 0.8;
   }
   50% {
-    transform: scale(1.8);
-    opacity: 1;
+    transform: scale(0.8);
+    opacity: 0.9;
   }
   100% {
     transform: scale(1);
-    opacity: 0.8;
+    opacity: 1;
   }
 }
 
-@keyframes ripple-expand {
+@keyframes center-close-inner {
   0% {
-    transform: translate(-50%, -50%) scale(0);
+    transform: scale(1.4);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(0.7);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+}
+
+@keyframes sparkle-implode {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(3);
+    opacity: 0.3;
+  }
+  100% {
+    transform: scale(0.8);
+    opacity: 0.4;
+  }
+}
+
+@keyframes bloom-particle-burst {
+  0% {
+    transform: translate(0, 0) scale(0.7);
+    opacity: 0.7;
+  }
+  30% {
+    transform: 
+      translate(
+        calc(cos(var(--particle-angle)) * var(--particle-distance) * 2),
+        calc(sin(var(--particle-angle)) * var(--particle-distance) * 2)
+      ) 
+      scale(1.5);
     opacity: 1;
   }
   100% {
-    transform: translate(-50%, -50%) scale(3);
+    transform: 
+      translate(
+        calc(cos(var(--particle-angle)) * var(--particle-distance) * 0.3),
+        calc(sin(var(--particle-angle)) * var(--particle-distance) * 0.3)
+      ) 
+      scale(0.1);
     opacity: 0;
   }
 }
 
+/* ================================================
+   LABEL STYLING
+   ================================================ */
+
+.icon-label {
+  margin-top: 0.5rem;
+}
+
+.label-text {
+  font-size: 1.25rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #ec4899, #a855f7, #c084fc);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: label-shimmer 4s ease-in-out infinite;
+}
+
 @keyframes label-shimmer {
-  0%,
-  100% {
+  0%, 100% {
     filter: brightness(1);
   }
   50% {
-    filter: brightness(1.3);
+    filter: brightness(1.4);
   }
 }
 
-/* Responsive */
+/* ================================================
+   RESPONSIVE ADJUSTMENTS
+   ================================================ */
+
 @media (max-width: 768px) {
-  .pivoine-docs-icon-wrapper.is-interactive:hover {
-    transform: scale(1.05) translateY(-4px);
+  .pivoine-docs-icon-wrapper.is-interactive.is-hovered {
+    transform: scale(1.08) translateY(-6px);
+  }
+  
+  .pivoine-docs-icon-wrapper.is-interactive.is-hovered .outer-petal {
+    transform: scale(1.05) translateX(32px);
+  }
+  
+  .pivoine-docs-icon-wrapper.is-interactive.is-hovered .middle-petal {
+    transform: scale(1) translateX(22px);
+  }
+  
+  .pivoine-docs-icon-wrapper.is-interactive.is-hovered .inner-petal {
+    transform: scale(0.95) translateX(14px);
   }
 }
 
-/* Reduced motion */
+/* ================================================
+   REDUCED MOTION SUPPORT
+   ================================================ */
+
 @media (prefers-reduced-motion: reduce) {
   .pivoine-docs-icon-wrapper,
   .pivoine-docs-icon,
   .petal,
   .sparkle,
-  .particle,
-  .center-circle,
+  .bloom-particle,
+  .center-circle-outer,
+  .center-circle-inner,
+  .center-stamens,
+  .stamen,
   .page,
   .text-line,
-  .ripple-effect,
-  .label-text {
+  .label-text,
+  .bg-glow {
     animation: none !important;
-    transition: none !important;
+    transition: opacity 0.3s ease, transform 0.3s ease !important;
   }
 
-  .pivoine-docs-icon-wrapper.is-interactive:hover {
-    transform: scale(1.03);
+  .pivoine-docs-icon-wrapper.is-interactive.is-hovered {
+    transform: scale(1.05);
   }
 
-  /* Show petals in semi-open state for reduced motion */
+  /* Show petals in beautiful semi-open state */
   .outer-petal {
-    transform: scale(0.85);
-    opacity: 0.85;
+    transform: scale(0.85) translateX(22px);
+    opacity: 0.8;
   }
 
   .middle-petal {
-    transform: scale(0.88);
-    opacity: 0.9;
+    transform: scale(0.9) translateX(16px);
+    opacity: 0.88;
   }
 
   .inner-petal {
-    transform: scale(0.9);
+    transform: scale(0.92) translateX(10px);
+    opacity: 0.92;
+  }
+
+  .pivoine-docs-icon-wrapper.is-interactive.is-hovered .outer-petal {
+    transform: scale(0.95) translateX(28px);
+    opacity: 0.88;
+  }
+
+  .pivoine-docs-icon-wrapper.is-interactive.is-hovered .middle-petal {
+    transform: scale(0.98) translateX(20px);
+    opacity: 0.92;
+  }
+
+  .pivoine-docs-icon-wrapper.is-interactive.is-hovered .inner-petal {
+    transform: scale(1) translateX(14px);
+    opacity: 0.95;
+  }
+
+  .bloom-particle {
+    display: none;
+  }
+}
+
+/* ================================================
+   TOUCH DEVICE OPTIMIZATION
+   ================================================ */
+
+@media (hover: none) and (pointer: coarse) {
+  .pivoine-docs-icon-wrapper.is-interactive:active {
+    transform: scale(0.98);
+  }
+  
+  /* Show semi-open bloom by default on touch devices */
+  .pivoine-docs-icon-wrapper.is-interactive .outer-petal {
+    transform: scale(0.6) translateX(16px);
+    opacity: 0.7;
+  }
+  
+  .pivoine-docs-icon-wrapper.is-interactive .middle-petal {
+    transform: scale(0.7) translateX(12px);
+    opacity: 0.8;
+  }
+  
+  .pivoine-docs-icon-wrapper.is-interactive .inner-petal {
+    transform: scale(0.75) translateX(8px);
+    opacity: 0.88;
+  }
+
+  /* Enhance bloom on hover state for touch */
+  .pivoine-docs-icon-wrapper.is-interactive.is-hovered .outer-petal {
+    transform: scale(0.95) translateX(32px);
+    opacity: 0.85;
+  }
+  
+  .pivoine-docs-icon-wrapper.is-interactive.is-hovered .middle-petal {
+    transform: scale(0.95) translateX(22px);
+    opacity: 0.9;
+  }
+  
+  .pivoine-docs-icon-wrapper.is-interactive.is-hovered .inner-petal {
+    transform: scale(0.95) translateX(14px);
     opacity: 0.95;
   }
 }
 
-/* Touch devices */
-@media (hover: none) and (pointer: coarse) {
-  .pivoine-docs-icon-wrapper.is-interactive:active {
-    transform: scale(0.95);
+/* ================================================
+   HIGH PERFORMANCE MODE
+   ================================================ */
+
+@media (prefers-reduced-data: reduce) {
+  .bloom-particle,
+  .sparkle {
+    display: none;
+  }
+  
+  .pivoine-docs-icon {
+    filter: none !important;
   }
 }

@@ -113,12 +113,12 @@ export default function DocsHub() {
                 <div className="relative">
                   <div className="flex items-start justify-between mb-4">
                     {project.name === 'Kompose' ? (
-                      <div className={`relative w-12 h-12 rounded-xl bg-gradient-to-br ${project.gradient} shadow-lg flex items-center justify-center`}>
-                        <KomposeIcon size="32px" interactive={false} className='' />
+                      <div className={`relative w-14 h-14 rounded-xl bg-gradient-to-br ${project.gradient} shadow-lg flex items-center justify-center`}>
+                        <KomposeIcon size="36px" interactive={false} className='' />
                       </div>
                     ) : (
                       <div className={`p-3 rounded-xl bg-gradient-to-br ${project.gradient} shadow-lg`}>
-                        <BookOpen className="w-6 h-6 text-white" />
+                        <BookOpen className="w-8 h-8 text-white" />
                       </div>
                     )}
                     <span className="px-3 py-1 bg-emerald-500/20 text-emerald-300 rounded-full text-sm border border-emerald-500/30">
@@ -146,7 +146,7 @@ export default function DocsHub() {
             <div className="relative bg-white/5 backdrop-blur-md rounded-2xl p-8 border border-dashed border-white/20">
               <div className="opacity-60">
                 <div className="p-3 rounded-xl bg-gradient-to-br from-gray-600 to-gray-700 w-fit mb-4">
-                  <BookOpen className="w-6 h-6 text-white" />
+                  <BookOpen className="w-8 h-8 text-white" />
                 </div>
                 <h3 className="text-2xl font-bold mb-3 text-gray-400">More Projects</h3>
                 <p className="text-gray-500 leading-relaxed">
