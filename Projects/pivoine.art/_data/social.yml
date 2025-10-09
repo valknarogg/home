@@ -264,3 +264,7 @@ mastodon:
 sexy:
   name: sexy.pivoine.art
   icon: gi gi-duality-mask
+code:
+  name: code.pivoine.art
+  icon: gi gi-book-cover
+  prepend: https://code.pivoine.art/
