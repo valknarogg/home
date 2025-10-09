@@ -10,6 +10,21 @@ export const metadata: Metadata = {
   keywords: ['documentation', 'pivoine', 'valknar', 'developer', 'guides', 'api'],
   authors: [{ name: 'Valknar', url: 'https://pivoine.art' }],
   creator: 'Valknar',
+  manifest: '/manifest.json',
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/icon.svg', type: 'image/svg+xml', sizes: 'any' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'black-translucent',
+    title: 'Pivoine Docs',
+  },
   openGraph: {
     type: 'website',
     locale: 'en_US',

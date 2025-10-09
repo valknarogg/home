@@ -1,0 +1,67 @@
+<svg viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="petal-gradient-1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#a855f7;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#ec4899;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="petal-gradient-2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#9333ea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#db2777;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="petal-gradient-3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#c026d3;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#f472b6;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="center-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#fbbf24;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#f59e0b;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#d97706;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="page-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#f3f4f6;stop-opacity:0.95" />
+      <stop offset="100%" style="stop-color:#e5e7eb;stop-opacity:0.95" />
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <circle cx="128" cy="128" r="120" fill="#1e293b" opacity="0.6" />
+
+  <!-- Outer petals -->
+  <ellipse cx="128" cy="128" rx="35" ry="65" fill="url(#petal-gradient-1)" transform="rotate(0 128 128)" opacity="0.85" />
+  <ellipse cx="128" cy="128" rx="35" ry="65" fill="url(#petal-gradient-2)" transform="rotate(45 128 128)" opacity="0.85" />
+  <ellipse cx="128" cy="128" rx="35" ry="65" fill="url(#petal-gradient-3)" transform="rotate(90 128 128)" opacity="0.85" />
+  <ellipse cx="128" cy="128" rx="35" ry="65" fill="url(#petal-gradient-1)" transform="rotate(135 128 128)" opacity="0.85" />
+  <ellipse cx="128" cy="128" rx="35" ry="65" fill="url(#petal-gradient-2)" transform="rotate(180 128 128)" opacity="0.85" />
+  <ellipse cx="128" cy="128" rx="35" ry="65" fill="url(#petal-gradient-3)" transform="rotate(225 128 128)" opacity="0.85" />
+  <ellipse cx="128" cy="128" rx="35" ry="65" fill="url(#petal-gradient-1)" transform="rotate(270 128 128)" opacity="0.85" />
+  <ellipse cx="128" cy="128" rx="35" ry="65" fill="url(#petal-gradient-2)" transform="rotate(315 128 128)" opacity="0.85" />
+
+  <!-- Middle petals -->
+  <ellipse cx="128" cy="128" rx="28" ry="50" fill="url(#petal-gradient-2)" transform="rotate(30 128 128)" opacity="0.9" />
+  <ellipse cx="128" cy="128" rx="28" ry="50" fill="url(#petal-gradient-3)" transform="rotate(90 128 128)" opacity="0.9" />
+  <ellipse cx="128" cy="128" rx="28" ry="50" fill="url(#petal-gradient-1)" transform="rotate(150 128 128)" opacity="0.9" />
+  <ellipse cx="128" cy="128" rx="28" ry="50" fill="url(#petal-gradient-2)" transform="rotate(210 128 128)" opacity="0.9" />
+  <ellipse cx="128" cy="128" rx="28" ry="50" fill="url(#petal-gradient-3)" transform="rotate(270 128 128)" opacity="0.9" />
+  <ellipse cx="128" cy="128" rx="28" ry="50" fill="url(#petal-gradient-1)" transform="rotate(330 128 128)" opacity="0.9" />
+
+  <!-- Inner petals -->
+  <ellipse cx="128" cy="128" rx="22" ry="38" fill="url(#petal-gradient-3)" transform="rotate(45 128 128)" opacity="0.95" />
+  <ellipse cx="128" cy="128" rx="22" ry="38" fill="url(#petal-gradient-1)" transform="rotate(135 128 128)" opacity="0.95" />
+  <ellipse cx="128" cy="128" rx="22" ry="38" fill="url(#petal-gradient-2)" transform="rotate(225 128 128)" opacity="0.95" />
+  <ellipse cx="128" cy="128" rx="22" ry="38" fill="url(#petal-gradient-3)" transform="rotate(315 128 128)" opacity="0.95" />
+
+  <!-- Document pages in center -->
+  <rect x="102" y="102" width="52" height="52" rx="4" fill="url(#page-gradient)" opacity="0.4" />
+  <rect x="104" y="104" width="48" height="48" rx="4" fill="url(#page-gradient)" opacity="0.6" />
+  <rect x="106" y="106" width="44" height="44" rx="4" fill="url(#page-gradient)" opacity="0.9" />
+
+  <!-- Text lines -->
+  <line x1="112" y1="115" x2="138" y2="115" stroke="#6366f1" stroke-width="2" stroke-linecap="round" opacity="0.6" />
+  <line x1="112" y1="122" x2="144" y2="122" stroke="#6366f1" stroke-width="2" stroke-linecap="round" opacity="0.6" />
+  <line x1="112" y1="129" x2="135" y2="129" stroke="#6366f1" stroke-width="2" stroke-linecap="round" opacity="0.6" />
+  <line x1="112" y1="136" x2="142" y2="136" stroke="#a855f7" stroke-width="2" stroke-linecap="round" opacity="0.6" />
+  <line x1="112" y1="143" x2="137" y2="143" stroke="#a855f7" stroke-width="2" stroke-linecap="round" opacity="0.6" />
+
+  <!-- Center circle -->
+  <circle cx="128" cy="128" r="18" fill="url(#center-gradient)" opacity="0.8" />
+</svg>

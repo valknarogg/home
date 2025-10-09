@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { BookOpen, Code2, Globe, ChevronRight, Sparkles, Terminal } from 'lucide-react'
 import KomposeIcon from '@/components/icons/KomposeIcon'
+import { PivoineDocsIcon } from '@/components/icons'
 
 export default function DocsHub() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
@@ -70,6 +71,11 @@ export default function DocsHub() {
       <div className="relative z-10 container mx-auto px-6 py-12 max-w-6xl">
         {/* Header */}
         <header className="text-center mb-20 pt-12">
+          {/* Hero Icon */}
+          <div className="flex justify-center mb-8">
+            <PivoineDocsIcon size="200px" showLabel={false} interactive={true} />
+          </div>
+          
           <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 bg-white/5 backdrop-blur-sm rounded-full border border-white/10">
             <Sparkles className="w-4 h-4 text-purple-400" />
             <span className="text-sm text-purple-300">Documentation Hub</span>
@@ -107,8 +113,8 @@ export default function DocsHub() {
                 <div className="relative">
                   <div className="flex items-start justify-between mb-4">
                     {project.name === 'Kompose' ? (
-                      <div className="relative">
-                        <KomposeIcon size="48px" interactive={false} />
+                      <div className={`relative w-12 h-12 rounded-xl bg-gradient-to-br ${project.gradient} shadow-lg flex items-center justify-center`}>
+                        <KomposeIcon size="32px" interactive={false} className='' />
                       </div>
                     ) : (
                       <div className={`p-3 rounded-xl bg-gradient-to-br ${project.gradient} shadow-lg`}>

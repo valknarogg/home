@@ -11,6 +11,7 @@ A stunning, modern documentation hub landing page for all Pivoine projects by Va
 
 - **Modern Stack**: Built with Next.js 15 App Router, React 19, TypeScript, and Tailwind CSS 4
 - **Stunning Design**: Glassmorphism effects, gradient animations, and interactive elements
+- **Custom Branding Icon**: Beautiful animated peony flower icon with documentation elements 🌸
 - **Responsive**: Fully responsive design that works on all devices
 - **Performance Optimized**: Turbopack for lightning-fast dev builds, image optimization, and production-ready configuration
 - **SEO Ready**: Comprehensive metadata and Open Graph tags

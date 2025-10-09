@@ -4,7 +4,81 @@ This directory contains reusable React components for the Pivoine Docs Hub.
 
 ## Icons
 
-Custom animated icons for documentation projects.
+Custom animated icons for the documentation hub and projects.
+
+### PivoineDocsIcon ⭐ NEW
+
+The official branding icon for the Pivoine Docs Hub - a beautiful peony flower with integrated documentation elements.
+
+#### Features
+- 🌸 Multi-layer peony flower design (18 petals, 3 layers)
+- 📄 Document pages in the center with text lines
+- ✨ Twinkling sparkles and orbiting particles
+- 💫 Smooth bloom animation on hover
+- 🎯 3D rotation and ripple effect on click
+- 🎨 Purple/pink gradients matching theme
+- 📱 Fully responsive and touch-optimized
+- ♿ Accessibility support (reduced motion)
+- 🚀 GPU-accelerated animations (60 FPS)
+
+#### Usage
+
+```tsx
+import { PivoineDocsIcon } from '@/components/icons'
+
+// Hero section - large, interactive
+<PivoineDocsIcon size="200px" />
+
+// With label
+<PivoineDocsIcon size="256px" showLabel={true} />
+
+// Small, non-interactive
+<PivoineDocsIcon size="64px" interactive={false} />
+```
+
+#### Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `size` | `string` | `'256px'` | Size of the icon (CSS width/height) |
+| `interactive` | `boolean` | `true` | Enable/disable hover and click animations |
+| `className` | `string` | `''` | Additional CSS classes |
+| `showLabel` | `boolean` | `false` | Show "Pivoine Docs" text below icon |
+
+#### Animations
+
+**Default State:**
+- Subtle pulsing background
+- Twinkling sparkles (2s cycle)
+- Orbiting particles (8s cycle)
+- Gentle page floating
+- Text lines appear on mount
+
+**On Hover:**
+- Icon scales and lifts
+- Petals bloom in sequence (outer → middle → inner)
+- Center glows intensely
+- Sparkles burst
+- Pages fan out with rotation
+
+**On Click/Tap:**
+- 3D rotation flip (360°)
+- Petal explosion effect
+- Center burst
+- Ripple effect emanates from center
+- Duration: ~800ms
+
+#### Use Cases
+- Hero sections and splash screens
+- About pages
+- Branding materials
+- Favicon and PWA icons
+- Social media graphics
+
+#### Documentation
+See [PIVOINE_DOCS_ICON.md](./icons/PIVOINE_DOCS_ICON.md) for complete documentation.
+
+---
 
 ### KomposeIcon
 
