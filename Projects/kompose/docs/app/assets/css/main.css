@@ -25,9 +25,9 @@
 }
 
 h2 > a > span + span {
-  @apply size-5 align-baseline;
+  @apply size-6 align-text-top;
 }
 
 h3 > a > span + span {
-  @apply size-6 align-text-top;
+  @apply size-5 align-text-bottom;
 }
