@@ -50,18 +50,6 @@
   <ellipse cx="128" cy="128" rx="22" ry="38" fill="url(#petal-gradient-2)" transform="rotate(225 128 128)" opacity="0.95" />
   <ellipse cx="128" cy="128" rx="22" ry="38" fill="url(#petal-gradient-3)" transform="rotate(315 128 128)" opacity="0.95" />
 
-  <!-- Document pages in center -->
-  <rect x="102" y="102" width="52" height="52" rx="4" fill="url(#page-gradient)" opacity="0.4" />
-  <rect x="104" y="104" width="48" height="48" rx="4" fill="url(#page-gradient)" opacity="0.6" />
-  <rect x="106" y="106" width="44" height="44" rx="4" fill="url(#page-gradient)" opacity="0.9" />
-
-  <!-- Text lines -->
-  <line x1="112" y1="115" x2="138" y2="115" stroke="#6366f1" stroke-width="2" stroke-linecap="round" opacity="0.6" />
-  <line x1="112" y1="122" x2="144" y2="122" stroke="#6366f1" stroke-width="2" stroke-linecap="round" opacity="0.6" />
-  <line x1="112" y1="129" x2="135" y2="129" stroke="#6366f1" stroke-width="2" stroke-linecap="round" opacity="0.6" />
-  <line x1="112" y1="136" x2="142" y2="136" stroke="#a855f7" stroke-width="2" stroke-linecap="round" opacity="0.6" />
-  <line x1="112" y1="143" x2="137" y2="143" stroke="#a855f7" stroke-width="2" stroke-linecap="round" opacity="0.6" />
-
   <!-- Center circle -->
   <circle cx="128" cy="128" r="18" fill="url(#center-gradient)" opacity="0.8" />
 </svg>

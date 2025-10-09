@@ -87,10 +87,10 @@ export default function PivoineDocsIcon({
         <defs>
           {/* Enhanced Gradients for natural peony colors */}
           <radialGradient id="petal-gradient-1" cx="30%" cy="30%">
-            <stop offset="0%" style={{ stopColor: '#fce7f3', stopOpacity: 1 }} />
-            <stop offset="40%" style={{ stopColor: '#fbcfe8', stopOpacity: 1 }} />
-            <stop offset="70%" style={{ stopColor: '#f9a8d4', stopOpacity: 1 }} />
-            <stop offset="100%" style={{ stopColor: '#ec4899', stopOpacity: 0.95 }} />
+            <stop offset="0%" style={{ stopColor: '#fdf4ff', stopOpacity: 1 }} />
+            <stop offset="40%" style={{ stopColor: '#fae8ff', stopOpacity: 1 }} />
+            <stop offset="70%" style={{ stopColor: '#f0abfc', stopOpacity: 1 }} />
+            <stop offset="100%" style={{ stopColor: '#d946ef', stopOpacity: 0.95 }} />
           </radialGradient>
 
           <radialGradient id="petal-gradient-2" cx="30%" cy="30%">
@@ -233,15 +233,13 @@ export default function PivoineDocsIcon({
         <g className="inner-petals">
           {[
             { angle: 0, gradient: 3 },
-            { angle: 36, gradient: 4 },
-            { angle: 72, gradient: 1 },
-            { angle: 108, gradient: 2 },
-            { angle: 144, gradient: 3 },
-            { angle: 180, gradient: 4 },
-            { angle: 216, gradient: 1 },
-            { angle: 252, gradient: 2 },
-            { angle: 288, gradient: 3 },
-            { angle: 324, gradient: 4 },
+            { angle: 45, gradient: 4 },
+            { angle: 90, gradient: 1 },
+            { angle: 135, gradient: 2 },
+            { angle: 180, gradient: 3 },
+            { angle: 225, gradient: 4 },
+            { angle: 270, gradient: 1 },
+            { angle: 315, gradient: 2 },
           ].map((petal, i) => (
             <ellipse
               key={`inner-${i}`}
