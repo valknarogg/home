@@ -17,6 +17,7 @@
     "@nuxt/content": "^3.7.1",
     "@nuxt/image": "^1.11.0",
     "@nuxt/ui": "^4.0.1",
+    "@nuxtjs/mdc": "^0.17.4",
     "@tailwindcss/typography": "^0.5.19",
     "@vite-pwa/nuxt": "^1.0.4",
     "better-sqlite3": "^12.4.1",
