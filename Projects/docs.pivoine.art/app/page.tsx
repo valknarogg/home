@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { BookOpen, Code2, Globe, ChevronRight, Sparkles, Terminal } from 'lucide-react'
+import KomposeIcon from '@/components/icons/KomposeIcon'
 
 export default function DocsHub() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
@@ -105,9 +106,15 @@ export default function DocsHub() {
                 
                 <div className="relative">
                   <div className="flex items-start justify-between mb-4">
-                    <div className={`p-3 rounded-xl bg-gradient-to-br ${project.gradient} shadow-lg`}>
-                      <BookOpen className="w-6 h-6 text-white" />
-                    </div>
+                    {project.name === 'Kompose' ? (
+                      <div className="relative">
+                        <KomposeIcon size="48px" interactive={false} />
+                      </div>
+                    ) : (
+                      <div className={`p-3 rounded-xl bg-gradient-to-br ${project.gradient} shadow-lg`}>
+                        <BookOpen className="w-6 h-6 text-white" />
+                      </div>
+                    )}
                     <span className="px-3 py-1 bg-emerald-500/20 text-emerald-300 rounded-full text-sm border border-emerald-500/30">
                       {project.status}
                     </span>

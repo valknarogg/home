@@ -34,8 +34,13 @@ pivoine-docs-hub/
 │   ├── globals.css        # Global styles and Tailwind imports
 │   ├── layout.tsx         # Root layout with metadata
 │   └── page.tsx           # Main landing page component
+├── components/            # Reusable React components
+│   ├── icons/            # Custom animated project icons
+│   │   ├── KomposeIcon.tsx
+│   │   └── index.ts
+│   └── README.md
 ├── public/                # Static assets (add your images here)
-├── .eslintrc.json        # ESLint configuration
+├── eslint.config.mjs     # ESLint configuration (flat config)
 ├── .gitignore            # Git ignore rules
 ├── next.config.js        # Next.js configuration
 ├── package.json          # Project dependencies
@@ -139,6 +144,21 @@ const projects = [
 ```
 
 3. **Create the documentation** at the specified path (e.g., `/kompose`)
+
+### Custom Project Icons
+
+The **Kompose** project features a custom animated icon (`KomposeIcon`) with:
+- Interactive hover effects with glowing animations
+- Click/tap interactions with ripple effects
+- Pulsing status indicator
+- 3D rotation on interaction
+
+To add a custom icon for your project:
+1. Create your icon component in `components/icons/YourIcon.tsx`
+2. Export it in `components/icons/index.ts`
+3. Import and conditionally render it in `app/page.tsx`
+
+See [components/README.md](components/README.md) for detailed instructions.
 
 ## 🎯 Deployment
 
