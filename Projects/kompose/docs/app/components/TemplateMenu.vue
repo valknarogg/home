@@ -3,11 +3,11 @@
     v-slot="{ open }"
     :modal="false"
     :items="[{
-      label: 'Starter',
-      to: 'https://starter-template.nuxt.dev/'
+      label: 'Blog',
+      to: 'https://pivoine.art'
     }, {
-      label: 'Landing',
-      to: 'https://landing-template.nuxt.dev/'
+      label: 'Code',
+      to: 'https://code.pivoine.art'
     }, {
       label: 'Docs',
       to: 'https://docs-template.nuxt.dev/',
@@ -15,20 +15,8 @@
       checked: true,
       type: 'checkbox'
     }, {
-      label: 'SaaS',
-      to: 'https://saas-template.nuxt.dev/'
-    }, {
-      label: 'Dashboard',
-      to: 'https://dashboard-template.nuxt.dev/'
-    }, {
-      label: 'Chat',
-      to: 'https://chat-template.nuxt.dev/'
-    }, {
-      label: 'Portfolio',
-      to: 'https://portfolio-template.nuxt.dev/'
-    }, {
-      label: 'Changelog',
-      to: 'https://changelog-template.nuxt.dev/'
+      label: 'Sexy',
+      to: 'https://sexy.pivoine.art'
     }]"
     :content="{ align: 'start' }"
     :ui="{ content: 'min-w-fit' }"

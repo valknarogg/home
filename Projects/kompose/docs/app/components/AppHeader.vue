@@ -22,7 +22,7 @@ const { header } = useAppConfig()
     <template v-else #left>
       <div class="flex items-center gap-6">
         <NuxtLink :to="header?.to || '/'" class="flex items-center">
-          <img src="/icon.svg" alt="kompose" class="size-7 mt-1 mr-2"></img>
+          <AppIcon size="32px" class="mt-1 mr-2" />
           <AppLogo class="!text-2xl mt-1" />
         </NuxtLink>
 
