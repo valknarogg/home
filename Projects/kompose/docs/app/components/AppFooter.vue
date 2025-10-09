@@ -5,6 +5,7 @@ const { footer } = useAppConfig()
 <template>
   <UFooter>
     <template #left>
+      <img src="/kompose/favicon.svg" alt="kompose" class="size-5 mr-6"></img>
       {{ footer.credits }}
     </template>
 
