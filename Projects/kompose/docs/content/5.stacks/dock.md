@@ -317,7 +317,7 @@ services:
 - 🪶 **Lightweight**: Tiny footprint, fast UI
 - :icon{name="lucide:palette"} **Beautiful**: Clean, modern interface
 - :icon{name="lucide:wrench"} **Simple**: Does one thing really well
-- 🆓 **Free**: Open source, no enterprise upsells
+- :icon{name="lucide:smile"} **Free**: Open source, no enterprise upsells
 - 👨‍:icon{name="lucide:laptop"} **Dev-Friendly**: Doesn't hide the compose file from you
 
 ## Integration Ideas

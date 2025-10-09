@@ -26,7 +26,7 @@ Vaultwarden is your digital security blanket:
 - :icon{name="lucide:refresh-cw"} **Sync Everywhere**: Desktop, mobile, browser extensions
 - :icon{name="lucide:users"} **Sharing**: Securely share with family/team
 - :icon{name="lucide:key"} **2FA Support**: TOTP, YubiKey, Duo
-- 📱 **Mobile Apps**: iOS & Android (official Bitwarden apps)
+- :icon{name="lucide:phone"} **Mobile Apps**: iOS & Android (official Bitwarden apps)
 - :icon{name="lucide:globe"} **Browser Extensions**: Chrome, Firefox, Safari, Edge
 - :icon{name="lucide:dollar-sign"} **Free**: All premium features, no limits
 - :icon{name="simple-icons:rust"} **Rust-Powered**: Secure, fast, resource-efficient
@@ -62,7 +62,7 @@ Both use the same client apps - just different servers!
 ### Security Features
 - :icon{name="lucide:lock"} **End-to-End Encryption**: Zero-knowledge architecture
 - :icon{name="lucide:lock-keyhole"} **Master Password**: Only you know it
-- 📱 **Two-Factor Auth**: Extra security layer
+- :icon{name="lucide:phone"} **Two-Factor Auth**: Extra security layer
 - :icon{name="lucide:refresh-cw"} **Password Generator**: Strong random passwords
 - :icon{name="lucide:alert-triangle"} **Security Reports**: Weak, reused, compromised passwords
 - :icon{name="lucide:bar-chart"} **Vault Health**: Check security score

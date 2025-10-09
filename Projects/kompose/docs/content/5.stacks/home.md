@@ -24,7 +24,7 @@ Home Assistant is your smart home's mission control:
 - :icon{name="lucide:plug"} **2000+ Integrations**: Control almost anything
 - :icon{name="lucide:bot"} **Powerful Automations**: If this, then that (but better!)
 - :icon{name="lucide:palette"} **Beautiful UI**: Customizable dashboards
-- 📱 **Mobile Apps**: Control from anywhere (iOS & Android)
+- :icon{name="lucide:phone"} **Mobile Apps**: Control from anywhere (iOS & Android)
 - 🗣️ **Voice Control**: Alexa, Google, Siri integration
 - :icon{name="lucide:lock-keyhole"} **Privacy First**: Your data stays home
 - 🌙 **Energy Monitoring**: Track usage and costs

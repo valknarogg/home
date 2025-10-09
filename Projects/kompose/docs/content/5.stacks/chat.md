@@ -20,7 +20,7 @@ Gotify is your self-hosted push notification server! Think of it as your persona
 **Home**: https://chat.pivoine.art
 
 Gotify is the Swiss Army knife of push notifications:
-- 📱 **Mobile Apps**: iOS and Android clients available
+- :icon{name="lucide:phone"} **Mobile Apps**: iOS and Android clients available
 - :icon{name="lucide:globe"} **Web Interface**: Check notifications in your browser
 - :icon{name="lucide:plug"} **REST API**: Send notifications from anything
 - :icon{name="lucide:lock"} **App Tokens**: Separate tokens for different applications
@@ -187,7 +187,7 @@ if ! curl -f https://mysite.com &> /dev/null; then
 fi
 ```
 
-## Mobile Apps 📱
+## Mobile Apps :icon{name="lucide:phone"}
 
 ### Android
 Download from:
@@ -207,7 +207,7 @@ Download from:
 
 ## Web Interface Features
 
-- 📱 Desktop notifications (browser permission needed)
+- :icon{name="lucide:phone"} Desktop notifications (browser permission needed)
 - :icon{name="lucide:search"} Search through message history
 - 🗑️ Delete individual or all messages
 - :icon{name="lucide:users"} Manage applications and clients
@@ -310,9 +310,9 @@ Use HTTP request node:
 ## Why Gotify Rocks :icon{name="lucide:music"}
 
 - :icon{name="lucide:sparkles"} Self-hosted (your data, your server)
-- 🆓 Completely free and open source
+- :icon{name="lucide:smile"} Completely free and open source
 - :icon{name="lucide:rocket"} Super lightweight (Go binary + SQLite)
-- 📱 Native mobile apps
+- :icon{name="lucide:phone"} Native mobile apps
 - :icon{name="lucide:plug"} Dead simple API
 - :icon{name="lucide:palette"} Clean, modern interface
 - :icon{name="lucide:lock"} No third-party dependencies

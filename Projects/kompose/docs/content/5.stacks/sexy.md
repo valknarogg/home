@@ -40,7 +40,7 @@ Directus is the headless CMS that doesn't make you cry:
 The face of your content:
 - :icon{name="lucide:rocket"} **Lightning Fast**: Svelte's magic compilation
 - :icon{name="lucide:target"} **SEO Friendly**: Server-side rendering
-- 📱 **Responsive**: Mobile-first design
+- :icon{name="lucide:phone"} **Responsive**: Mobile-first design
 - :icon{name="lucide:palette"} **Beautiful**: Because sexy.pivoine.art deserves it
 - :icon{name="lucide:refresh-cw"} **Real-time Updates**: Live data from Directus
 - :icon{name="lucide:sparkles"} **Styled**: Tailwind CSS + custom design
@@ -435,8 +435,8 @@ A: Check WEBSOCKETS_ENABLED=true and wss:// connection
 - :icon{name="lucide:rocket"} **Performance**: Fast out of the box
 - :icon{name="lucide:palette"} **Design**: Beautiful admin interface
 - :icon{name="lucide:wrench"} **Flexibility**: Customize everything
-- 📱 **Modern**: Built with latest tech
-- 🆓 **Open Source**: Free forever
+- :icon{name="lucide:phone"} **Modern**: Built with latest tech
+- :icon{name="lucide:smile"} **Open Source**: Free forever
 - :icon{name="lucide:dumbbell"} **Production Ready**: Powers serious sites
 
 ## Resources

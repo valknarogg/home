@@ -274,7 +274,7 @@ Query all your logs:
 Set up notifications:
 - :icon{name="lucide:mail"} Email alerts
 - :icon{name="lucide:message-circle"} Slack notifications
-- 📱 PagerDuty integration
+- :icon{name="lucide:phone"} PagerDuty integration
 - :icon{name="lucide:bell"} Custom webhooks
 
 ## Common Queries & Dashboards
@@ -539,7 +539,7 @@ Set and track SLOs:
 
 ## Why SigNoz is Awesome
 
-- 🆓 **Open Source**: Free forever, no limits
+- :icon{name="lucide:smile"} **Open Source**: Free forever, no limits
 - :icon{name="lucide:rocket"} **Fast**: ClickHouse is CRAZY fast
 - :icon{name="lucide:target"} **Complete**: Metrics + Traces + Logs in one
 - :icon{name="lucide:bar-chart"} **Powerful**: Query anything, any way

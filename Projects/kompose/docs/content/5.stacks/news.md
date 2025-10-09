@@ -70,7 +70,7 @@ news/
 
 ### Email Features
 - :icon{name="lucide:palette"} Custom HTML templates
-- 📱 Mobile-responsive designs
+- :icon{name="lucide:phone"} Mobile-responsive designs
 - 🖼️ Image support
 - :icon{name="lucide:link"} Link tracking
 - :icon{name="lucide:user"} Personalization ({{name}}, etc.)

@@ -22,7 +22,7 @@ WG-Easy is your self-hosted VPN server powered by WireGuard! It's like having yo
 
 WG-Easy makes WireGuard actually easy:
 - :icon{name="lucide:palette"} **Beautiful Web UI**: Manage VPN from browser
-- 📱 **QR Codes**: Instant mobile setup
+- :icon{name="lucide:phone"} **QR Codes**: Instant mobile setup
 - :icon{name="lucide:users"} **Multi-Client**: Unlimited devices
 - :icon{name="lucide:zap"} **WireGuard**: Modern, fast, secure protocol
 - :icon{name="lucide:bar-chart"} **Traffic Stats**: See bandwidth usage
@@ -35,7 +35,7 @@ WG-Easy makes WireGuard actually easy:
 ### Why WireGuard is Awesome
 - :icon{name="lucide:zap"} **Fast**: 4000+ lines of code vs OpenVPN's 600,000+
 - :icon{name="lucide:lock"} **Secure**: State-of-the-art cryptography
-- 📱 **Battery Friendly**: Less power consumption
+- :icon{name="lucide:phone"} **Battery Friendly**: Less power consumption
 - :icon{name="lucide:refresh-cw"} **Roaming**: Seamless connection switching
 - 🐧 **Linux Kernel**: Built into Linux 5.6+
 - :icon{name="lucide:target"} **Simple**: Easier to audit and configure
@@ -151,7 +151,7 @@ Restart container:
 docker compose restart
 ```
 
-## Creating VPN Clients 📱
+## Creating VPN Clients :icon{name="lucide:phone"}
 
 ### Add a Client
 
@@ -381,7 +381,7 @@ nslookup google.com
 DNS = 8.8.8.8
 ```
 
-## Mobile Tips 📱
+## Mobile Tips :icon{name="lucide:phone"}
 
 ### iOS
 - **On-Demand**: Auto-connect on untrusted WiFi

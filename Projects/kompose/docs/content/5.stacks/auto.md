@@ -201,7 +201,7 @@ A: Default is `admin`/`changeme` - check if you changed it and forgot!
 - :icon{name="lucide:refresh-cw"} Task history and versioning
 - 👁️ Real-time execution logs
 - :icon{name="lucide:target"} RBAC (Role-Based Access Control)
-- 🆓 Open source and free
+- :icon{name="lucide:smile"} Open source and free
 
 ## Resources
 

@@ -26,9 +26,9 @@ Umami is analytics done right:
 - :icon{name="lucide:bar-chart"} **Beautiful Dashboards**: Real-time, clean, insightful
 - 🌍 **Multi-Site**: Track unlimited websites
 - :icon{name="lucide:users"} **Team Features**: Invite team members
-- 📱 **Events Tracking**: Custom events and goals
+- :icon{name="lucide:phone"} **Events Tracking**: Custom events and goals
 - :icon{name="lucide:palette"} **Simple Script**: Just one line of JavaScript
-- 🆓 **Open Source**: Free forever, your data, your server
+- :icon{name="lucide:smile"} **Open Source**: Free forever, your data, your server
 
 ## Features That Make Sense :icon{name="lucide:sparkles"}
 
@@ -36,7 +36,7 @@ Umami is analytics done right:
 - :icon{name="lucide:trending-up"} **Page Views**: Real-time visitor counts
 - :icon{name="lucide:user"} **Unique Visitors**: Who's new, who's returning
 - :icon{name="lucide:globe"} **Referrers**: Where traffic comes from
-- 📱 **Devices**: Desktop vs Mobile vs Tablet
+- :icon{name="lucide:phone"} **Devices**: Desktop vs Mobile vs Tablet
 - 🌍 **Countries**: Geographic distribution
 - :icon{name="lucide:monitor"} **Browsers**: Chrome, Firefox, Safari, etc.
 - :icon{name="lucide:laptop"} **Operating Systems**: Windows, Mac, Linux, etc.
@@ -247,7 +247,7 @@ Watch visitors as they browse:
 - 📅 Custom date ranges
 - :icon{name="lucide:bar-chart"} Page comparisons
 - 🌍 Geographic heatmaps
-- 📱 Device breakdowns
+- :icon{name="lucide:phone"} Device breakdowns
 - :icon{name="lucide:search"} Referrer analysis
 
 ### Filters
@@ -476,7 +476,7 @@ Install via plugin or add to theme's `header.php`:
 - :icon{name="lucide:lock"} **Privacy**: Respect your visitors
 - :icon{name="lucide:bar-chart"} **Insights**: Get data that matters
 - :icon{name="lucide:palette"} **Simple**: No complexity overload
-- 🆓 **Free**: No limits, no upsells
+- :icon{name="lucide:smile"} **Free**: No limits, no upsells
 - :icon{name="lucide:rocket"} **Fast**: Lightweight script
 - :icon{name="lucide:dumbbell"} **Reliable**: Self-hosted stability
 - 🌍 **Ethical**: Do the right thing
