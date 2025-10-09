@@ -25,7 +25,7 @@ FROM nginx:alpine
 COPY nginx.conf /etc/nginx/nginx.conf
 
 # Copy built static site
-COPY --from=builder /app/.output/public /usr/share/nginx/html
+COPY --from=builder /app/.output/public /usr/share/nginx/html/kompose
 
 # Add healthcheck
 # HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
