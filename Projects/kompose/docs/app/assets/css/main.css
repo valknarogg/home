@@ -24,6 +24,10 @@
   --ui-container: var(--container-8xl);
 }
 
-h3 .iconify {
-  @apply size-6;
+h2 > a > span + span {
+  @apply size-5 align-baseline;
+}
+
+h3 > a > span + span {
+  @apply size-6 align-text-top;
 }
