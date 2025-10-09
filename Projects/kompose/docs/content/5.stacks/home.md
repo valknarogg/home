@@ -25,14 +25,14 @@ Home Assistant is your smart home's mission control:
 - :icon{name="lucide:bot"} **Powerful Automations**: If this, then that (but better!)
 - :icon{name="lucide:palette"} **Beautiful UI**: Customizable dashboards
 - :icon{name="lucide:phone"} **Mobile Apps**: Control from anywhere (iOS & Android)
-- 🗣️ **Voice Control**: Alexa, Google, Siri integration
+- :icon{name="lucide:megaphone"} **Voice Control**: Alexa, Google, Siri integration
 - :icon{name="lucide:lock-keyhole"} **Privacy First**: Your data stays home
-- 🌙 **Energy Monitoring**: Track usage and costs
+- :icon{name="lucide:eclipse"} **Energy Monitoring**: Track usage and costs
 - :icon{name="lucide:bar-chart"} **History & Analytics**: Visualize your home
 
 ## Configuration Breakdown
 
-### Privileged Mode 🔓
+### Privileged Mode :icon{name="lucide:lock"}
 
 Running in privileged mode to access:
 - USB devices (Zigbee/Z-Wave sticks)
@@ -81,7 +81,7 @@ A: Verify timezone is set correctly - this is crucial!
 
 - :icon{name="lucide:lock-keyhole"} **Strong Password**: Your home security depends on it!
 - :icon{name="lucide:globe"} **HTTPS Only**: Traefik provides SSL automatically
-- 👁️ **Two-Factor**: Enable in user profile
+- :icon{name="lucide:eye"} **Two-Factor**: Enable in user profile
 - :icon{name="lucide:key"} **API Tokens**: Use long-lived tokens, not passwords
 
 ## Resources

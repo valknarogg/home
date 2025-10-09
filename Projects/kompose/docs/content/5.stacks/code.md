@@ -22,8 +22,8 @@ This stack is your personal GitHub - a lightweight, powerful, self-hosted Git se
 
 Gitea packs a serious punch for its size:
 - :icon{name="lucide:package"} **Git Hosting**: Unlimited private/public repositories
-- 🔀 **Pull Requests**: Full code review workflow
-- 🐛 **Issue Tracking**: Built-in project management
+- :icon{name="lucide:shuffle"} **Pull Requests**: Full code review workflow
+- :icon{name="lucide:bug"} **Issue Tracking**: Built-in project management
 - :icon{name="lucide:users"} **Organizations & Teams**: Multi-user collaboration
 - :icon{name="lucide:git-branch"} **Webhooks**: CI/CD integration ready
 - :icon{name="lucide:file-text"} **Wiki**: Documentation for your projects

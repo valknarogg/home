@@ -199,7 +199,7 @@ A: Default is `admin`/`changeme` - check if you changed it and forgot!
 - :icon{name="lucide:sparkles"} Makes Ansible actually fun to use
 - :icon{name="lucide:palette"} Beautiful, modern interface
 - :icon{name="lucide:refresh-cw"} Task history and versioning
-- 👁️ Real-time execution logs
+- :icon{name="lucide:eye"} Real-time execution logs
 - :icon{name="lucide:target"} RBAC (Role-Based Access Control)
 - :icon{name="lucide:smile"} Open source and free
 

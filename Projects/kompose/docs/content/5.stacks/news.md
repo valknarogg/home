@@ -49,29 +49,29 @@ news/
 
 ### Campaign Management
 - :icon{name="lucide:mail"} Create beautiful emails with templates
-- 📅 Schedule sends for later
+- :icon{name="lucide:calendar"} Schedule sends for later
 - :icon{name="lucide:target"} Segment subscribers by tags/lists
 - :icon{name="lucide:file-text"} Preview before sending
 - :icon{name="lucide:refresh-cw"} A/B testing (coming soon™)
 
 ### Subscriber Management
-- 📥 Import via CSV
-- ✅ Double opt-in confirmation
+- :icon{name="lucide:upload"} Import via CSV
+- :icon{name="lucide:check"} Double opt-in confirmation
 - :icon{name="lucide:tag"} Tag and categorize
 - :icon{name="lucide:bar-chart"} View engagement history
 - :icon{name="lucide:ban"} Easy unsubscribe management
 
 ### Analytics Dashboard
 - :icon{name="lucide:trending-up"} Open rates
-- 👆 Click-through rates
-- 📉 Unsubscribe rates
+- :icon{name="lucide:mouse-pointer-click"} Click-through rates
+- :icon{name="lucide:chart"} Unsubscribe rates
 - :icon{name="lucide:bar-chart"} Subscriber growth over time
 - :icon{name="lucide:target"} Campaign performance
 
 ### Email Features
 - :icon{name="lucide:palette"} Custom HTML templates
 - :icon{name="lucide:phone"} Mobile-responsive designs
-- 🖼️ Image support
+- :icon{name="lucide:image"} Image support
 - :icon{name="lucide:link"} Link tracking
 - :icon{name="lucide:user"} Personalization ({{name}}, etc.)
 
@@ -236,17 +236,17 @@ The backend runs several automated jobs:
 ## Privacy & Compliance :icon{name="lucide:lock"}
 
 ### GDPR Compliant
-- ✅ Double opt-in
-- ✅ Easy unsubscribe
-- ✅ Data export
-- ✅ Data deletion
-- ✅ Consent tracking
+- :icon{name="lucide:check"} Double opt-in
+- :icon{name="lucide:check"} Easy unsubscribe
+- :icon{name="lucide:check"} Data export
+- :icon{name="lucide:check"} Data deletion
+- :icon{name="lucide:check"} Consent tracking
 
 ### CAN-SPAM Compliant
-- ✅ Physical address in footer
-- ✅ Clear unsubscribe link
-- ✅ Opt-in records
-- ✅ "From" address accuracy
+- :icon{name="lucide:check"} Physical address in footer
+- :icon{name="lucide:check"} Clear unsubscribe link
+- :icon{name="lucide:check"} Opt-in records
+- :icon{name="lucide:check"} "From" address accuracy
 
 ## Performance Optimization
 

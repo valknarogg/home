@@ -22,9 +22,9 @@ Umami is your self-hosted, privacy-focused alternative to Google Analytics! It's
 
 Umami is analytics done right:
 - :icon{name="lucide:lock"} **Privacy-First**: No cookies, no tracking pixels, no creepy stuff
-- 🇪🇺 **GDPR Compliant**: By design, not as an afterthought
+- :icon{name="lucide:euro"} **GDPR Compliant**: By design, not as an afterthought
 - :icon{name="lucide:bar-chart"} **Beautiful Dashboards**: Real-time, clean, insightful
-- 🌍 **Multi-Site**: Track unlimited websites
+- :icon{name="lucide:globe"} **Multi-Site**: Track unlimited websites
 - :icon{name="lucide:users"} **Team Features**: Invite team members
 - :icon{name="lucide:phone"} **Events Tracking**: Custom events and goals
 - :icon{name="lucide:palette"} **Simple Script**: Just one line of JavaScript
@@ -37,18 +37,18 @@ Umami is analytics done right:
 - :icon{name="lucide:user"} **Unique Visitors**: Who's new, who's returning
 - :icon{name="lucide:globe"} **Referrers**: Where traffic comes from
 - :icon{name="lucide:phone"} **Devices**: Desktop vs Mobile vs Tablet
-- 🌍 **Countries**: Geographic distribution
+- :icon{name="lucide:globe"} **Countries**: Geographic distribution
 - :icon{name="lucide:monitor"} **Browsers**: Chrome, Firefox, Safari, etc.
 - :icon{name="lucide:laptop"} **Operating Systems**: Windows, Mac, Linux, etc.
 - :icon{name="lucide:file"} **Pages**: Most popular content
 
 ### Advanced Features
 - :icon{name="lucide:target"} **Custom Events**: Track buttons, forms, videos
-- ⏱️ **Time on Site**: Engagement metrics
+- :icon{name="lucide:timer"} **Time on Site**: Engagement metrics
 - :icon{name="lucide:bar-chart"} **Real-time Data**: Live visitor updates
-- 📅 **Date Ranges**: Custom time periods
+- :icon{name="lucide:calendar"} **Date Ranges**: Custom time periods
 - :icon{name="lucide:search"} **Filters**: Drill down into data
-- 📤 **Export Data**: CSV downloads
+- :icon{name="lucide:upload"} **Export Data**: CSV downloads
 - :icon{name="lucide:link"} **Share Links**: Public dashboard links
 - :icon{name="lucide:palette"} **Themes**: Light/Dark mode
 
@@ -231,9 +231,9 @@ umami.track('Social Share', {
 ## Dashboard Features :icon{name="lucide:bar-chart"}
 
 ### Overview
-- 👁️ Real-time visitor count
+- :icon{name="lucide:eye"} Real-time visitor count
 - :icon{name="lucide:trending-up"} Views & visitors today
-- 🕐 Average time on site
+- :icon{name="lucide:clock"} Average time on site
 - :icon{name="lucide:refresh-cw"} Bounce rate
 
 ### Realtime View
@@ -244,9 +244,9 @@ Watch visitors as they browse:
 - Live count
 
 ### Reports
-- 📅 Custom date ranges
+- :icon{name="lucide:calendar"} Custom date ranges
 - :icon{name="lucide:bar-chart"} Page comparisons
-- 🌍 Geographic heatmaps
+- :icon{name="lucide:globe"} Geographic heatmaps
 - :icon{name="lucide:phone"} Device breakdowns
 - :icon{name="lucide:search"} Referrer analysis
 
@@ -289,18 +289,18 @@ Anyone with the link can view stats (no login needed)!
 ## Privacy Features :icon{name="lucide:lock"}
 
 ### What Umami Does NOT Track
-- ❌ Personal information
-- ❌ Cookies (beyond session)
-- ❌ IP addresses (optional hashing)
-- ❌ Cross-site tracking
-- ❌ Fingerprinting
+- :icon{name="lucide:x"} Personal information
+- :icon{name="lucide:x"} Cookies (beyond session)
+- :icon{name="lucide:x"} IP addresses (optional hashing)
+- :icon{name="lucide:x"} Cross-site tracking
+- :icon{name="lucide:x"} Fingerprinting
 
 ### What Umami DOES Track
-- ✅ Page views (anonymized)
-- ✅ Referrers
-- ✅ Device types (generic)
-- ✅ Countries (city-level optional)
-- ✅ Custom events
+- :icon{name="lucide:check"} Page views (anonymized)
+- :icon{name="lucide:check"} Referrers
+- :icon{name="lucide:check"} Device types (generic)
+- :icon{name="lucide:check"} Countries (city-level optional)
+- :icon{name="lucide:check"} Custom events
 
 ### GDPR Compliance
 Umami is GDPR-compliant by default:
@@ -357,9 +357,9 @@ curl -X POST https://umami.pivoine.art/api/send \
 Default setup works great! No optimization needed.
 
 ### For Medium Sites (10k-100k/month)
-- ✅ Enable database indexes (auto-created)
-- ✅ Regular database maintenance
-- ✅ Monitor disk space
+- :icon{name="lucide:check"} Enable database indexes (auto-created)
+- :icon{name="lucide:check"} Regular database maintenance
+- :icon{name="lucide:check"} Monitor disk space
 
 ### For Large Sites (100k+/month)
 - :icon{name="lucide:rocket"} Increase PostgreSQL memory
@@ -479,7 +479,7 @@ Install via plugin or add to theme's `header.php`:
 - :icon{name="lucide:smile"} **Free**: No limits, no upsells
 - :icon{name="lucide:rocket"} **Fast**: Lightweight script
 - :icon{name="lucide:dumbbell"} **Reliable**: Self-hosted stability
-- 🌍 **Ethical**: Do the right thing
+- :icon{name="lucide:globe"} **Ethical**: Do the right thing
 
 ## Advanced Features
 

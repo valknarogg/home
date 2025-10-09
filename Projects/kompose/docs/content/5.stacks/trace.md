@@ -58,9 +58,9 @@ The coordinator:
 **Image**: `signoz/signoz-otel-collector:v0.129.6`
 
 The data pipeline:
-- 📥 **Receives**: Traces, metrics, logs from apps
+- :icon{name="lucide:download"} **Receives**: Traces, metrics, logs from apps
 - :icon{name="lucide:refresh-cw"} **Processes**: Transforms and enriches data
-- 📤 **Exports**: Sends to ClickHouse
+- :icon{name="lucide:upload"} **Exports**: Sends to ClickHouse
 - :icon{name="lucide:target"} **Sampling**: Smart data collection
 - :icon{name="lucide:plug"} **Flexible**: Supports many data formats
 
@@ -69,9 +69,9 @@ The data pipeline:
 **Containers**: `trace_migrator_sync` & `trace_migrator_async`
 
 The database janitors:
-- 🗂️ **Migrations**: Set up database schema
+- :icon{name="lucide:folder-input"} **Migrations**: Set up database schema
 - :icon{name="lucide:refresh-cw"} **Updates**: Apply schema changes
-- 🏗️ **Initialization**: Prepare ClickHouse
+- :icon{name="lucide:square-dashed-mouse-pointer"} **Initialization**: Prepare ClickHouse
 
 ## Architecture Overview
 
@@ -161,11 +161,11 @@ docker compose up -d
 ```
 
 This starts:
-- ✅ ClickHouse (database)
-- ✅ ZooKeeper (coordination)
-- ✅ Schema migrations (database setup)
-- ✅ SigNoz (UI and query engine)
-- ✅ OTel Collector (data collection)
+- :icon{name="lucide:check"} ClickHouse (database)
+- :icon{name="lucide:check"} ZooKeeper (coordination)
+- :icon{name="lucide:check"} Schema migrations (database setup)
+- :icon{name="lucide:check"} SigNoz (UI and query engine)
+- :icon{name="lucide:check"} OTel Collector (data collection)
 
 ### 3. Access SigNoz
 ```
@@ -245,15 +245,15 @@ span.end();
 ### Services View
 See all your microservices:
 - :icon{name="lucide:bar-chart"} Request rate
-- ⏱️ Latency (P50, P90, P99)
-- ❌ Error rate
+- :icon{name="lucide:timer"} Latency (P50, P90, P99)
+- :icon{name="lucide:x"} Error rate
 - :icon{name="lucide:flame"} Top endpoints
 
 ### Traces View
 Debug individual requests:
 - :icon{name="lucide:search"} Search by service, operation, duration
 - :icon{name="lucide:trending-up"} Visualize request flow
-- ⏱️ See exact timings
+- :icon{name="lucide:timer"} See exact timings
 - 🐛 Find errors with full context
 
 ### Metrics View (Dashboards)
@@ -305,8 +305,8 @@ Limit: 10
 Auto-generated service map shows:
 - :icon{name="lucide:link"} Which services call which
 - :icon{name="lucide:bar-chart"} Request volumes
-- ⏱️ Latencies between services
-- ❌ Error rates
+- :icon{name="lucide:timer"} Latencies between services
+- :icon{name="lucide:x"} Error rates
 
 ## Instrumenting Different Languages
 

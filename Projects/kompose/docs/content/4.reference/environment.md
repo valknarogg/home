@@ -105,17 +105,17 @@ DB_HOST=news-postgres  # Overrides root
 
 ### Security
 
-- ✅ Use strong, random passwords
-- ✅ Never commit `.env` files to version control
-- ✅ Use `.env.example` as template
-- ✅ Rotate secrets regularly
+- :icon{name="lucide:check"} Use strong, random passwords
+- :icon{name="lucide:check"} Never commit `.env` files to version control
+- :icon{name="lucide:check"} Use `.env.example` as template
+- :icon{name="lucide:check"} Rotate secrets regularly
 
 ### Organization
 
-- ✅ Document custom variables
-- ✅ Group related variables
-- ✅ Use consistent naming
-- ✅ Keep defaults in root `.env`
+- :icon{name="lucide:check"} Document custom variables
+- :icon{name="lucide:check"} Group related variables
+- :icon{name="lucide:check"} Use consistent naming
+- :icon{name="lucide:check"} Keep defaults in root `.env`
 
 ## Generating Secrets
 

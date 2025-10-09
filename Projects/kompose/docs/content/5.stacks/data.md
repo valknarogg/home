@@ -52,7 +52,7 @@ The speed demon of data storage! Redis is your in-memory cache:
 - `sexy` → Directus cache for faster API responses
 - Perfect for session storage, rate limiting, queues
 
-### 🎛️ pgAdmin 4
+### :icon{name="lucide:ethernet-port"} pgAdmin 4
 
 **Container**: `pgadmin4_container`  
 **Image**: `dpage/pgadmin4`  

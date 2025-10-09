@@ -29,5 +29,5 @@ h2 > a > span + span {
 }
 
 h3 > a > span + span {
-  @apply size-5 align-text-bottom;
+  @apply size-5 align-text-top;
 }

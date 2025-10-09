@@ -13,7 +13,7 @@ Dockge (pronounced "dog-ee" 🐕) is a fancy, self-hosted web UI for managing Do
 
 ## The Stack Captain
 
-### 🎛️ Dockge
+### :icon{name="lucide:ethernet-port"} Dockge
 
 **Container**: `dock_app`  
 **Image**: `louislam/dockge:1`  
@@ -22,7 +22,7 @@ Dockge (pronounced "dog-ee" 🐕) is a fancy, self-hosted web UI for managing Do
 
 Dockge makes Docker Compose management feel like playing with LEGO:
 - :icon{name="lucide:clipboard"} **Visual Stack Management**: See all your compose stacks at a glance
-- ✏️ **Built-in Editor**: Edit compose files right in the browser
+- :icon{name="lucide:pen"} **Built-in Editor**: Edit compose files right in the browser
 - :icon{name="lucide:rocket"} **One-Click Deploy**: Start, stop, restart with a button
 - :icon{name="lucide:bar-chart"} **Real-time Logs**: Watch your containers do their thing
 - :icon{name="lucide:file-text"} **Compose File Preview**: See what you're deploying before you deploy it
@@ -107,12 +107,12 @@ mkdir -p /root/repos/compose
 ### Managing Existing Stacks
 
 From the dashboard, you can:
-- ▶️ **Start**: Fire up all containers
-- ⏸️ **Stop**: Gracefully stop everything
+- :icon{name="lucide:play"} **Start**: Fire up all containers
+- :icon{name="lucide:pause"} **Stop**: Gracefully stop everything
 - :icon{name="lucide:refresh-cw"} **Restart**: Quick bounce
 - :icon{name="lucide:file-text"} **Edit**: Change the compose file
 - :icon{name="lucide:wrench"} **Update**: Pull new images and redeploy
-- 🗑️ **Delete**: Remove stack completely
+- :icon{name="lucide:trash"} **Delete**: Remove stack completely
 
 ### Viewing Logs
 
@@ -314,11 +314,11 @@ services:
 ## Why Choose Dockge?
 
 - :icon{name="lucide:target"} **Compose-Native**: Built specifically for docker-compose
-- 🪶 **Lightweight**: Tiny footprint, fast UI
+- :icon{name="lucide:feather"} **Lightweight**: Tiny footprint, fast UI
 - :icon{name="lucide:palette"} **Beautiful**: Clean, modern interface
 - :icon{name="lucide:wrench"} **Simple**: Does one thing really well
 - :icon{name="lucide:smile"} **Free**: Open source, no enterprise upsells
-- 👨‍:icon{name="lucide:laptop"} **Dev-Friendly**: Doesn't hide the compose file from you
+- :icon{name="lucide:laptop"} **Dev-Friendly**: Doesn't hide the compose file from you
 
 ## Integration Ideas
 
@@ -353,4 +353,4 @@ Automated backups of your compose files:
 
 ---
 
-*"The best UI is the one that gets out of your way and lets you work."* - Dockge Philosophy 🐳:icon{name="lucide:sparkles"}
+*"The best UI is the one that gets out of your way and lets you work."* - Dockge Philosophy :icon{name="lucide:sparkles"}

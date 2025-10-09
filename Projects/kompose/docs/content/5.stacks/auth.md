@@ -57,7 +57,7 @@ Running in `edge` mode because we're living on the edge (behind Traefik)! This t
 | `KC_DB_URL` | JDBC connection string | :icon{name="lucide:plug"} The digital umbilical cord |
 | `KC_HOSTNAME` | Public-facing URL | :icon{name="lucide:globe"} Your internet identity |
 | `KC_PROXY` | Proxy mode setting | :icon{name="lucide:drama"} Trust the middleman |
-| `KC_FEATURES` | Enabled features (docker) | 🐳 Whale hello there! |
+| `KC_FEATURES` | Enabled features (docker) |  Whale hello there! |
 
 ## Ports & Networking
 

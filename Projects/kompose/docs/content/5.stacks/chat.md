@@ -51,8 +51,8 @@ Path: /app/data
 
 This stores:
 - :icon{name="lucide:database"} SQLite database (users, apps, messages)
-- 🖼️ Application images
-- ⚙️ Server configuration
+- :icon{name="lucide:image"} Application images
+- :icon{name="lucide:cog"} Server configuration
 
 ### No Exposed Port
 All access goes through Traefik at https://chat.pivoine.art - clean and secure!
@@ -209,9 +209,9 @@ Download from:
 
 - :icon{name="lucide:phone"} Desktop notifications (browser permission needed)
 - :icon{name="lucide:search"} Search through message history
-- 🗑️ Delete individual or all messages
+- :icon{name="lucide:trash"} Delete individual or all messages
 - :icon{name="lucide:users"} Manage applications and clients
-- ⚙️ Configure server settings
+- :icon{name="lucide:cog"} Configure server settings
 - :icon{name="lucide:bar-chart"} View message statistics
 
 ## Security Best Practices :icon{name="lucide:lock"}
@@ -233,9 +233,9 @@ curl -X POST "https://chat.pivoine.art/message" \
   -F "title=Deployment Report" \
   -F "message=## Deploy Status
   
-- ✅ Database migration
-- ✅ Frontend build  
-- ✅ Backend restart
+- :icon{name="lucide:check"} Database migration
+- :icon{name="lucide:check"} Frontend build  
+- :icon{name="lucide:check"} Backend restart
 - :icon{name="lucide:alert-triangle"}  Cache warmup (slower than expected)
 
 **Next**: Monitor performance metrics" \

@@ -22,7 +22,7 @@ Vaultwarden is your self-hosted password manager - a lightweight, Rust-powered a
 
 Vaultwarden is your digital security blanket:
 - :icon{name="lucide:lock-keyhole"} **Password Vault**: Store unlimited passwords
-- 🗂️ **Secure Notes**: Credit cards, identities, documents
+- :icon{name="lucide:folder-input"} **Secure Notes**: Credit cards, identities, documents
 - :icon{name="lucide:refresh-cw"} **Sync Everywhere**: Desktop, mobile, browser extensions
 - :icon{name="lucide:users"} **Sharing**: Securely share with family/team
 - :icon{name="lucide:key"} **2FA Support**: TOTP, YubiKey, Duo
@@ -43,20 +43,20 @@ Vaultwarden is your digital security blanket:
 
 Both use the same client apps - just different servers!
 
-## Features That Matter 🌟
+## Features That Matter :icon{name="lucide:sparkles"}
 
 ### Password Management
 - :icon{name="lucide:lock-keyhole"} **Unlimited Passwords**: No caps, no limits
 - :icon{name="lucide:search"} **Search**: Find credentials instantly
 - :icon{name="lucide:folder"} **Folders**: Organize by category
 - :icon{name="lucide:tag"} **Tags**: Multiple ways to organize
-- ⭐ **Favorites**: Quick access to common items
+- :icon{name="lucide:star"} **Favorites**: Quick access to common items
 - :icon{name="lucide:file-text"} **Notes**: Attach notes to any item
 
 ### Secure Storage Types
 - :icon{name="lucide:key"} **Login**: Username + password combos
-- 💳 **Card**: Credit/debit card info
-- 🆔 **Identity**: Personal info, addresses
+- :icon{name="lucide:credit-card"} **Card**: Credit/debit card info
+- :icon{name="lucide:id-card"} **Identity**: Personal info, addresses
 - :icon{name="lucide:file"} **Secure Note**: Encrypted text
 
 ### Security Features
@@ -207,7 +207,7 @@ Or use keyboard shortcut: `Ctrl+Shift+L`
 - Search by name, URL, username, or notes
 - Filter by type, folder, or favorites
 
-## Admin Panel 🎛️
+## Admin Panel :icon{name="lucide:ethernet-port"}
 
 Access at: `https://vault.pivoine.art/admin`
 
@@ -217,9 +217,9 @@ Access at: `https://vault.pivoine.art/admin`
 - :icon{name="lucide:users"} View all users
 - :icon{name="lucide:lock-keyhole"} Disable/delete users
 - :icon{name="lucide:mail"} Resend invitations
-- 🗑️ Delete accounts
+- :icon{name="lucide:trash"} Delete accounts
 - :icon{name="lucide:bar-chart"} View diagnostics
-- ⚙️ Configure settings
+- :icon{name="lucide:cog"} Configure settings
 
 ### Useful Admin Tasks
 
@@ -257,23 +257,23 @@ Shows config, health checks, versions
 ## Security Best Practices :icon{name="lucide:shield"}
 
 ### Master Password
-- ✅ Use a passphrase: `correct-horse-battery-staple`
-- ✅ At least 14+ characters
-- ✅ Unique (not used elsewhere)
-- ✅ Write it down physically
-- ❌ Don't store digitally
-- ❌ Don't share it
+- :icon{name="lucide:check"} Use a passphrase: `correct-horse-battery-staple`
+- :icon{name="lucide:check"} At least 14+ characters
+- :icon{name="lucide:check"} Unique (not used elsewhere)
+- :icon{name="lucide:check"} Write it down physically
+- :icon{name="lucide:x"} Don't store digitally
+- :icon{name="lucide:x"} Don't share it
 
 ### Two-Factor Authentication
-- ✅ Enable 2FA immediately
-- ✅ Save recovery codes
-- ✅ Use authenticator app (not SMS)
-- ✅ Consider hardware key (YubiKey)
+- :icon{name="lucide:check"} Enable 2FA immediately
+- :icon{name="lucide:check"} Save recovery codes
+- :icon{name="lucide:check"} Use authenticator app (not SMS)
+- :icon{name="lucide:check"} Consider hardware key (YubiKey)
 
 ### Vault Hygiene
 - :icon{name="lucide:refresh-cw"} Regular security reports
 - :icon{name="lucide:search"} Update weak passwords
-- 🗑️ Remove old accounts
+- :icon{name="lucide:trash"} Remove old accounts
 - :icon{name="lucide:mail"} Use unique emails when possible
 - :icon{name="lucide:lock-keyhole"} Never reuse passwords
 
@@ -428,11 +428,11 @@ Organize shared items:
 ## Why Self-Host Your Passwords?
 
 - :icon{name="lucide:lock"} **Full Control**: Your data, your server
-- 🕵️ **Privacy**: No third-party access
+- :icon{name="lucide:hat-glasses"} **Privacy**: No third-party access
 - :icon{name="lucide:dollar-sign"} **Cost**: Free premium features
 - :icon{name="lucide:rocket"} **Performance**: Local network speed
 - :icon{name="lucide:shield"} **Security**: You control the security
-- 🌍 **Independence**: Not dependent on cloud service
+- :icon{name="lucide:globe"} **Independence**: Not dependent on cloud service
 - :icon{name="lucide:bar-chart"} **Transparency**: Open source, auditable
 
 ## Resources

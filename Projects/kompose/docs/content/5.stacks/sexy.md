@@ -22,9 +22,9 @@ This is your full-stack content management system! A headless CMS (Directus) pai
 
 Directus is the headless CMS that doesn't make you cry:
 - :icon{name="lucide:bar-chart"} **Database-First**: Works with your existing database
-- 🎛️ **Admin Panel**: Beautiful UI out of the box
+- :icon{name="lucide:ethernet-port"} **Admin Panel**: Beautiful UI out of the box
 - :icon{name="lucide:plug"} **REST + GraphQL**: Choose your flavor
-- 🖼️ **Asset Management**: Images, videos, files - all handled
+- :icon{name="lucide:image"} **Asset Management**: Images, videos, files - all handled
 - :icon{name="lucide:users"} **User Roles**: Granular permissions
 - :icon{name="lucide:refresh-cw"} **Real-time**: WebSocket support for live updates
 - :icon{name="lucide:palette"} **Customizable**: Extensions, hooks, custom fields
@@ -139,7 +139,7 @@ Password: Your ADMIN_PASSWORD
 
 5. **Save and Create Item!**
 
-## Using the Admin Panel 🎛️
+## Using the Admin Panel :icon{name="lucide:ethernet-port"}
 
 ### Content Management
 
@@ -164,13 +164,13 @@ Password: Your ADMIN_PASSWORD
 
 **Field Types**:
 - :icon{name="lucide:file-text"} Text (String, Text, Markdown)
-- 🔢 Numbers (Integer, Float, Decimal)
-- 📅 Dates (Date, DateTime, Time)
-- ✅ Booleans & Toggles
+-- :icon{name="lucide:arrow-up-0-1"} Numbers (Integer, Float, Decimal)
+- :icon{name="lucide:calendar"} Dates (Date, DateTime, Time)
+- :icon{name="lucide:check"} Booleans & Toggles
 - :icon{name="lucide:palette"} JSON & Code
 - :icon{name="lucide:link"} Relations (O2M, M2O, M2M)
-- 🖼️ Files & Images
-- 📍 Geolocation
+- :icon{name="lucide:image"} Files & Images
+-- :icon{name="lucide:map-pin"} Geolocation
 
 ## API Usage :icon{name="lucide:plug"}
 

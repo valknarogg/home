@@ -222,7 +222,7 @@ The server will automatically use it for missing pages!
 - :icon{name="lucide:file-text"} Personal thoughts and experiences
 - :icon{name="lucide:wrench"} Project documentation
 - :icon{name="lucide:target"} Case studies and success stories
-- 🌟 Whatever makes your heart sing!
+- :icon{name="lucide:sparkles"} Whatever makes your heart sing!
 
 ## Fun Facts
 

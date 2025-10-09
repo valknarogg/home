@@ -27,7 +27,7 @@ WG-Easy makes WireGuard actually easy:
 - :icon{name="lucide:zap"} **WireGuard**: Modern, fast, secure protocol
 - :icon{name="lucide:bar-chart"} **Traffic Stats**: See bandwidth usage
 - :icon{name="lucide:lock"} **Encrypted**: Industry-standard crypto
-- 🌍 **Route All Traffic**: Or split-tunnel
+- :icon{name="lucide:globe"} **Route All Traffic**: Or split-tunnel
 - :icon{name="lucide:rocket"} **Performance**: Faster than OpenVPN
 
 ## WireGuard: The Modern VPN Protocol
@@ -37,7 +37,7 @@ WG-Easy makes WireGuard actually easy:
 - :icon{name="lucide:lock"} **Secure**: State-of-the-art cryptography
 - :icon{name="lucide:phone"} **Battery Friendly**: Less power consumption
 - :icon{name="lucide:refresh-cw"} **Roaming**: Seamless connection switching
-- 🐧 **Linux Kernel**: Built into Linux 5.6+
+- :icon{name="lucide:sparkles"} **Linux Kernel**: Built into Linux 5.6+
 - :icon{name="lucide:target"} **Simple**: Easier to audit and configure
 
 ## Configuration Breakdown
@@ -206,9 +206,9 @@ PersistentKeepalive = 25
 ### Full Tunnel (All Traffic)
 
 **Default behavior** - all internet traffic goes through VPN:
-- ✅ Complete privacy
-- ✅ Bypass geo-blocks
-- ✅ Secure public WiFi
+- :icon{name="lucide:check"} Complete privacy
+- :icon{name="lucide:check"} Bypass geo-blocks
+- :icon{name="lucide:check"} Secure public WiFi
 - :icon{name="lucide:alert-triangle"} Slightly slower (routing through your server)
 
 ### Split Tunnel (Selective Routing)
@@ -229,9 +229,9 @@ AllowedIPs = 10.0.0.0/24  # Only home network
 ## Traffic Statistics :icon{name="lucide:bar-chart"}
 
 Web UI shows for each client:
-- 📥 **Download**: Data received
-- 📤 **Upload**: Data sent
-- 🕐 **Last Seen**: When last connected
+- :icon{name="lucide:upload"} **Download**: Data received
+- :icon{name="lucide:download"} **Upload**: Data sent
+- :icon{name="lucide:clock"} **Last Seen**: When last connected
 - :icon{name="lucide:trending-up"} **Charts**: Bandwidth over time
 
 ## Common Use Cases
@@ -248,13 +248,13 @@ You (anywhere) → VPN → Home Network → NAS, Printer, etc.
 ```
 Access devices as if you're home.
 
-### 3. Bypass Geo-Restrictions 🌍
+### 3. Bypass Geo-Restrictions :icon{name="lucide:globe"}
 ```
 Your Location → VPN (Server Country) → Streaming Service
 ```
 Appear to be in server's location.
 
-### 4. Privacy from ISP 🕵️
+### 4. Privacy from ISP :icon{name="lucide:hat-glasses"}
 ```
 Your Device → Encrypted Tunnel → Your Server → Internet
 ```
@@ -478,8 +478,8 @@ docker compose restart
 - :icon{name="lucide:lock"} **Full Control**: Your server, your rules
 - :icon{name="lucide:dollar-sign"} **Cost Effective**: No monthly fees
 - :icon{name="lucide:rocket"} **Performance**: Direct to your server
-- 🕵️ **Privacy**: No third-party logging
-- 🌍 **Flexibility**: Use any server location
+- :icon{name="lucide:hat-glasses"} **Privacy**: No third-party logging
+- :icon{name="lucide:globe"} **Flexibility**: Use any server location
 - :icon{name="lucide:bar-chart"} **Transparency**: You know what's happening
 - :icon{name="lucide:hammer"} **Customization**: Configure exactly as needed
 
