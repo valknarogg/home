@@ -6,7 +6,7 @@ on:
     branches:
       - main # Or your default branch
     paths:
-      - 'Projects/kompose/docs/**'
+      - 'Projects/kompose/**'
 
 jobs:
   build:

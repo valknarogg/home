@@ -111,6 +111,8 @@
 !/Projects/pivoine.art/**
 !/Projects/sexy.pivoine.art/
 !/Projects/sexy.pivoine.art/**
+!/Projects/docs.pivoine.art/
+!/Projects/docs.pivoine.art/**
 
 # Ignore so we won't commit these in the allowed dirctories.
 .DS_Store

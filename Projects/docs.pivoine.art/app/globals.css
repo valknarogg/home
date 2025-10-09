@@ -1,0 +1,47 @@
+@import "tailwindcss";
+
+@theme {
+  /* Custom animations */
+  --animate-pulse: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  
+  /* Custom keyframes for pulse */
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+  }
+}
+
+@layer base {
+	* {
+		@supports (color: color-mix(in lab, red, red)) {
+			outline-color: color-mix(in oklab, var(--ring) 50%, transparent);
+		}
+	}
+
+	* {
+		border-color: var(--border);
+		outline-color: var(--ring);
+	}
+}
+
+/* Custom scrollbar styling */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgb(17 24 39);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgb(139 92 246);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgb(167 139 250);
+}
