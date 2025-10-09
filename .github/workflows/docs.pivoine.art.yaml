@@ -1,0 +1,50 @@
+name: Build and Deploy docs.pivoine.art via SSH
+
+on:
+  workflow_dispatch: # Allows workflow to be run manually
+  push:
+    branches:
+      - main # Or your default branch
+    paths:
+      - 'Projects/kompose/docs/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./Projects/kompose/docs
+    environment: ionos
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+      - name: Install dependencies
+        run: pnpm install
+      - name: Build JavaScript
+        run: |
+          pnpm generate
+          mv .output/public ${{ github.workspace }}/_site/
+
+      - name: 🚀 Deploy via SSH
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          source: _site/* # Adjust if required
+          target: /var/www/docs.pivoine.art/kompose # Set to your deployment directory (for example /public_html)
+          strip_components: 1 # This ensures that a subdirectory is not created
+          rm: 1
+      - name: Docker compose restart
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWORD }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd Projects/kompose/docs
+            docker compose restart
