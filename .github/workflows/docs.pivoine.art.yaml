@@ -1,4 +1,4 @@
-name: Build and Deploy docs.pivoine.art via SSH
+name: Build and Deploy Docs.Pivoine.Art via SSH
 
 on:
   workflow_dispatch: # Allows workflow to be run manually
