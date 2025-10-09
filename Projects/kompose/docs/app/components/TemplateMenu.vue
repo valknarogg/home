@@ -8,15 +8,17 @@
   }, {
     label: 'Docs',
     to: 'https://docs.pivoine.art/',
+    color: 'primary',
+    type: 'link',
     children: [
       {
         label: 'Kompose',
         to: 'https://docs.pivoine.art/kompose',
-        color: 'primary',
+        color: 'secondary',
         checked: true,
         type: 'checkbox'
       }
-    ]
+    ],
   }, {
     label: 'Sexy',
     to: 'https://sexy.pivoine.art'
