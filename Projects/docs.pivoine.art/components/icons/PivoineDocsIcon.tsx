@@ -76,7 +76,7 @@ export default function PivoineDocsIcon({
       onMouseLeave={handleMouseLeave}
       onClick={handleClick}
       onTouchStart={handleTouch}
-      style={{ width: size, height: size }}
+      style={{ width: size, height: size, rotate: '5deg' }}
     >
       <svg
         className="pivoine-docs-icon"
@@ -108,10 +108,10 @@ export default function PivoineDocsIcon({
           </radialGradient>
 
           <radialGradient id="petal-gradient-4" cx="30%" cy="30%">
-            <stop offset="0%" style={{ stopColor: '#fce7f3', stopOpacity: 1 }} />
-            <stop offset="40%" style={{ stopColor: '#fda4af', stopOpacity: 1 }} />
-            <stop offset="70%" style={{ stopColor: '#fb7185', stopOpacity: 1 }} />
-            <stop offset="100%" style={{ stopColor: '#f43f5e', stopOpacity: 0.95 }} />
+            <stop offset="0%" style={{ stopColor: '#fae8ff', stopOpacity: 1 }} />
+            <stop offset="40%" style={{ stopColor: '#f3e8ff', stopOpacity: 1 }} />
+            <stop offset="70%" style={{ stopColor: '#e9d5ff', stopOpacity: 1 }} />
+            <stop offset="100%" style={{ stopColor: '#c084fc', stopOpacity: 0.95 }} />
           </radialGradient>
 
           <radialGradient id="center-gradient" cx="50%" cy="50%">
