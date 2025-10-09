@@ -165,21 +165,21 @@
 
 /* Petals bloom outward beautifully */
 .pivoine-docs-icon-wrapper.is-interactive.is-hovered .outer-petal {
-  transform: scale(0.55) translateX(38px);
+  transform: scale(1.1) translateX(38px);
   opacity: 0.9;
   filter: url(#intense-glow);
   animation: petal-bloom-hover 2s ease-in-out infinite;
 }
 
 .pivoine-docs-icon-wrapper.is-interactive.is-hovered .middle-petal {
-  transform: scale(0.525) translateX(26px);
+  transform: scale(1.05) translateX(26px);
   opacity: 0.92;
   filter: url(#petal-glow);
   animation: petal-bloom-hover 2s ease-in-out infinite 0.2s;
 }
 
 .pivoine-docs-icon-wrapper.is-interactive.is-hovered .inner-petal {
-  transform: scale(0.5) translateX(16px);
+  transform: scale(1.0) translateX(16px);
   opacity: 0.95;
   filter: url(#petal-glow);
   animation: petal-bloom-hover 2s ease-in-out infinite 0.4s;
