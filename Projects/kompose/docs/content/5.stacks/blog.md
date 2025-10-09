@@ -52,7 +52,7 @@ This means you can update your blog by just replacing files on the host! No cont
 ### No Health Check? No Problem!
 Static web servers are so simple and reliable that Docker health checks aren't really necessary. Traefik can tell if it's alive by checking the port - if it responds, it's healthy!
 
-## Traefik Magic :icon{name="lucide:hat"}:icon{name="lucide:sparkles"}
+## Traefik Magic :icon{name="lucide:sparkles"}:icon{name="lucide:sparkles"}
 
 All the routing is handled by Traefik labels:
 - **HTTP → HTTPS**: Automatic redirect for security
