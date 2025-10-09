@@ -3,6 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "generate": "nuxi generate",
     "build": "nuxt build",
     "dev": "nuxt dev",
     "preview": "nuxt preview",
