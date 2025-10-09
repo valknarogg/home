@@ -130,20 +130,20 @@ Complete documentation covering:
 
 ### Animation States
 
-**Default (Always Running):**
-- Background pulse (4s cycle)
-- Sparkle twinkle (2s, staggered)
-- Particle orbit (8s rotation)
-- Center pulse (3s)
-- Page float (3s gentle sway)
-- Text lines draw in on mount
+**Default State:**
+- Flower starts **closed** as a tight bud 🌷 (petals 30-50% size)
+- Pulsing background (4s)
+- Twinkling sparkles (2s, staggered)
+- Orbiting particles (8s)
+- Floating pages (3s)
+- Text lines draw in
 
-**Hover (Interactive):**
-- Scale up 1.08x + lift 8px
-- Enhanced shadow and glow
-- Petal bloom sequence (outer → middle → inner)
-- Center intense glow
-- Sparkle burst
+**Hover (Interactive - Blooming!):**
+- Scales up 1.08x and lifts
+- **Petals bloom open** to full size (0.8s smooth transition)
+- Bloom sequence: outer → middle → inner (staggered)
+- Center glows intensely
+- Sparkles burst
 - Pages fan out with rotation
 
 **Click/Tap:**

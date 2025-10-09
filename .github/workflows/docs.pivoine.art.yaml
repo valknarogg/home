@@ -23,11 +23,11 @@ jobs:
         uses: pnpm/action-setup@v4
       - name: Build JavaScript
         run: |
-          cd ${{ github.workspace }}/docs.pivoine.art
+          cd ./docs.pivoine.art
           pnpm install
           pnpm build
           mv out ${{ github.workspace }}/_site
-          cd ${{ github.workspace }}/kompose/docs
+          cd ../kompose/docs
           pnpm install
           pnpm generate
           mv .output/public ${{ github.workspace }}/_site/kompose

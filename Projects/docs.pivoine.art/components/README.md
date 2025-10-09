@@ -48,15 +48,17 @@ import { PivoineDocsIcon } from '@/components/icons'
 #### Animations
 
 **Default State:**
+- Flower starts **closed** as a tight bud (petals 30-50% size)
 - Subtle pulsing background
 - Twinkling sparkles (2s cycle)
 - Orbiting particles (8s cycle)
 - Gentle page floating
 - Text lines appear on mount
 
-**On Hover:**
+**On Hover (Blooming!):**
 - Icon scales and lifts
-- Petals bloom in sequence (outer → middle → inner)
+- Petals **bloom open** to full size (smooth 0.8s transition)
+- Bloom sequence: outer → middle → inner (staggered)
 - Center glows intensely
 - Sparkles burst
 - Pages fan out with rotation

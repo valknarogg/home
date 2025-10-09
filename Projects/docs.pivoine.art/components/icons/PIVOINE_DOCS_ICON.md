@@ -96,6 +96,10 @@ interface PivoineDocsIconProps {
 ## ✨ Animations & Effects
 
 ### Default State
+- **Flower starts CLOSED** as a tight bud 🌷
+  - Outer petals: 30% size, 50% opacity
+  - Middle petals: 40% size, 60% opacity
+  - Inner petals: 50% size, 70% opacity
 - **Subtle pulsing** background circle
 - **Twinkling sparkles** at corners
 - **Orbiting particles** around the flower
@@ -104,11 +108,14 @@ interface PivoineDocsIconProps {
 
 ### Hover State (when `interactive={true}`)
 - Icon **scales up** and **lifts** (transform 3D)
+- **PETALS BLOOM OPEN** to full size! 🌸
+  - Smooth 0.8s transition
+  - Staggered timing for natural bloom:
+    - Outer petals bloom first (0s delay)
+    - Middle petals follow (0.05s delay)
+    - Inner petals last (0.1s delay)
+  - All reach 100% size and full opacity
 - Enhanced **shadow and glow** effects
-- Petals **bloom** outward in sequence
-  - Outer petals bloom first
-  - Middle petals follow (0.1s delay)
-  - Inner petals last (0.2s delay)
 - Center golden circle **glows intensely**
 - Sparkles **burst** and expand
 - Pages **fan out** slightly with rotation
