@@ -16,7 +16,7 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 
 # Generate static site
-RUN pnpm run generate
+RUN pnpm build
 
 # Production stage
 FROM nginx:alpine
