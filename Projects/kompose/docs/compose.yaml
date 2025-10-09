@@ -9,6 +9,8 @@ services:
       - /var/www/docs.pivoine.art:/public
     # No healthcheck - static-web-server doesn't include wget/curl
     # Traefik will detect via port check
+    environment:
+      SERVER_REDIRECT_TRAILING_SLASH: false
     networks:
       - kompose_network
     labels:
