@@ -5,7 +5,7 @@ description: Get started with Kompose in minutes
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/kompose.git
+git clone https://code.pivoine.art/valknar/kompose.git
 cd kompose
 
 # Make kompose executable
