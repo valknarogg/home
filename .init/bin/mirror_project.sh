@@ -5,7 +5,7 @@ TMP_PROJECT="$3"
 git config --global user.email "valknar@pivoine.art"
 git config --global user.name "Sebastian Krüger"
 
-mkdir
+mkdir "$TMP_PROJECT"
 git clone "$1" "$TMP_PROJECT"
 cp -rf ./* "$TMP_PROJECT"
 cd "$TMP_PROJECT"
