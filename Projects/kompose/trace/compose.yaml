@@ -160,6 +160,8 @@ services:
       options:
         max-size: 50m
         max-file: "3"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     command:
       - --config=/etc/otel-collector-config.yaml
       - --manager-config=/etc/manager-config.yaml
