@@ -208,7 +208,7 @@ services:
 
 networks:
   signoz:
-    name: ${COMPOSE_PROJECT_NAME}_signoz
+    name: signoz
   kompose_network:
     name: ${NETWORK_NAME:-kompose}
     external: true
