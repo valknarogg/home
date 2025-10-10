@@ -8,8 +8,6 @@ services:
     volumes:
       - gotify_data:/app/data
     environment:
-      - GOTIFY_DEFAULTUSER_NAME=${ADMIN_USER}
-      - GOTIFY_DEFAULTUSER_PASS=${ADMIN_PASSWORD}
     # Gotify is a Go binary - no wget/curl, but has built-in health endpoint
     # healthcheck:
     #   test: ["CMD-SHELL", "nc -z localhost $APP_PORT || exit 1"]
