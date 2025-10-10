@@ -2,9 +2,9 @@ receivers:
   otlp:
     protocols:
       grpc:
-        endpoint: 0.0.0.0:4317
+        endpoint: signoz:4317
       http:
-        endpoint: 0.0.0.0:4318
+        endpoint: signoz:4318
   # hostmetrics:
   #   root_path: /hostfs
   #   scrapers:
@@ -17,20 +17,20 @@ receivers:
   #     process:
   #     processes:
   #     paging:
-  prometheus:
-    config:
-      global:
-        scrape_interval: 60s
-      scrape_configs:
-        - job_name: otel-collector
-          static_configs:
-          - targets:
-              - localhost:8888
-            labels:
-              job_name: otel-collector
+  # prometheus:
+  #   config:
+  #     global:
+  #       scrape_interval: 60s
+  #     scrape_configs:
+  #       - job_name: otel-collector
+  #         static_configs:
+  #         - targets:
+  #             - localhost:8888
+  #           labels:
+  #             job_name: otel-collector
   postgresql:
     # The endpoint of the postgresql server. Whether using TCP or Unix sockets, this value should be host:port. If transport is set to unix, the endpoint will internally be translated from host:port to /host.s.PGSQL.port
-    endpoint: postgres:5432
+    endpoint: host.docker.internal:5432
     # The frequency at which to collect metrics from the Postgres instance.
     collection_interval: 60s
     # The username used to access the postgres instance
@@ -102,7 +102,7 @@ receivers:
   #       value: postgres
   redis:
     # The hostname and port of the Redis instance, separated by a colon.
-    endpoint: "redis:6379"
+    endpoint: "host.docker.internal:6379"
     # The frequency at which to collect metrics from the Redis instance.
     collection_interval: 60s
     # # The password used to access the Redis instance; must match the password specified in the requirepass server configuration option.
