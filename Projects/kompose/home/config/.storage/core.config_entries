@@ -1,0 +1,15 @@
+{
+  "version": 1,
+  "minor_version": 5,
+  "key": "core.config_entries",
+  "data": {
+    "entries": [
+      {"created_at":"2025-10-10T21:01:00.563570+00:00","data":{},"disabled_by":null,"discovery_keys":{},"domain":"sun","entry_id":"01K77YTM8KRMTJ4G0J9N3ZDPT0","minor_version":1,"modified_at":"2025-10-10T21:01:00.563573+00:00","options":{},"pref_disable_new_entities":false,"pref_disable_polling":false,"source":"import","subentries":[],"title":"Sun","unique_id":null,"version":1},
+      {"created_at":"2025-10-10T21:01:00.619012+00:00","data":{},"disabled_by":null,"discovery_keys":{},"domain":"backup","entry_id":"01K77YTMABSN4SVQG6M3PYTR1P","minor_version":1,"modified_at":"2025-10-10T21:01:00.619013+00:00","options":{},"pref_disable_new_entities":false,"pref_disable_polling":false,"source":"system","subentries":[],"title":"Backup","unique_id":null,"version":1},
+      {"created_at":"2025-10-10T21:04:32.025272+00:00","data":{},"disabled_by":null,"discovery_keys":{},"domain":"shopping_list","entry_id":"01K77Z12RS1SERWA726YSCG1VE","minor_version":1,"modified_at":"2025-10-10T21:04:32.025276+00:00","options":{},"pref_disable_new_entities":false,"pref_disable_polling":false,"source":"onboarding","subentries":[],"title":"Shopping list","unique_id":"shopping_list","version":1},
+      {"created_at":"2025-10-10T21:04:32.074200+00:00","data":{},"disabled_by":null,"discovery_keys":{},"domain":"radio_browser","entry_id":"01K77Z12TABXSN519N6BRRWESA","minor_version":1,"modified_at":"2025-10-10T21:04:32.074204+00:00","options":{},"pref_disable_new_entities":false,"pref_disable_polling":false,"source":"onboarding","subentries":[],"title":"Radio Browser","unique_id":null,"version":1},
+      {"created_at":"2025-10-10T21:04:32.077165+00:00","data":{"language":"en","tld":"com"},"disabled_by":null,"discovery_keys":{},"domain":"google_translate","entry_id":"01K77Z12TDTX9V9EQ4F35JB2DW","minor_version":1,"modified_at":"2025-10-10T21:04:32.077170+00:00","options":{},"pref_disable_new_entities":false,"pref_disable_polling":false,"source":"onboarding","subentries":[],"title":"Google Translate text-to-speech","unique_id":null,"version":1},
+      {"created_at":"2025-10-10T21:06:41.028909+00:00","data":{"broker":"mosquitto","port":1883},"disabled_by":null,"discovery_keys":{},"domain":"mqtt","entry_id":"01K77Z50R48FA5BXAPEXF1WX6P","minor_version":2,"modified_at":"2025-10-10T21:06:41.028915+00:00","options":{},"pref_disable_new_entities":false,"pref_disable_polling":false,"source":"user","subentries":[],"title":"mosquitto","unique_id":null,"version":1}
+    ]
+  }
+}

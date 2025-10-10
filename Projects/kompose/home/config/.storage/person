@@ -1,0 +1,15 @@
+{
+  "version": 2,
+  "minor_version": 1,
+  "key": "person",
+  "data": {
+    "items": [
+      {
+        "id": "sebastian_kruger",
+        "name": "Sebastian Krüger",
+        "user_id": "4b03cf29b3f74d56b19c617896ae2d68",
+        "device_trackers": []
+      }
+    ]
+  }
+}
