@@ -35,4 +35,4 @@ jobs:
         git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
         git config --global user.email "${{ env.CI_COMMIT_EMAIL }}"
 
-        ${{ github.workspace }}/.init/bin/mirror_project.sh '${{ github.event.head_commit.message }}' ../home  
+        ${{ github.workspace }}/home/.init/bin/mirror_project.sh '${{ github.event.head_commit.message }}' ../home  
