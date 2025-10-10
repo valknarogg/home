@@ -1,0 +1,6 @@
+- hosts: all
+  tasks:
+  - name: Run kompose.sh with args
+    shell: cd /root/Projects/kompose && ./kompose.sh "{{ kompose_filter }}" {{ kompose_command }}
+    args:
+      executable: /bin/bash
