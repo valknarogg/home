@@ -18,6 +18,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
       - name: Install pnpm
         uses: pnpm/action-setup@v4
       - name: Install dependencies
@@ -45,13 +48,3 @@ jobs:
           target: /var/www/pivoine.art # Set to your deployment directory (for example /public_html)
           strip_components: 1 # This ensures that a subdirectory is not created
           rm: 1
-      - name: Docker compose restart
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          password: ${{ secrets.PASSWORD }}
-          port: ${{ secrets.PORT }}
-          script: |
-            cd Projects/kompose/blog
-            docker compose restart

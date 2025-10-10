@@ -18,7 +18,10 @@ jobs:
     environment: ionos
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
       - name: Install pnpm
         uses: pnpm/action-setup@v4
       - name: Build JavaScript
