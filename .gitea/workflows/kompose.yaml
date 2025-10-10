@@ -9,7 +9,7 @@ on:
     - 'Projects/kompose/**'
 
 env:
-  SYNC_TARGET: ssh://git@gitea:22/valknar/kompose.git
+  SYNC_TARGET: ssh://git@host.docker.internal:2222/valknar/kompose.git
 
 jobs:
   build:
