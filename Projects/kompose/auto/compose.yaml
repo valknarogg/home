@@ -28,6 +28,7 @@ services:
       - semaphore_data:/var/lib/semaphore
       - semaphore_config:/etc/semaphore
       - semaphore_tmp:/tmp/semaphore
+      - ./kompose.yml:/home/semaphore/kompose.yml
     # Semaphore has curl available
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/api/ping"]
