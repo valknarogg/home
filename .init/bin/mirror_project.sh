@@ -1,16 +1,18 @@
 #!/bin/bash
 
-TMP_PROJECT="$3"
+TMP_PROJECT="$PWD"
+RELATIVE_HOME="$TMP_PROJECT"
+CURRENT_PROJECT="${s##*/}"
 
-git config --global user.email "valknar@pivoine.art"
-git config --global user.name "Sebastian Krüger"
-
-mkdir "$TMP_PROJECT"
-git clone "$1" "$TMP_PROJECT"
-cp -rf ./* "$TMP_PROJECT"
-cd "$TMP_PROJECT"
-rm -rf ./.env **/uploads/ ./**/*.sql ./**/*.pem
-git add -A
-git commit -m "$2"
-git push
-cd -
+if [[ `git status --porcelain --untracked-files=no` ]]; then
+  # Changes
+  cp -rf $RELATIVE_HOME/Projects/kompose/* $TMP_PROJECT
+  rm -rf $TMP_PROJECT/.env $TMP_PROJECT/**/uploads/ $TMP_PROJECT/**/*.sql $TMP_PROJECT/**/*.pem
+  git add -A
+  git commit -m "$1"
+  git push
+else
+  # No changes
+  echo "no changes to latest posts"
+  exit 0
+fi

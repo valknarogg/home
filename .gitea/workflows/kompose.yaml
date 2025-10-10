@@ -14,14 +14,24 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./Projects/kompose
 
     steps:
     - uses: actions/checkout@v4
-    - name: Sync Respository
+      with:
+        path: home
+    - uses: actions/checkout@v4
+      with:
+        repository: valknarogg/kompose
+        path: kompose
+    - name: Commit and push changes (if any)
+      shell: bash
+      env:
+        CI_COMMIT_MESSAGE: "repo: update kompose"
+        CI_COMMIT_AUTHOR: "technitz[bot]@valknar/kompose
+        CI_COMMIT_EMAIL: admin@pivoine.art
       run: |
-        mkdir -p ~/.ssh/
-        ssh-keyscan host.docker.internal --port=2222 >> ~/.ssh/known_hosts
-        ${{ github.workspace }}/.init/bin/mirror_project.sh $SYNC_TARGET '${{ github.event.head_commit.message }}' ${{ runner.temp }}/kompose  
+        cd kompose
+        git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
+        git config --global user.email "${{ env.CI_COMMIT_EMAIL }}"
+
+        ${{ github.workspace }}/.init/bin/mirror_project.sh '${{ github.event.head_commit.message }}' ../home  
