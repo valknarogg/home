@@ -27,7 +27,7 @@ jobs:
       shell: bash
       env:
         CI_COMMIT_MESSAGE: "repo: update kompose"
-        CI_COMMIT_AUTHOR: "technitz[bot]@valknar/kompose
+        CI_COMMIT_AUTHOR: technitz[bot]@valknar/kompose
         CI_COMMIT_EMAIL: admin@pivoine.art
       run: |
         cd kompose
