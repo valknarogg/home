@@ -1,4 +1,4 @@
-import { app } from "@src/app"
-import superTest from "supertest"
+import { app } from "@src/app";
+import superTest from "supertest";
 
-export const request = superTest(app)
+export const request = superTest(app);

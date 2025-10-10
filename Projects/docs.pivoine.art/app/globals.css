@@ -1,18 +1,19 @@
 @import "tailwindcss";
 
 @theme {
-  /* Custom animations */
-  --animate-pulse: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-  
-  /* Custom keyframes for pulse */
-  @keyframes pulse {
-    0%, 100% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.5;
-    }
-  }
+	/* Custom animations */
+	--animate-pulse: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+	/* Custom keyframes for pulse */
+	@keyframes pulse {
+		0%,
+		100% {
+			opacity: 1;
+		}
+		50% {
+			opacity: 0.5;
+		}
+	}
 }
 
 @layer base {
@@ -30,18 +31,18 @@
 
 /* Custom scrollbar styling */
 ::-webkit-scrollbar {
-  width: 10px;
+	width: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: rgb(17 24 39);
+	background: rgb(17 24 39);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgb(139 92 246);
-  border-radius: 5px;
+	background: rgb(139 92 246);
+	border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgb(167 139 250);
+	background: rgb(167 139 250);
 }

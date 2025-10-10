@@ -2,5 +2,5 @@
 /* eslint-disable */
 import { makeTypedQueryFactory as $mkFactory } from "../runtime/edge.js";
 export const countDistinctRecipientsInTimeRange = /*#__PURE__*/ $mkFactory(
-  'SELECT COUNT(DISTINCT "subscriberId")\nFROM "Message" m\nJOIN "Campaign" c ON m."campaignId" = c.id\nWHERE c."organizationId" = $1\nAND m."createdAt" >= $2\nAND m."createdAt" <= $3;',
+	'SELECT COUNT(DISTINCT "subscriberId")\nFROM "Message" m\nJOIN "Campaign" c ON m."campaignId" = c.id\nWHERE c."organizationId" = $1\nAND m."createdAt" >= $2\nAND m."createdAt" <= $3;',
 );

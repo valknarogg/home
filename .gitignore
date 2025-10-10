@@ -34,6 +34,7 @@
 !.zshenv
 !.hushlogin
 !.last_pwd
+!biome.json
 
 !/.github/
 !/.github/**

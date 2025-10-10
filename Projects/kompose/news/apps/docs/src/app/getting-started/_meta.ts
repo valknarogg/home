@@ -1,7 +1,7 @@
-import type { MetaRecord } from "nextra"
+import type { MetaRecord } from "nextra";
 
 const meta: MetaRecord = {
-  configuration: "Configuration",
-}
+	configuration: "Configuration",
+};
 
-export default meta
+export default meta;

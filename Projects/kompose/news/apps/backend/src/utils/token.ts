@@ -1,10 +1,10 @@
-import { z } from "zod"
+import { z } from "zod";
 
 export const tokenPayloadSchema = z.object({
-  id: z.string(),
-  version: z.number(),
-  iat: z.number(),
-  exp: z.number(),
-})
+	id: z.string(),
+	version: z.number(),
+	iat: z.number(),
+	exp: z.number(),
+});
 
-export type TokenPayload = z.infer<typeof tokenPayloadSchema>
+export type TokenPayload = z.infer<typeof tokenPayloadSchema>;

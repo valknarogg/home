@@ -1,5 +1,5 @@
 {
-  "devDependencies": {
-    "@electron/asar": "^3.2.1"
-  }
+	"devDependencies": {
+		"@electron/asar": "^3.2.1"
+	}
 }

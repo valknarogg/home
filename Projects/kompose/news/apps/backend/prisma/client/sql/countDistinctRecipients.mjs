@@ -2,5 +2,5 @@
 /* eslint-disable */
 import { makeTypedQueryFactory as $mkFactory } from "../runtime/library";
 export const countDistinctRecipients = /*#__PURE__*/ $mkFactory(
-  'SELECT COUNT(DISTINCT "subscriberId")\nFROM "Message" m\nJOIN "Campaign" c ON m."campaignId" = c.id\nWHERE c."organizationId" = $1;',
+	'SELECT COUNT(DISTINCT "subscriberId")\nFROM "Message" m\nJOIN "Campaign" c ON m."campaignId" = c.id\nWHERE c."organizationId" = $1;',
 );

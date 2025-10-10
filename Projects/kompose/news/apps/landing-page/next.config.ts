@@ -1,9 +1,9 @@
 // To throw error if any env variable is not defined
-import "./src/constants"
-import type { NextConfig } from "next"
+import "./src/constants";
+import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-}
+	/* config options here */
+};
 
-export default nextConfig
+export default nextConfig;

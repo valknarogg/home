@@ -9,8 +9,7 @@
 		"build:frontend": "git pull && pnpm install && pnpm --filter @sexy.pivoine.art/frontend build",
 		"dev:data": "cd ../compose/data && docker compose up -d",
 		"dev:directus": "cd ../compose/sexy && docker compose --env-file=.env.local up -d directus",
-		"dev": "pnpm dev:data && pnpm dev:directus && pnpm --filter @sexy.pivoine.art/frontend dev",
-		"format": "biome format --write"
+		"dev": "pnpm dev:data && pnpm dev:directus && pnpm --filter @sexy.pivoine.art/frontend dev"
 	},
 	"keywords": [],
 	"author": "",
@@ -25,8 +24,5 @@
 			"@tailwindcss/oxide",
 			"node-sass"
 		]
-	},
-	"devDependencies": {
-		"@biomejs/biome": "2.2.4"
 	}
 }

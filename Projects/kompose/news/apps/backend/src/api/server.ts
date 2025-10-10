@@ -1,17 +1,17 @@
-import express from "express"
-import { prisma } from "../utils/prisma"
-import { authenticateApiKey } from "./middleware"
-import { z } from "zod"
-import { Prisma } from "../../prisma/client"
-import crypto from "crypto"
-import { Mailer } from "../lib/Mailer"
-import fs from "fs/promises"
-import path from "path"
-import dayjs from "dayjs"
+import express from "express";
+import { prisma } from "../utils/prisma";
+import { authenticateApiKey } from "./middleware";
+import { z } from "zod";
+import { Prisma } from "../../prisma/client";
+import crypto from "crypto";
+import { Mailer } from "../lib/Mailer";
+import fs from "fs/promises";
+import path from "path";
+import dayjs from "dayjs";
 
-export const apiRouter = express.Router()
+export const apiRouter = express.Router();
 
-apiRouter.use(authenticateApiKey)
+apiRouter.use(authenticateApiKey);
 
 /**
  * @swagger
@@ -110,329 +110,331 @@ apiRouter.use(authenticateApiKey)
  *         description: Unauthorized - Invalid or missing API key
  */
 apiRouter.post("/subscribers", async (req, res) => {
-  try {
-    const { data: body, error: validationError } = z
-      .object({
-        email: z
-          .string()
-          .min(1, "Email is required")
-          .email("Invalid email format"),
-        name: z.string().optional(),
-        lists: z.array(z.string()).min(1, "At least one listId is required"),
-        doubleOptIn: z.boolean().optional(),
-        emailVerified: z.boolean().optional(),
-        metadata: z.record(z.string(), z.string()).optional(),
-      })
-      .safeParse(req.body)
+	try {
+		const { data: body, error: validationError } = z
+			.object({
+				email: z
+					.string()
+					.min(1, "Email is required")
+					.email("Invalid email format"),
+				name: z.string().optional(),
+				lists: z.array(z.string()).min(1, "At least one listId is required"),
+				doubleOptIn: z.boolean().optional(),
+				emailVerified: z.boolean().optional(),
+				metadata: z.record(z.string(), z.string()).optional(),
+			})
+			.safeParse(req.body);
 
-    if (validationError) {
-      res.status(400).json({
-        error: validationError.issues[0]?.message || "Invalid input data",
-      })
-      return
-    }
+		if (validationError) {
+			res.status(400).json({
+				error: validationError.issues[0]?.message || "Invalid input data",
+			});
+			return;
+		}
 
-    const {
-      email,
-      name,
-      lists,
-      doubleOptIn,
-      emailVerified,
-      metadata: newMetadata,
-    } = body
+		const {
+			email,
+			name,
+			lists,
+			doubleOptIn,
+			emailVerified,
+			metadata: newMetadata,
+		} = body;
 
-    const existingLists = await prisma.list.findMany({
-      where: {
-        id: {
-          in: lists,
-        },
-        organizationId: req.organization.id,
-      },
-    })
+		const existingLists = await prisma.list.findMany({
+			where: {
+				id: {
+					in: lists,
+				},
+				organizationId: req.organization.id,
+			},
+		});
 
-    if (existingLists.length !== lists.length) {
-      const foundListIds = existingLists.map((list) => list.id)
-      const missingListId = lists.find((id) => !foundListIds.includes(id))
-      res.status(400).json({ error: `List with id ${missingListId} not found` })
-      return
-    }
+		if (existingLists.length !== lists.length) {
+			const foundListIds = existingLists.map((list) => list.id);
+			const missingListId = lists.find((id) => !foundListIds.includes(id));
+			res
+				.status(400)
+				.json({ error: `List with id ${missingListId} not found` });
+			return;
+		}
 
-    const existingSubscriber = await prisma.subscriber.findFirst({
-      where: {
-        email,
-        organizationId: req.organization.id,
-      },
-      include: {
-        ListSubscribers: {
-          include: {
-            List: true,
-          },
-        },
-        Metadata: true,
-      },
-    })
+		const existingSubscriber = await prisma.subscriber.findFirst({
+			where: {
+				email,
+				organizationId: req.organization.id,
+			},
+			include: {
+				ListSubscribers: {
+					include: {
+						List: true,
+					},
+				},
+				Metadata: true,
+			},
+		});
 
-    const existingListIds =
-      existingSubscriber?.ListSubscribers.map((list) => list.List.id) || []
-    const allLists = existingListIds.concat(lists)
+		const existingListIds =
+			existingSubscriber?.ListSubscribers.map((list) => list.List.id) || [];
+		const allLists = existingListIds.concat(lists);
 
-    const uniqueLists = [...new Set(allLists)]
+		const uniqueLists = [...new Set(allLists)];
 
-    const isExpired = existingSubscriber?.emailVerificationTokenExpiresAt
-      ? dayjs(existingSubscriber.emailVerificationTokenExpiresAt).isBefore(
-          dayjs()
-        )
-      : true
+		const isExpired = existingSubscriber?.emailVerificationTokenExpiresAt
+			? dayjs(existingSubscriber.emailVerificationTokenExpiresAt).isBefore(
+					dayjs(),
+				)
+			: true;
 
-    const shouldSendVerificationEmail =
-      doubleOptIn && !existingSubscriber?.emailVerified && isExpired
+		const shouldSendVerificationEmail =
+			doubleOptIn && !existingSubscriber?.emailVerified && isExpired;
 
-    if (shouldSendVerificationEmail) {
-      const emailVerificationToken = crypto.randomBytes(32).toString("hex")
-      const emailVerificationTokenExpiresAt = dayjs().add(24, "hours").toDate()
-      const emailVerified = false
+		if (shouldSendVerificationEmail) {
+			const emailVerificationToken = crypto.randomBytes(32).toString("hex");
+			const emailVerificationTokenExpiresAt = dayjs().add(24, "hours").toDate();
+			const emailVerified = false;
 
-      try {
-        const smtpSettings = await prisma.smtpSettings.findFirst({
-          where: { organizationId: req.organization.id },
-        })
+			try {
+				const smtpSettings = await prisma.smtpSettings.findFirst({
+					where: { organizationId: req.organization.id },
+				});
 
-        if (!smtpSettings) {
-          console.error(
-            `SMTP settings not found for organization ${req.organization.id}.`
-          )
-          res.status(422).json({
-            error:
-              "SMTP settings not configured for this organization. Cannot send verification email.",
-          })
-          return
-        }
+				if (!smtpSettings) {
+					console.error(
+						`SMTP settings not found for organization ${req.organization.id}.`,
+					);
+					res.status(422).json({
+						error:
+							"SMTP settings not configured for this organization. Cannot send verification email.",
+					});
+					return;
+				}
 
-        const generalSettings = await prisma.generalSettings.findFirst({
-          where: { organizationId: req.organization.id },
-        })
+				const generalSettings = await prisma.generalSettings.findFirst({
+					where: { organizationId: req.organization.id },
+				});
 
-        if (!generalSettings || !generalSettings.baseURL) {
-          console.error(
-            `General settings (especially baseURL) not found for organization ${req.organization.id}.`
-          )
-          res.status(422).json({
-            error:
-              "Base URL not configured in general settings for this organization. Cannot send verification email.",
-          })
-          return
-        }
+				if (!generalSettings || !generalSettings.baseURL) {
+					console.error(
+						`General settings (especially baseURL) not found for organization ${req.organization.id}.`,
+					);
+					res.status(422).json({
+						error:
+							"Base URL not configured in general settings for this organization. Cannot send verification email.",
+					});
+					return;
+				}
 
-        const fromEmailAddress =
-          smtpSettings.fromEmail || generalSettings.defaultFromEmail
-        if (!fromEmailAddress) {
-          console.error(
-            `Sender email (fromEmail/defaultFromEmail) not configured for organization ${req.organization.id}.`
-          )
-          res.status(422).json({
-            error:
-              "Sender email not configured for this organization. Cannot send verification email.",
-          })
-          return
-        }
+				const fromEmailAddress =
+					smtpSettings.fromEmail || generalSettings.defaultFromEmail;
+				if (!fromEmailAddress) {
+					console.error(
+						`Sender email (fromEmail/defaultFromEmail) not configured for organization ${req.organization.id}.`,
+					);
+					res.status(422).json({
+						error:
+							"Sender email not configured for this organization. Cannot send verification email.",
+					});
+					return;
+				}
 
-        const mailer = new Mailer(smtpSettings)
-        const verificationLink = `${generalSettings.baseURL.replace(/\/$/, "")}/verify-email?token=${emailVerificationToken}`
+				const mailer = new Mailer(smtpSettings);
+				const verificationLink = `${generalSettings.baseURL.replace(/\/$/, "")}/verify-email?token=${emailVerificationToken}`;
 
-        const templatePath = path.join(
-          __dirname,
-          "../../templates/verificationEmail.html"
-        )
-        let emailHtmlContent = await fs.readFile(templatePath, "utf-8")
+				const templatePath = path.join(
+					__dirname,
+					"../../templates/verificationEmail.html",
+				);
+				let emailHtmlContent = await fs.readFile(templatePath, "utf-8");
 
-        emailHtmlContent = emailHtmlContent
-          .replace(/{{name}}/g, name || "there")
-          .replace(/{{verificationLink}}/g, verificationLink)
-          .replace(/{{currentYear}}/g, new Date().getFullYear().toString())
+				emailHtmlContent = emailHtmlContent
+					.replace(/{{name}}/g, name || "there")
+					.replace(/{{verificationLink}}/g, verificationLink)
+					.replace(/{{currentYear}}/g, new Date().getFullYear().toString());
 
-        await mailer.sendEmail({
-          to: email,
-          from: fromEmailAddress,
-          subject: "Verify Your Email Address",
-          html: emailHtmlContent,
-        })
+				await mailer.sendEmail({
+					to: email,
+					from: fromEmailAddress,
+					subject: "Verify Your Email Address",
+					html: emailHtmlContent,
+				});
 
-        const subscriber = await prisma.subscriber.upsert({
-          where: { id: existingSubscriber?.id || "create" },
-          update: {
-            emailVerificationToken,
-            emailVerificationTokenExpiresAt,
-            emailVerified,
-            ListSubscribers: {
-              deleteMany: {},
-              create: uniqueLists.map((listId: string) => ({
-                List: { connect: { id: listId } },
-              })),
-            },
-            Metadata: newMetadata
-              ? {
-                  deleteMany: {},
-                  create: Object.entries(newMetadata).map(([key, value]) => ({
-                    key,
-                    value,
-                  })),
-                }
-              : undefined,
-          },
-          create: {
-            email,
-            name,
-            organizationId: req.organization.id,
-            emailVerified,
-            emailVerificationToken,
-            emailVerificationTokenExpiresAt,
-            ListSubscribers: {
-              create: uniqueLists.map((listId: string) => ({
-                List: { connect: { id: listId } },
-              })),
-            },
-            Metadata: newMetadata
-              ? {
-                  create: Object.entries(newMetadata).map(([key, value]) => ({
-                    key,
-                    value,
-                  })),
-                }
-              : undefined,
-          },
-          select: {
-            id: true,
-            email: true,
-            name: true,
-            ListSubscribers: { include: { List: true } },
-            Metadata: true,
-            emailVerified: true,
-            createdAt: true,
-            updatedAt: true,
-          },
-        })
+				const subscriber = await prisma.subscriber.upsert({
+					where: { id: existingSubscriber?.id || "create" },
+					update: {
+						emailVerificationToken,
+						emailVerificationTokenExpiresAt,
+						emailVerified,
+						ListSubscribers: {
+							deleteMany: {},
+							create: uniqueLists.map((listId: string) => ({
+								List: { connect: { id: listId } },
+							})),
+						},
+						Metadata: newMetadata
+							? {
+									deleteMany: {},
+									create: Object.entries(newMetadata).map(([key, value]) => ({
+										key,
+										value,
+									})),
+								}
+							: undefined,
+					},
+					create: {
+						email,
+						name,
+						organizationId: req.organization.id,
+						emailVerified,
+						emailVerificationToken,
+						emailVerificationTokenExpiresAt,
+						ListSubscribers: {
+							create: uniqueLists.map((listId: string) => ({
+								List: { connect: { id: listId } },
+							})),
+						},
+						Metadata: newMetadata
+							? {
+									create: Object.entries(newMetadata).map(([key, value]) => ({
+										key,
+										value,
+									})),
+								}
+							: undefined,
+					},
+					select: {
+						id: true,
+						email: true,
+						name: true,
+						ListSubscribers: { include: { List: true } },
+						Metadata: true,
+						emailVerified: true,
+						createdAt: true,
+						updatedAt: true,
+					},
+				});
 
-        const data = {
-          id: subscriber.id,
-          email: subscriber.email,
-          name: subscriber.name,
-          lists: subscriber.ListSubscribers.map((list) => ({
-            id: list.List.id,
-            name: list.List.name,
-            description: list.List.description,
-          })),
-          metadata: subscriber.Metadata.reduce(
-            (acc, meta) => {
-              acc[meta.key] = meta.value
-              return acc
-            },
-            {} as Record<string, string>
-          ),
-          emailVerified: subscriber.emailVerified,
-          createdAt: subscriber.createdAt,
-          updatedAt: subscriber.updatedAt,
-        }
+				const data = {
+					id: subscriber.id,
+					email: subscriber.email,
+					name: subscriber.name,
+					lists: subscriber.ListSubscribers.map((list) => ({
+						id: list.List.id,
+						name: list.List.name,
+						description: list.List.description,
+					})),
+					metadata: subscriber.Metadata.reduce(
+						(acc, meta) => {
+							acc[meta.key] = meta.value;
+							return acc;
+						},
+						{} as Record<string, string>,
+					),
+					emailVerified: subscriber.emailVerified,
+					createdAt: subscriber.createdAt,
+					updatedAt: subscriber.updatedAt,
+				};
 
-        console.log("data", data)
+				console.log("data", data);
 
-        res.status(201).json(data)
-        return
-      } catch (emailError: any) {
-        console.error(
-          `Error sending verification email to ${email}:`,
-          emailError
-        )
-        res.status(422).json({
-          error: `Failed to send verification email: ${emailError.message || "Unknown reason"}`,
-        })
-        return
-      }
-    }
+				res.status(201).json(data);
+				return;
+			} catch (emailError: any) {
+				console.error(
+					`Error sending verification email to ${email}:`,
+					emailError,
+				);
+				res.status(422).json({
+					error: `Failed to send verification email: ${emailError.message || "Unknown reason"}`,
+				});
+				return;
+			}
+		}
 
-    const subscriber = await prisma.subscriber.upsert({
-      where: {
-        id: existingSubscriber?.id || "create",
-      },
-      update: {
-        email,
-        name,
-        emailVerified,
-        ListSubscribers: {
-          deleteMany: {},
-          create: uniqueLists.map((listId: string) => ({
-            List: { connect: { id: listId } },
-          })),
-        },
-        Metadata: newMetadata
-          ? {
-              deleteMany: {},
-              create: Object.entries(newMetadata).map(([key, value]) => ({
-                key,
-                value,
-              })),
-            }
-          : undefined,
-      },
-      create: {
-        email,
-        name,
-        organizationId: req.organization.id,
-        emailVerified,
-        ListSubscribers: {
-          create: uniqueLists.map((listId: string) => ({
-            List: {
-              connect: {
-                id: listId,
-              },
-            },
-          })),
-        },
-        Metadata: newMetadata
-          ? {
-              create: Object.entries(newMetadata).map(([key, value]) => ({
-                key,
-                value,
-              })),
-            }
-          : undefined,
-      },
-      include: {
-        ListSubscribers: {
-          include: {
-            List: true,
-          },
-        },
-        Metadata: true,
-      },
-    })
+		const subscriber = await prisma.subscriber.upsert({
+			where: {
+				id: existingSubscriber?.id || "create",
+			},
+			update: {
+				email,
+				name,
+				emailVerified,
+				ListSubscribers: {
+					deleteMany: {},
+					create: uniqueLists.map((listId: string) => ({
+						List: { connect: { id: listId } },
+					})),
+				},
+				Metadata: newMetadata
+					? {
+							deleteMany: {},
+							create: Object.entries(newMetadata).map(([key, value]) => ({
+								key,
+								value,
+							})),
+						}
+					: undefined,
+			},
+			create: {
+				email,
+				name,
+				organizationId: req.organization.id,
+				emailVerified,
+				ListSubscribers: {
+					create: uniqueLists.map((listId: string) => ({
+						List: {
+							connect: {
+								id: listId,
+							},
+						},
+					})),
+				},
+				Metadata: newMetadata
+					? {
+							create: Object.entries(newMetadata).map(([key, value]) => ({
+								key,
+								value,
+							})),
+						}
+					: undefined,
+			},
+			include: {
+				ListSubscribers: {
+					include: {
+						List: true,
+					},
+				},
+				Metadata: true,
+			},
+		});
 
-    const data = {
-      id: subscriber.id,
-      email: subscriber.email,
-      name: subscriber.name,
-      lists: subscriber.ListSubscribers.map((list) => ({
-        id: list.List.id,
-        name: list.List.name,
-        description: list.List.description,
-      })),
-      metadata: subscriber.Metadata.reduce(
-        (acc, meta) => {
-          acc[meta.key] = meta.value
-          return acc
-        },
-        {} as Record<string, string>
-      ),
-      emailVerified: subscriber.emailVerified,
-      createdAt: subscriber.createdAt,
-      updatedAt: subscriber.updatedAt,
-    }
+		const data = {
+			id: subscriber.id,
+			email: subscriber.email,
+			name: subscriber.name,
+			lists: subscriber.ListSubscribers.map((list) => ({
+				id: list.List.id,
+				name: list.List.name,
+				description: list.List.description,
+			})),
+			metadata: subscriber.Metadata.reduce(
+				(acc, meta) => {
+					acc[meta.key] = meta.value;
+					return acc;
+				},
+				{} as Record<string, string>,
+			),
+			emailVerified: subscriber.emailVerified,
+			createdAt: subscriber.createdAt,
+			updatedAt: subscriber.updatedAt,
+		};
 
-    res.status(201).json(data)
-  } catch (error) {
-    console.error("Error creating subscriber", error)
-    res.status(500).json({ error: "Server error" })
-  }
-})
+		res.status(201).json(data);
+	} catch (error) {
+		console.error("Error creating subscriber", error);
+		res.status(500).json({ error: "Server error" });
+	}
+});
 
 /**
  * @swagger
@@ -486,139 +488,139 @@ apiRouter.post("/subscribers", async (req, res) => {
  *         description: Subscriber not found
  */
 apiRouter.put("/subscribers/:id", async (req, res) => {
-  try {
-    const { data: body, error } = z
-      .object({
-        email: z.string().email().optional(),
-        name: z.string().optional(),
-        lists: z
-          .array(z.string())
-          .min(1, "At least one listId is required")
-          .optional(),
-        metadata: z.record(z.string(), z.string()).optional(),
-        emailVerified: z.boolean().optional(),
-      })
-      .safeParse(req.body)
+	try {
+		const { data: body, error } = z
+			.object({
+				email: z.string().email().optional(),
+				name: z.string().optional(),
+				lists: z
+					.array(z.string())
+					.min(1, "At least one listId is required")
+					.optional(),
+				metadata: z.record(z.string(), z.string()).optional(),
+				emailVerified: z.boolean().optional(),
+			})
+			.safeParse(req.body);
 
-    if (error) {
-      res
-        .status(400)
-        .json({ error: error.issues[0]?.message || "Invalid input data" })
-      return
-    }
+		if (error) {
+			res
+				.status(400)
+				.json({ error: error.issues[0]?.message || "Invalid input data" });
+			return;
+		}
 
-    const { email, name, lists, metadata: newMetadata, emailVerified } = body
+		const { email, name, lists, metadata: newMetadata, emailVerified } = body;
 
-    const id = req.params.id
+		const id = req.params.id;
 
-    if (typeof id !== "string") {
-      res.status(400).json({ error: "Invalid id" })
-      return
-    }
+		if (typeof id !== "string") {
+			res.status(400).json({ error: "Invalid id" });
+			return;
+		}
 
-    const subscriber = await prisma.subscriber.findFirst({
-      where: {
-        id,
-        organizationId: req.organization.id,
-      },
-      include: {
-        ListSubscribers: {
-          include: {
-            List: true,
-          },
-        },
-        Metadata: true,
-      },
-    })
-    if (!subscriber) {
-      res.status(404).json({ error: "Subscriber not found" })
-      return
-    }
+		const subscriber = await prisma.subscriber.findFirst({
+			where: {
+				id,
+				organizationId: req.organization.id,
+			},
+			include: {
+				ListSubscribers: {
+					include: {
+						List: true,
+					},
+				},
+				Metadata: true,
+			},
+		});
+		if (!subscriber) {
+			res.status(404).json({ error: "Subscriber not found" });
+			return;
+		}
 
-    if (lists?.length) {
-      const existingLists = await prisma.list.findMany({
-        where: {
-          id: {
-            in: lists,
-          },
-          organizationId: req.organization.id,
-        },
-      })
+		if (lists?.length) {
+			const existingLists = await prisma.list.findMany({
+				where: {
+					id: {
+						in: lists,
+					},
+					organizationId: req.organization.id,
+				},
+			});
 
-      if (existingLists.length !== lists.length) {
-        const foundListIds = existingLists.map((list) => list.id)
-        const missingListId = lists.find((id) => !foundListIds.includes(id))
-        res
-          .status(400)
-          .json({ error: `List with id ${missingListId} not found` })
-        return
-      }
-    }
+			if (existingLists.length !== lists.length) {
+				const foundListIds = existingLists.map((list) => list.id);
+				const missingListId = lists.find((id) => !foundListIds.includes(id));
+				res
+					.status(400)
+					.json({ error: `List with id ${missingListId} not found` });
+				return;
+			}
+		}
 
-    const updatedSubscriber = await prisma.subscriber.update({
-      where: {
-        id,
-      },
-      data: {
-        email,
-        name,
-        emailVerified,
-        ListSubscribers: lists?.length
-          ? {
-              deleteMany: {},
-              create: Array.isArray(lists)
-                ? lists.map((listId: string) => ({
-                    List: { connect: { id: listId } },
-                  }))
-                : [],
-            }
-          : undefined,
-        Metadata: newMetadata
-          ? {
-              deleteMany: {},
-              create: Object.entries(newMetadata).map(([key, value]) => ({
-                key,
-                value,
-              })),
-            }
-          : undefined,
-      },
-      include: {
-        ListSubscribers: {
-          include: {
-            List: true,
-          },
-        },
-        Metadata: true,
-      },
-    })
+		const updatedSubscriber = await prisma.subscriber.update({
+			where: {
+				id,
+			},
+			data: {
+				email,
+				name,
+				emailVerified,
+				ListSubscribers: lists?.length
+					? {
+							deleteMany: {},
+							create: Array.isArray(lists)
+								? lists.map((listId: string) => ({
+										List: { connect: { id: listId } },
+									}))
+								: [],
+						}
+					: undefined,
+				Metadata: newMetadata
+					? {
+							deleteMany: {},
+							create: Object.entries(newMetadata).map(([key, value]) => ({
+								key,
+								value,
+							})),
+						}
+					: undefined,
+			},
+			include: {
+				ListSubscribers: {
+					include: {
+						List: true,
+					},
+				},
+				Metadata: true,
+			},
+		});
 
-    const data = {
-      id: updatedSubscriber.id,
-      email: updatedSubscriber.email,
-      name: updatedSubscriber.name,
-      lists: updatedSubscriber.ListSubscribers.map((list) => ({
-        id: list.List.id,
-        name: list.List.name,
-        description: list.List.description,
-      })),
-      metadata: updatedSubscriber.Metadata.reduce(
-        (acc, meta) => {
-          acc[meta.key] = meta.value
-          return acc
-        },
-        {} as Record<string, string>
-      ),
-      createdAt: updatedSubscriber.createdAt,
-      updatedAt: updatedSubscriber.updatedAt,
-    }
+		const data = {
+			id: updatedSubscriber.id,
+			email: updatedSubscriber.email,
+			name: updatedSubscriber.name,
+			lists: updatedSubscriber.ListSubscribers.map((list) => ({
+				id: list.List.id,
+				name: list.List.name,
+				description: list.List.description,
+			})),
+			metadata: updatedSubscriber.Metadata.reduce(
+				(acc, meta) => {
+					acc[meta.key] = meta.value;
+					return acc;
+				},
+				{} as Record<string, string>,
+			),
+			createdAt: updatedSubscriber.createdAt,
+			updatedAt: updatedSubscriber.updatedAt,
+		};
 
-    res.json(data)
-  } catch (error) {
-    console.error("Error updating subscriber", error)
-    res.status(500).json({ error: "Server error" })
-  }
-})
+		res.json(data);
+	} catch (error) {
+		console.error("Error updating subscriber", error);
+		res.status(500).json({ error: "Server error" });
+	}
+});
 
 /**
  * @swagger
@@ -654,38 +656,38 @@ apiRouter.put("/subscribers/:id", async (req, res) => {
  *         description: Subscriber not found
  */
 apiRouter.delete("/subscribers/:id", async (req, res) => {
-  try {
-    const { id } = req.params
+	try {
+		const { id } = req.params;
 
-    if (typeof id !== "string") {
-      res.status(400).json({ error: "Invalid id" })
-      return
-    }
+		if (typeof id !== "string") {
+			res.status(400).json({ error: "Invalid id" });
+			return;
+		}
 
-    const subscriber = await prisma.subscriber.findFirst({
-      where: {
-        id,
-        organizationId: req.organization.id,
-      },
-    })
+		const subscriber = await prisma.subscriber.findFirst({
+			where: {
+				id,
+				organizationId: req.organization.id,
+			},
+		});
 
-    if (!subscriber) {
-      res.status(404).json({ error: "Subscriber not found" })
-      return
-    }
+		if (!subscriber) {
+			res.status(404).json({ error: "Subscriber not found" });
+			return;
+		}
 
-    await prisma.subscriber.delete({
-      where: {
-        id,
-      },
-    })
+		await prisma.subscriber.delete({
+			where: {
+				id,
+			},
+		});
 
-    res.json({ success: true })
-  } catch (error) {
-    console.error("Error deleting subscriber", error)
-    res.status(500).json({ error: "Server error" })
-  }
-})
+		res.json({ success: true });
+	} catch (error) {
+		console.error("Error deleting subscriber", error);
+		res.status(500).json({ error: "Server error" });
+	}
+});
 
 /**
  * @swagger
@@ -718,60 +720,60 @@ apiRouter.delete("/subscribers/:id", async (req, res) => {
  *         description: Subscriber not found
  */
 apiRouter.get("/subscribers/:id", async (req, res) => {
-  try {
-    const { id } = req.params
+	try {
+		const { id } = req.params;
 
-    if (typeof id !== "string") {
-      res.status(400).json({ error: "Invalid id" })
-      return
-    }
+		if (typeof id !== "string") {
+			res.status(400).json({ error: "Invalid id" });
+			return;
+		}
 
-    const subscriber = await prisma.subscriber.findFirst({
-      where: {
-        id,
-        organizationId: req.organization.id,
-      },
-      include: {
-        ListSubscribers: { include: { List: true } },
-        Messages: {
-          orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-          take: 10,
-        },
-        Metadata: true,
-      },
-      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-    })
-    if (!subscriber) {
-      res.status(404).json({ error: "Subscriber not found" })
-      return
-    }
+		const subscriber = await prisma.subscriber.findFirst({
+			where: {
+				id,
+				organizationId: req.organization.id,
+			},
+			include: {
+				ListSubscribers: { include: { List: true } },
+				Messages: {
+					orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+					take: 10,
+				},
+				Metadata: true,
+			},
+			orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+		});
+		if (!subscriber) {
+			res.status(404).json({ error: "Subscriber not found" });
+			return;
+		}
 
-    const subscriberData = {
-      id: subscriber.id,
-      email: subscriber.email,
-      name: subscriber.name,
-      lists: subscriber.ListSubscribers.map((list) => ({
-        id: list.List.id,
-        name: list.List.name,
-        description: list.List.description,
-      })),
-      metadata: subscriber.Metadata.reduce(
-        (acc, meta) => {
-          acc[meta.key] = meta.value
-          return acc
-        },
-        {} as Record<string, string>
-      ),
-      createdAt: subscriber.createdAt,
-      updatedAt: subscriber.updatedAt,
-    }
+		const subscriberData = {
+			id: subscriber.id,
+			email: subscriber.email,
+			name: subscriber.name,
+			lists: subscriber.ListSubscribers.map((list) => ({
+				id: list.List.id,
+				name: list.List.name,
+				description: list.List.description,
+			})),
+			metadata: subscriber.Metadata.reduce(
+				(acc, meta) => {
+					acc[meta.key] = meta.value;
+					return acc;
+				},
+				{} as Record<string, string>,
+			),
+			createdAt: subscriber.createdAt,
+			updatedAt: subscriber.updatedAt,
+		};
 
-    res.json(subscriberData)
-  } catch (error) {
-    console.error("Error fetching subscriber", error)
-    res.status(500).json({ error: "Server error" })
-  }
-})
+		res.json(subscriberData);
+	} catch (error) {
+		console.error("Error fetching subscriber", error);
+		res.status(500).json({ error: "Server error" });
+	}
+});
 
 /**
  * @swagger
@@ -834,97 +836,97 @@ apiRouter.get("/subscribers/:id", async (req, res) => {
  *         description: Unauthorized - Invalid or missing API key
  */
 apiRouter.get("/subscribers", async (req, res) => {
-  try {
-    const { data: query, error } = z
-      .object({
-        page: z
-          .string()
-          .optional()
-          .default("1")
-          .transform(Number)
-          .refine((val) => val > 0, "Invalid page number"),
-        perPage: z
-          .string()
-          .optional()
-          .default("100")
-          .transform(Number)
-          .refine((val) => val > 0, "Invalid perPage number"),
-        emailEquals: z.string().optional(),
-        nameEquals: z.string().optional(),
-      })
-      .safeParse(req.query)
+	try {
+		const { data: query, error } = z
+			.object({
+				page: z
+					.string()
+					.optional()
+					.default("1")
+					.transform(Number)
+					.refine((val) => val > 0, "Invalid page number"),
+				perPage: z
+					.string()
+					.optional()
+					.default("100")
+					.transform(Number)
+					.refine((val) => val > 0, "Invalid perPage number"),
+				emailEquals: z.string().optional(),
+				nameEquals: z.string().optional(),
+			})
+			.safeParse(req.query);
 
-    if (error) {
-      res
-        .status(400)
-        .json({ error: error.issues[0]?.message || "Invalid input data" })
-      return
-    }
+		if (error) {
+			res
+				.status(400)
+				.json({ error: error.issues[0]?.message || "Invalid input data" });
+			return;
+		}
 
-    const { page, perPage, emailEquals, nameEquals } = query
+		const { page, perPage, emailEquals, nameEquals } = query;
 
-    const where: Prisma.SubscriberWhereInput = {
-      organizationId: req.organization.id,
-    }
+		const where: Prisma.SubscriberWhereInput = {
+			organizationId: req.organization.id,
+		};
 
-    if (emailEquals) {
-      where.email = { equals: emailEquals }
-    }
+		if (emailEquals) {
+			where.email = { equals: emailEquals };
+		}
 
-    if (nameEquals) {
-      where.name = { equals: nameEquals }
-    }
+		if (nameEquals) {
+			where.name = { equals: nameEquals };
+		}
 
-    const total = await prisma.subscriber.count({ where })
-    const subscribers = await prisma.subscriber.findMany({
-      where,
-      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-      skip: (page - 1) * perPage,
-      take: perPage,
-      include: {
-        ListSubscribers: {
-          include: {
-            List: true,
-          },
-        },
-        Metadata: true,
-      },
-    })
+		const total = await prisma.subscriber.count({ where });
+		const subscribers = await prisma.subscriber.findMany({
+			where,
+			orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+			skip: (page - 1) * perPage,
+			take: perPage,
+			include: {
+				ListSubscribers: {
+					include: {
+						List: true,
+					},
+				},
+				Metadata: true,
+			},
+		});
 
-    const totalPages = Math.ceil(total / perPage)
+		const totalPages = Math.ceil(total / perPage);
 
-    const subscribersFormatted = subscribers.map((subscriber) => ({
-      id: subscriber.id,
-      email: subscriber.email,
-      name: subscriber.name,
-      lists: subscriber.ListSubscribers.map((list) => ({
-        id: list.List.id,
-        name: list.List.name,
-        description: list.List.description,
-      })),
-      metadata: subscriber.Metadata.reduce(
-        (acc, meta) => {
-          acc[meta.key] = meta.value
-          return acc
-        },
-        {} as Record<string, string>
-      ),
-      createdAt: subscriber.createdAt,
-      updatedAt: subscriber.updatedAt,
-    }))
+		const subscribersFormatted = subscribers.map((subscriber) => ({
+			id: subscriber.id,
+			email: subscriber.email,
+			name: subscriber.name,
+			lists: subscriber.ListSubscribers.map((list) => ({
+				id: list.List.id,
+				name: list.List.name,
+				description: list.List.description,
+			})),
+			metadata: subscriber.Metadata.reduce(
+				(acc, meta) => {
+					acc[meta.key] = meta.value;
+					return acc;
+				},
+				{} as Record<string, string>,
+			),
+			createdAt: subscriber.createdAt,
+			updatedAt: subscriber.updatedAt,
+		}));
 
-    res.json({
-      data: subscribersFormatted,
-      pagination: {
-        total,
-        page,
-        perPage,
-        totalPages,
-        hasMore: page < totalPages,
-      },
-    })
-  } catch (error) {
-    console.error("Error fetching subscribers", error)
-    res.status(500).json({ error: "Server error" })
-  }
-})
+		res.json({
+			data: subscribersFormatted,
+			pagination: {
+				total,
+				page,
+				perPage,
+				totalPages,
+				hasMore: page < totalPages,
+			},
+		});
+	} catch (error) {
+		console.error("Error fetching subscribers", error);
+		res.status(500).json({ error: "Server error" });
+	}
+});

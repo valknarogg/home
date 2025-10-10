@@ -1,2 +1,2 @@
-export * from "./toastError"
-export * from "./date"
+export * from "./toastError";
+export * from "./date";

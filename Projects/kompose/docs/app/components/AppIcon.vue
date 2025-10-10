@@ -75,50 +75,50 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref } from "vue";
 
 interface Props {
-  size?: string
-  interactive?: boolean
+	size?: string;
+	interactive?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  size: '192px',
-  interactive: true
-})
+	size: "192px",
+	interactive: true,
+});
 
-const isClicked = ref(false)
-const showRipple = ref(false)
+const isClicked = ref(false);
+const showRipple = ref(false);
 
 const handleClick = () => {
-  if (!props.interactive) return
+	if (!props.interactive) return;
 
-  isClicked.value = true
-  showRipple.value = true
+	isClicked.value = true;
+	showRipple.value = true;
 
-  setTimeout(() => {
-    isClicked.value = false
-  }, 600)
+	setTimeout(() => {
+		isClicked.value = false;
+	}, 600);
 
-  setTimeout(() => {
-    showRipple.value = false
-  }, 800)
-}
+	setTimeout(() => {
+		showRipple.value = false;
+	}, 800);
+};
 
 const handleHover = () => {
-  if (!props.interactive) return
-  // Hover animations are handled by CSS
-}
+	if (!props.interactive) return;
+	// Hover animations are handled by CSS
+};
 
 const handleLeave = () => {
-  if (!props.interactive) return
-  // Leave animations are handled by CSS
-}
+	if (!props.interactive) return;
+	// Leave animations are handled by CSS
+};
 
 const handleTouch = (e: TouchEvent) => {
-  if (!props.interactive) return
-  handleClick()
-}
+	if (!props.interactive) return;
+	handleClick();
+};
 </script>
 
 <style scoped>

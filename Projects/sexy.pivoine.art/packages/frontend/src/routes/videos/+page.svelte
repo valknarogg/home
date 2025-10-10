@@ -1,66 +1,65 @@
 <script lang="ts">
-  import { _ } from 'svelte-i18n';
-  import { Button } from '$lib/components/ui/button';
-  import { Card, CardContent } from '$lib/components/ui/card';
-  import { Input } from '$lib/components/ui/input';
-  import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger
-  } from '$lib/components/ui/select';
-  import { getAssetUrl } from '$lib/directus';
-  import Meta from '$lib/components/meta/meta.svelte';
-  import TimeAgo from 'javascript-time-ago';
-  import { formatVideoDuration } from '$lib/utils';
+import { _ } from "svelte-i18n";
+import { Button } from "$lib/components/ui/button";
+import { Card, CardContent } from "$lib/components/ui/card";
+import { Input } from "$lib/components/ui/input";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+} from "$lib/components/ui/select";
+import { getAssetUrl } from "$lib/directus";
+import Meta from "$lib/components/meta/meta.svelte";
+import TimeAgo from "javascript-time-ago";
+import { formatVideoDuration } from "$lib/utils";
 
-  const timeAgo = new TimeAgo('en');
+const timeAgo = new TimeAgo("en");
 
-  let searchQuery = $state('');
-  let sortBy = $state('trending');
-  let categoryFilter = $state('all');
-  let durationFilter = $state('all');
+let searchQuery = $state("");
+let sortBy = $state("trending");
+let categoryFilter = $state("all");
+let durationFilter = $state("all");
 
-  const { data } = $props();
+const { data } = $props();
 
-  const filteredVideos = $derived(() => {
-    return data.videos
-      .filter((video) => {
-        const matchesSearch = video.title
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase());
-        //  ||
-        // video.model.toLowerCase().includes(searchQuery.toLowerCase());
-        const matchesCategory = categoryFilter === 'all';
-        const matchesDuration =
-          durationFilter === 'all' ||
-          (durationFilter === 'short' && video.movie.duration < 10 * 60) ||
-          (durationFilter === 'medium' &&
-            video.movie.duration >= 10 * 60 &&
-            video.movie.duration < 20 * 60) ||
-          (durationFilter === 'long' && video.movie.duration >= 20 * 60);
-        return matchesSearch && matchesCategory && matchesDuration;
-      })
-      .sort((a, b) => {
-        // if (sortBy === "trending")
-        //   return (
-        //     parseInt(b.views.replace(/[^\d]/g, "")) -
-        //     parseInt(a.views.replace(/[^\d]/g, ""))
-        //   );
-        if (sortBy === 'recent')
-          return (
-            new Date(b.upload_date).getTime() -
-            new Date(a.upload_date).getTime()
-          );
-        // if (sortBy === "popular")
-        //   return (
-        //     parseInt(b.likes.replace(/[^\d]/g, "")) -
-        //     parseInt(a.likes.replace(/[^\d]/g, ""))
-        //   );
-        if (sortBy === 'duration') return b.movie.duration - a.movie.duration;
-        return a.title.localeCompare(b.title);
-      });
-  });
+const filteredVideos = $derived(() => {
+	return data.videos
+		.filter((video) => {
+			const matchesSearch = video.title
+				.toLowerCase()
+				.includes(searchQuery.toLowerCase());
+			//  ||
+			// video.model.toLowerCase().includes(searchQuery.toLowerCase());
+			const matchesCategory = categoryFilter === "all";
+			const matchesDuration =
+				durationFilter === "all" ||
+				(durationFilter === "short" && video.movie.duration < 10 * 60) ||
+				(durationFilter === "medium" &&
+					video.movie.duration >= 10 * 60 &&
+					video.movie.duration < 20 * 60) ||
+				(durationFilter === "long" && video.movie.duration >= 20 * 60);
+			return matchesSearch && matchesCategory && matchesDuration;
+		})
+		.sort((a, b) => {
+			// if (sortBy === "trending")
+			//   return (
+			//     parseInt(b.views.replace(/[^\d]/g, "")) -
+			//     parseInt(a.views.replace(/[^\d]/g, ""))
+			//   );
+			if (sortBy === "recent")
+				return (
+					new Date(b.upload_date).getTime() - new Date(a.upload_date).getTime()
+				);
+			// if (sortBy === "popular")
+			//   return (
+			//     parseInt(b.likes.replace(/[^\d]/g, "")) -
+			//     parseInt(a.likes.replace(/[^\d]/g, ""))
+			//   );
+			if (sortBy === "duration") return b.movie.duration - a.movie.duration;
+			return a.title.localeCompare(b.title);
+		});
+});
 </script>
 
 <Meta title={$_('videos.title')} description={$_('videos.description')} />

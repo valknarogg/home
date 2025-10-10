@@ -1,21 +1,22 @@
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed } from "vue";
 
 const props = defineProps({
-  size: {
-    type: String,
-    default: '42px' // Can be: '24px', '32px', '42px', '56px', etc.
-  }
-})
+	size: {
+		type: String,
+		default: "42px", // Can be: '24px', '32px', '42px', '56px', etc.
+	},
+});
 
-const isHovered = ref(false)
+const isHovered = ref(false);
 
 // Load Google Font
-if (typeof document !== 'undefined') {
-  const link = document.createElement('link')
-  link.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@800;900&display=swap'
-  link.rel = 'stylesheet'
-  document.head.appendChild(link)
+if (typeof document !== "undefined") {
+	const link = document.createElement("link");
+	link.href =
+		"https://fonts.googleapis.com/css2?family=Inter:wght@800;900&display=swap";
+	link.rel = "stylesheet";
+	document.head.appendChild(link);
 }
 </script>
 

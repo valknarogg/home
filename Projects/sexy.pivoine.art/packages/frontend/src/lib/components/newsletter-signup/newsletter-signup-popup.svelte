@@ -1,46 +1,48 @@
 <script lang="ts">
-  import { _ } from 'svelte-i18n';
-  import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle
-  } from '$lib/components/ui/dialog';
-  import { Button } from '$lib/components/ui/button';
-  import { Separator } from '$lib/components/ui/separator';
-  import type { Snippet } from 'svelte';
-  import Label from '../ui/label/label.svelte';
-  import Input from '../ui/input/input.svelte';
-  import { toast } from 'svelte-sonner';
+import { _ } from "svelte-i18n";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+} from "$lib/components/ui/dialog";
+import { Button } from "$lib/components/ui/button";
+import { Separator } from "$lib/components/ui/separator";
+import type { Snippet } from "svelte";
+import Label from "../ui/label/label.svelte";
+import Input from "../ui/input/input.svelte";
+import { toast } from "svelte-sonner";
 
-  interface Props {
-    open: boolean;
-    email: string;
-    children?: Snippet;
-  }
+interface Props {
+	open: boolean;
+	email: string;
+	children?: Snippet;
+}
 
-  let isLoading = $state(false);
+let isLoading = $state(false);
 
-  async function handleSubscription(e: Event) {
-    e.preventDefault();
-    try {
-      isLoading = true;
-      await fetch("/newsletter", {
-        method: "POST",
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({email})
-      })
-      toast.success($_('newsletter_signup.toast_subscribe', { values: { email } }));
-    } finally {
-      isLoading = false;
-      open = false;
-    }
-  }
+async function handleSubscription(e: Event) {
+	e.preventDefault();
+	try {
+		isLoading = true;
+		await fetch("/newsletter", {
+			method: "POST",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({ email }),
+		});
+		toast.success(
+			$_("newsletter_signup.toast_subscribe", { values: { email } }),
+		);
+	} finally {
+		isLoading = false;
+		open = false;
+	}
+}
 
-  let { open = $bindable(), email = $bindable() }: Props = $props();
+let { open = $bindable(), email = $bindable() }: Props = $props();
 </script>
 
 <Dialog bind:open>

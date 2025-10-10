@@ -1,11 +1,11 @@
 <script>
-  import { _ } from 'svelte-i18n';
-  import { Button } from '../ui/button';
-  import { Card, CardContent } from '../ui/card';
-  import NewsletterSignupPopup from './newsletter-signup-popup.svelte';
-  let isPopupOpen = $state(false);
+import { _ } from "svelte-i18n";
+import { Button } from "../ui/button";
+import { Card, CardContent } from "../ui/card";
+import NewsletterSignupPopup from "./newsletter-signup-popup.svelte";
+let isPopupOpen = $state(false);
 
-  let {email = ""} = $props();
+let { email = "" } = $props();
 </script>
 
 <!-- Newsletter Signup -->

@@ -3,8 +3,8 @@
 "use strict";
 exports.countDbSize = require("./countDbSize.edge.js").countDbSize;
 exports.countDistinctRecipients =
-  require("./countDistinctRecipients.edge.js").countDistinctRecipients;
+	require("./countDistinctRecipients.edge.js").countDistinctRecipients;
 exports.countDistinctRecipientsInTimeRange =
-  require("./countDistinctRecipientsInTimeRange.edge.js").countDistinctRecipientsInTimeRange;
+	require("./countDistinctRecipientsInTimeRange.edge.js").countDistinctRecipientsInTimeRange;
 exports.subscriberGrowthQuery =
-  require("./subscriberGrowthQuery.edge.js").subscriberGrowthQuery;
+	require("./subscriberGrowthQuery.edge.js").subscriberGrowthQuery;

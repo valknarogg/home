@@ -17,76 +17,80 @@
  * @license
  * @nocompile
  */
-import { html } from 'lit';
-import { customElement, property, query, eventOptions } from 'lit/decorators.js';
-import { RxLitElement } from '@hydecorp/component';
-import lunr from 'lunr';
-import { applyMixins } from './common';
-import { styles } from './styles';
-import { Key } from 'readline';
+import { html } from "lit";
+import {
+	customElement,
+	property,
+	query,
+	eventOptions,
+} from "lit/decorators.js";
+import { RxLitElement } from "@hydecorp/component";
+import lunr from "lunr";
+import { applyMixins } from "./common";
+import { styles } from "./styles";
+import { Key } from "readline";
 
-@customElement('hm-search')
+@customElement("hm-search")
 export class HmSearch extends applyMixins(RxLitElement, []) {
-  static styles = styles;
+	static styles = styles;
 
-  @query('.hm-search-input') inputEl!: HTMLInputElement;
+	@query(".hm-search-input") inputEl!: HTMLInputElement;
 
-  @property({ type: String, reflect: true }) placeholder: string = 'Search...';
-  @property({ type: Array, reflect: true }) documents: Array<any> = [];
-  @property({ type: Array, reflect: true }) fields: Array<string> = [];
+	@property({ type: String, reflect: true }) placeholder: string = "Search...";
+	@property({ type: Array, reflect: true }) documents: Array<any> = [];
+	@property({ type: Array, reflect: true }) fields: Array<string> = [];
 
-  idx!: lunr.Index;
+	idx!: lunr.Index;
 
-  constructor() {
-    super();
-  }
+	constructor() {
+		super();
+	}
 
-  handleKeyup(e: KeyboardEvent) {
-    if (e.key === 'Escape') {
-      this.clear();
-      return;
-    }
-    const query = this.inputEl.value;
-    if (!query) {
-      this.fireEvent('search', { detail: [] });
-      return;
-    }
-    this.fireEvent('search', { detail: this.idx.search(query) });
-  }
+	handleKeyup(e: KeyboardEvent) {
+		if (e.key === "Escape") {
+			this.clear();
+			return;
+		}
+		const query = this.inputEl.value;
+		if (!query) {
+			this.fireEvent("search", { detail: [] });
+			return;
+		}
+		this.fireEvent("search", { detail: this.idx.search(query) });
+	}
 
+	updated(): void {
+		const documents = this.documents;
+		const fields = this.fields;
+		this.idx = lunr(function () {
+			fields.forEach((field) => {
+				this.field(field);
+			});
 
-  updated(): void {
-    const documents = this.documents;
-    const fields = this.fields;
-    this.idx = lunr(function () {
-      fields.forEach((field) => {
-        this.field(field);
-      });
+			documents.forEach((doc) => {
+				this.add(doc);
+			});
+		});
+	}
 
-      documents.forEach((doc) => {
-        this.add(doc);
-      });
-    });
-  }
-
-  render() {
-    return html`
+	render() {
+		return html`
       <div class="hm-search">
         <input class="hm-search-input" type="text" placeholder="${this.placeholder}" name="hm-search-input" @keyup="${this.handleKeyup}" />
       </div>
     `;
-  }
+	}
 
-  focus() {
-    this.inputEl.focus();
-  }
+	focus() {
+		this.inputEl.focus();
+	}
 
-  clear() {
-    this.inputEl.value = '';
-    this.fireEvent('search', { detail: [] });
-  }
+	clear() {
+		this.inputEl.value = "";
+		this.fireEvent("search", { detail: [] });
+	}
 
-  get active() {
-    return this.inputEl === document.activeElement;
-  }
+	get active() {
+		return this.inputEl === document.activeElement;
+	}
 }

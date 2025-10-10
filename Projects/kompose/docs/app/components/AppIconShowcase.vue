@@ -6,7 +6,7 @@
 -->
 
 <script setup>
-import AppIcon from './AppIcon.vue'
+import AppIcon from "./AppIcon.vue";
 </script>
 
 <template>

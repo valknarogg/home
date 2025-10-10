@@ -3,8 +3,8 @@
 "use strict";
 exports.countDbSize = require("./countDbSize.js").countDbSize;
 exports.countDistinctRecipients =
-  require("./countDistinctRecipients.js").countDistinctRecipients;
+	require("./countDistinctRecipients.js").countDistinctRecipients;
 exports.countDistinctRecipientsInTimeRange =
-  require("./countDistinctRecipientsInTimeRange.js").countDistinctRecipientsInTimeRange;
+	require("./countDistinctRecipientsInTimeRange.js").countDistinctRecipientsInTimeRange;
 exports.subscriberGrowthQuery =
-  require("./subscriberGrowthQuery.js").subscriberGrowthQuery;
+	require("./subscriberGrowthQuery.js").subscriberGrowthQuery;

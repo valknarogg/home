@@ -841,7 +841,7 @@ export default {
 		close: "Close",
 		subscribe: "Subscribe",
 		subscribing: "Subscribing",
-		toast_subscribe: "Your email has been added to the newsletter list!"
+		toast_subscribe: "Your email has been added to the newsletter list!",
 	},
 	sharing_popup_button: {
 		share: "Share",

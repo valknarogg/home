@@ -32,41 +32,39 @@ async function processVideo(
 	}
 }
 
-export default defineHook(
-	async ({ filter, action }, { services, logger }) => {
-		action("files.upload", async (meta, context) => {
-			await processVideo(meta, context, services, logger);
-		});
+export default defineHook(async ({ filter, action }, { services, logger }) => {
+	action("files.upload", async (meta, context) => {
+		await processVideo(meta, context, services, logger);
+	});
 
-		filter(
-			"users.create",
-			(payload: {
-				first_name: string;
-				last_name: string;
-				artist_name: string;
-				slug: string;
-			}) => {
-				const artist_name = `${payload.first_name}-${new Date().getTime()}`;
-				const slug = slugify(artist_name);
-				const join_date = new Date();
-				return { ...payload, artist_name, slug, join_date };
-			},
-		);
+	filter(
+		"users.create",
+		(payload: {
+			first_name: string;
+			last_name: string;
+			artist_name: string;
+			slug: string;
+		}) => {
+			const artist_name = `${payload.first_name}-${new Date().getTime()}`;
+			const slug = slugify(artist_name);
+			const join_date = new Date();
+			return { ...payload, artist_name, slug, join_date };
+		},
+	);
 
-		filter(
-			"users.update",
-			(payload: {
-				first_name: string;
-				last_name: string;
-				artist_name: string;
-				slug: string;
-			}) => {
-				if (payload.artist_name) {
-					const slug = slugify(payload.artist_name);
-					return { ...payload, slug };
-				}
-				return payload;
-			},
-		);
-	},
-);
+	filter(
+		"users.update",
+		(payload: {
+			first_name: string;
+			last_name: string;
+			artist_name: string;
+			slug: string;
+		}) => {
+			if (payload.artist_name) {
+				const slug = slugify(payload.artist_name);
+				return { ...payload, slug };
+			}
+			return payload;
+		},
+	);
+});

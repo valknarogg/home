@@ -1,1 +1,1 @@
-export { applyMixins } from '@hydecorp/component';
+export { applyMixins } from "@hydecorp/component";

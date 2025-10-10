@@ -13,24 +13,28 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import 'broadcastchannel-polyfill';
-import { webComponentsReady, stylesheetReady } from './common';
+import "broadcastchannel-polyfill";
+import { webComponentsReady, stylesheetReady } from "./common";
 
 (async () => {
-  await Promise.all([
-    ...('customElements' in window
-      ? []
-      : [
-          import(/* webpackChunkName: "webcomponents" */ './polyfills/webcomponents').then(() =>
-            import(/* webpackChunkName: "shadydom" */ './polyfills/shadydom'),
-          ),
-        ]),
-  ]);
+	await Promise.all([
+		...("customElements" in window
+			? []
+			: [
+					import(
+						/* webpackChunkName: "webcomponents" */ "./polyfills/webcomponents"
+					).then(
+						() =>
+							import(/* webpackChunkName: "shadydom" */ "./polyfills/shadydom"),
+					),
+				]),
+	]);
 
-  await webComponentsReady;
-  await stylesheetReady;
+	await webComponentsReady;
+	await stylesheetReady;
 
-  if (process.env.GET_CLAPS_API && !window.GET_CLAPS_API) window.GET_CLAPS_API = process.env.GET_CLAPS_API;
+	if (process.env.GET_CLAPS_API && !window.GET_CLAPS_API)
+		window.GET_CLAPS_API = process.env.GET_CLAPS_API;
 
-  import(/* webpackMode: "eager" */ '@getclaps/button');
+	import(/* webpackMode: "eager" */ "@getclaps/button");
 })();

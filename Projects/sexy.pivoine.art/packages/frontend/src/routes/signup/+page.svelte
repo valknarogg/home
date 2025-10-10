@@ -1,69 +1,69 @@
 <script lang="ts">
-  import { _ } from 'svelte-i18n';
-  import { goto } from '$app/navigation';
-  import { Button } from '$lib/components/ui/button';
-  import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle
-  } from '$lib/components/ui/card';
-  import { Input } from '$lib/components/ui/input';
-  import { Label } from '$lib/components/ui/label';
-  import { Checkbox } from '$lib/components/ui/checkbox';
-  import { toast } from 'svelte-sonner';
-  import * as Alert from '$lib/components/ui/alert';
-  import PeonyIcon from '$lib/components/icon/peony-icon.svelte';
-  import { register } from '$lib/services';
-  import PeonyBackground from '$lib/components/background/peony-background.svelte';
-  import Meta from '$lib/components/meta/meta.svelte';
-  import { onMount } from 'svelte';
-  import Logo from '$lib/components/logo/logo.svelte';
+import { _ } from "svelte-i18n";
+import { goto } from "$app/navigation";
+import { Button } from "$lib/components/ui/button";
+import {
+	Card,
+	CardContent,
+	CardDescription,
+	CardHeader,
+	CardTitle,
+} from "$lib/components/ui/card";
+import { Input } from "$lib/components/ui/input";
+import { Label } from "$lib/components/ui/label";
+import { Checkbox } from "$lib/components/ui/checkbox";
+import { toast } from "svelte-sonner";
+import * as Alert from "$lib/components/ui/alert";
+import PeonyIcon from "$lib/components/icon/peony-icon.svelte";
+import { register } from "$lib/services";
+import PeonyBackground from "$lib/components/background/peony-background.svelte";
+import Meta from "$lib/components/meta/meta.svelte";
+import { onMount } from "svelte";
+import Logo from "$lib/components/logo/logo.svelte";
 
-  let firstName = $state('');
-  let lastName = $state('');
-  let email = $state('');
-  let password = $state('');
-  let confirmPassword = $state('');
-  let showPassword = $state(false);
-  let showConfirmPassword = $state(false);
-  let agreeTerms = $state(false);
-  let isLoading = $state(false);
-  let isError = $state(false);
-  let error = $state('');
+let firstName = $state("");
+let lastName = $state("");
+let email = $state("");
+let password = $state("");
+let confirmPassword = $state("");
+let showPassword = $state(false);
+let showConfirmPassword = $state(false);
+let agreeTerms = $state(false);
+let isLoading = $state(false);
+let isError = $state(false);
+let error = $state("");
 
-  async function handleSubmit(e: Event) {
-    e.preventDefault();
-    try {
-      if (!agreeTerms) {
-        throw new Error($_('auth.signup.agree_error'));
-      }
-      if (password !== confirmPassword) {
-        throw new Error($_('auth.signup.password_error'));
-      }
-      isLoading = true;
-      isError = false;
-      error = '';
-      await register(email, password, firstName, lastName);
-      toast.success($_('auth.signup.toast_register', { values: { email } }));
-      goto('/login');
-    } catch (err: any) {
-      error = err.message;
-      isError = true;
-    } finally {
-      isLoading = false;
-    }
-  }
+async function handleSubmit(e: Event) {
+	e.preventDefault();
+	try {
+		if (!agreeTerms) {
+			throw new Error($_("auth.signup.agree_error"));
+		}
+		if (password !== confirmPassword) {
+			throw new Error($_("auth.signup.password_error"));
+		}
+		isLoading = true;
+		isError = false;
+		error = "";
+		await register(email, password, firstName, lastName);
+		toast.success($_("auth.signup.toast_register", { values: { email } }));
+		goto("/login");
+	} catch (err: any) {
+		error = err.message;
+		isError = true;
+	} finally {
+		isLoading = false;
+	}
+}
 
-  const { data } = $props();
+const { data } = $props();
 
-  onMount(() => {
-    if (!data.authStatus.authenticated) {
-      return;
-    }
-    goto('/me');
-  });
+onMount(() => {
+	if (!data.authStatus.authenticated) {
+		return;
+	}
+	goto("/me");
+});
 </script>
 
 <Meta
