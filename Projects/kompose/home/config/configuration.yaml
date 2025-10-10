@@ -1,4 +1,1 @@
-# Example configuration.yaml entry
-mqtt_eventstream:
-  # publish_topic: ???
-  subscribe_topic: homeassitant
+# configuration.yaml
