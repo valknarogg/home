@@ -4,6 +4,7 @@ alias ri='source ~/.init/init.sh'
 
 # git
 alias g1='git reset $(git commit-tree "HEAD^{tree}" -m "A new start")'
+alias g0='git add . && git diff --quiet && git diff --cached --quiet'
 
 # rsync
 alias rs='rsync --rsync-path="sudo rsync" -avzhe ssh'
