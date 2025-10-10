@@ -34,8 +34,15 @@ services:
       - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.middlewares=${COMPOSE_PROJECT_NAME}-web-secure-compress'
       - 'traefik.http.services.${COMPOSE_PROJECT_NAME}-web-secure.loadbalancer.server.port=${APP_PORT}'
       - 'traefik.docker.network=${NETWORK_NAME}'
-
+  mosquitto:
+    container_name: ${COMPOSE_PROJECT_NAME}_mqtt
+    image: eclipse-mosquitto
+    restart: unless-stopped
+    networks:
+      - kompose_network
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
 networks:
   kompose_network:
-    name: ${NETWORK_NAME}
+    name: ${NETWORK_NAME:-kompose}
     external: true
