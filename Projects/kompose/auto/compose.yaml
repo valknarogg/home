@@ -5,6 +5,8 @@ services:
     image: ${DOCKER_IMAGE}
     container_name: ${COMPOSE_PROJECT_NAME}_app
     restart: unless-stopped
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     environment:
       SEMAPHORE_DB_DIALECT: postgres
       SEMAPHORE_DB_HOST: ${DB_HOST}
