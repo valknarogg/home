@@ -150,14 +150,11 @@ services:
     image: ${OTELCOL_IMAGE:-signoz/signoz-otel-collector:v0.129.6}
     container_name: ${COMPOSE_PROJECT_NAME}_otel_collector
     privileged: true
-    network_mode: host
     pid: host
     user: 0:0
-    extra_hosts:
-      - signoz:host-gateway
-      - clickhouse:host-gateway
-      - postgres:host-gateway
-      - redis:host-gateway
+    networks:
+      - kompose_network
+      - signoz
     restart: unless-stopped
     logging:
       options:
