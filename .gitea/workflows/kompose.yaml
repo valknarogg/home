@@ -22,6 +22,7 @@ jobs:
     - uses: actions/checkout@v4
       with:
         repository: valknar/kompose
+        branch: main
         path: kompose
     - name: Commit and push changes (if any)
       shell: bash
