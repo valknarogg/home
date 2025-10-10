@@ -1,0 +1,25 @@
+name: Sync Repository Kompose via git
+
+on:
+  workflow_dispatch: # Allows workflow to be run manually
+  push:
+    branches:
+    - main # Or your default branch
+    paths:
+    - 'Projects/kompose/**'
+
+env:
+  SYNC_TARGET: ssh://git@code.pivoine.art:2222/valknar/kompose.git
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./Projects/kompose
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Sync Respository
+      run: |
+        ${{ github.workspace }}/.init/bin/mirror_project.sh "${{ SYNC_TARGET }}" "${{ github.event.head_commit.message }}"  
