@@ -22,4 +22,4 @@ jobs:
     - uses: actions/checkout@v4
     - name: Sync Respository
       run: |
-        ${{ github.workspace }}/.init/bin/mirror_project.sh $SYNC_TARGET '${{ github.event.head_commit.message }}'  
+        ${{ github.workspace }}/.init/bin/mirror_project.sh $SYNC_TARGET '${{ github.event.head_commit.message }}' ${{ runner.temp }}/kompose  
