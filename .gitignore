@@ -38,6 +38,9 @@
 !/.github/
 !/.github/**
 
+!/.gitea/
+!/.gitea/**
+
 !/.init/
 !/.init/**
 
