@@ -21,7 +21,7 @@ jobs:
         path: home
     - uses: actions/checkout@v4
       with:
-        repository: https://code.pivoine.art/valknar/kompose.git
+        repository: valknar/kompose
         path: kompose
     - name: Commit and push changes (if any)
       shell: bash
