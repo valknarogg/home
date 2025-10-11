@@ -21,7 +21,7 @@ jobs:
         env:
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
-          echo "CHECK: '${{ env.COMMIT_MESSAGE }}'"
+          echo "CHECK: '${{ COMMIT_MESSAGE }}'"
           if [[ "${{ env.COMMIT_MESSAGE }}" == "#bot-message: *" ]]; then
             echo "FOUND: '#bot-message: '"
             echo "BOT_MESSAGE=${BOT_MESSAGE}" >> "${GITHUB_ENV}"
