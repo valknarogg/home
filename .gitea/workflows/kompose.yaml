@@ -16,11 +16,11 @@ jobs:
     - uses: actions/checkout@v4
     - name: Get head commit
       run: |
-        export COMMIT_MESSAGE=`git log --format=%B -n 1 HEAD | head -n 1)`
-        echo "CHECK: '${{ COMMIT_MESSAGE }}'"
-        if [ "${{ COMMIT_MESSAGE }}" == "#bot-message: *" ]; then
+        export COMMIT_MESSAGE=`git log --format=%B -n 1 HEAD | head -n 1`
+        echo "CHECK: '${COMMIT_MESSAGE}'"
+        if [[ "${COMMIT_MESSAGE}" == "#bot-message: *" ]]; then
           echo "FOUND: '#bot-message: '"
-          echo "BOT_MESSAGE=${BOT_MESSAGE}" >> "${GITHUB_ENV}"
+          echo "BOT_MESSAGE='true'" >> "${GITHUB_ENV}"
         else
           echo "NOT FOUND: '#bot-message: '"
           echo 'BOT_MESSAGE=' >> "${GITHUB_ENV}"
