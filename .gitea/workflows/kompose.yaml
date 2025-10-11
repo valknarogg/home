@@ -11,7 +11,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: ${{ contains(github.event.head_commit.message, '#bot-message:') }}
+    if: ${{ contains(github.event.head_commit.message, '#bot-message: ') }}
     steps:
     - uses: actions/checkout@v4
       with:
@@ -24,7 +24,7 @@ jobs:
     - name: Commit and push changes (if any)
       shell: bash
       env:
-        CI_COMMIT_MESSAGE: "${{ replace(github.event.head_commit.message, '#bot-message:') }}"
+        CI_COMMIT_MESSAGE: "${{ replace(github.event.head_commit.message, '#bot-message: ') }}"
         CI_COMMIT_AUTHOR: technitz[bot]@valknar/kompose
         CI_COMMIT_EMAIL: admin@pivoine.art
       run: |
