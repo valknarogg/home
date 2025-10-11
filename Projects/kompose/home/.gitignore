@@ -1,0 +1,35 @@
+# Home Stack .gitignore
+
+# Environment files with secrets
+.env.local
+secrets.env
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Volume mount points (if using local directories)
+homeassistant_config/
+matter_data/
+zigbee2mqtt_data/
+esphome_config/
+
+# Configuration backups
+backups/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
