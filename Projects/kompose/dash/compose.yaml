@@ -32,5 +32,5 @@ services:
 
 networks:
   kompose_network:
-    name: ${NETWORK_NAME}
+    name: ${NETWORK_NAME:-kompose}
     external: true
