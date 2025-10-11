@@ -24,6 +24,8 @@ N8N_WEBHOOK_BASE="${N8N_WEBHOOK_BASE:-http://localhost:5678/webhook}"
 # Available stacks
 declare -A STACKS=(
     ["core"]="Core services - MQTT, Redis, Postgres"
+    ["auth"]="Authentication - Keycloak SSO, OAuth2 Proxy"
+    ["kmps"]="Management Portal - User & SSO Administration"
     ["home"]="Smart Home - Home Assistant, Matter, Zigbee, ESPHome"
     ["vpn"]="VPN - WireGuard remote access (wg-easy)"
     ["chat"]="Communication - Gotify notifications"

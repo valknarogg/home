@@ -1,0 +1,71 @@
+name: kmps
+
+services:
+  # Kompose Management Portal & SSO Administration
+  kmps-app:
+    image: ${DOCKER_IMAGE:-node:20-alpine}
+    container_name: ${COMPOSE_PROJECT_NAME}_app
+    restart: unless-stopped
+    working_dir: /app
+    command: sh -c "npm install && npm run dev"
+    environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
+      NODE_ENV: ${NODE_ENV:-production}
+      
+      # Keycloak Admin API Configuration
+      KEYCLOAK_URL: https://${TRAEFIK_HOST_AUTH}
+      KEYCLOAK_REALM: kompose
+      KEYCLOAK_CLIENT_ID: ${KMPS_CLIENT_ID:-kmps-admin}
+      KEYCLOAK_CLIENT_SECRET: ${KMPS_CLIENT_SECRET}
+      
+      # Database Configuration
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:5432/${DB_NAME}
+      
+      # App Configuration
+      NEXT_PUBLIC_APP_NAME: "Kompose Management Portal"
+      NEXT_PUBLIC_SSO_URL: https://${OAUTH2_PROXY_HOST}
+      NEXT_PUBLIC_AUTH_URL: https://${TRAEFIK_HOST_AUTH}
+      
+      # Session & Security
+      NEXTAUTH_URL: https://${TRAEFIK_HOST}
+      NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
+      
+      # Admin Email for initial setup
+      ADMIN_EMAIL: ${ADMIN_EMAIL}
+      
+    volumes:
+      - ./app:/app
+      - kmps_node_modules:/app/node_modules
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:${APP_PORT}/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - kompose_network
+    labels:
+      - 'traefik.enable=true'
+      
+      # HTTP to HTTPS redirect
+      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-redirect-web-secure.redirectscheme.scheme=https'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.middlewares=${COMPOSE_PROJECT_NAME}-redirect-web-secure'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.rule=Host(`${TRAEFIK_HOST}`)'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.entrypoints=web'
+      
+      # HTTPS configuration with SSO middleware
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.rule=Host(`${TRAEFIK_HOST}`)'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.tls.certresolver=resolver'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.entrypoints=web-secure'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.middlewares=sso-secure'
+      - 'traefik.http.services.${COMPOSE_PROJECT_NAME}-web-secure.loadbalancer.server.port=${APP_PORT}'
+      - 'traefik.docker.network=${NETWORK_NAME}'
+
+volumes:
+  kmps_node_modules:
+    name: ${COMPOSE_PROJECT_NAME}_node_modules
+
+networks:
+  kompose_network:
+    name: ${NETWORK_NAME:-kompose}
+    external: true

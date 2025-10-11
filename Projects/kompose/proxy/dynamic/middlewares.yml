@@ -112,6 +112,36 @@ http:
           - security-headers
           - compression
 
+    # ================================================================
+    # SSO Authentication Middleware Chains
+    # ================================================================
+    
+    # SSO protected with security headers and compression
+    sso-secure:
+      chain:
+        middlewares:
+          - kompose-sso
+          - security-headers
+          - compression
+
+    # SSO protected + rate limiting for public services
+    sso-secure-limited:
+      chain:
+        middlewares:
+          - kompose-sso
+          - rate-limit-standard
+          - security-headers
+          - compression
+
+    # SSO protected + internal IP restriction (extra security)
+    sso-internal-only:
+      chain:
+        middlewares:
+          - kompose-sso
+          - internal-only
+          - security-headers
+          - compression
+
 # ================================================================
 # TCP Middleware (for non-HTTP services like SSH, MQTT)
 # ================================================================
@@ -127,3 +157,11 @@ tcp:
 # 4. Use internal-secure for: Semaphore, Redis UI, admin panels
 # 5. Use public-secure for: n8n, Gitea, Vaultwarden, public apps
 # 6. Use public-secure-limited for: public APIs with rate limiting
+# 7. Use sso-secure for: Applications requiring SSO authentication
+# 8. Use sso-internal-only for: Admin interfaces with SSO + IP restriction
+# 9. Use sso-secure-limited for: Public SSO apps with rate limiting
+#
+# SSO Middleware Usage:
+# - The kompose-sso middleware is defined in auth stack's oauth2-proxy service
+# - It provides forward authentication via OAuth2 Proxy + Keycloak
+# - See SSO_INTEGRATION_GUIDE.md for full setup instructions

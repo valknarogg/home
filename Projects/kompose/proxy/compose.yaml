@@ -14,6 +14,8 @@ services:
       - '--providers.docker=true'
       - '--providers.docker.exposedbydefault=false'
       - '--providers.docker.network=${NETWORK_NAME}'
+      - '--providers.file.directory=/etc/traefik/dynamic'
+      - '--providers.file.watch=true'
       - '--entrypoints.web.address=:80'
       - '--entryPoints.web-secure.address=:443'
       - '--certificatesresolvers.resolver.acme.tlschallenge=true'
@@ -33,6 +35,7 @@ services:
     volumes:
       - /var/local/data/traefik/letsencrypt:/letsencrypt
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./dynamic:/etc/traefik/dynamic:ro
 
 networks:
   kompose_network:
