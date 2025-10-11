@@ -8,7 +8,7 @@ on:
     paths:
     - 'Projects/kompose/**'
 env:
-  BOT_MESSAGE: ${{ contains(github.event.head_commit.message, '#bot-message: ') }}
+  BOT_MESSAGE: ${{ contains(gitea.event.head_commit.message, '#bot-message: ') }}
 jobs:
   build:
     runs-on: ubuntu-latest
