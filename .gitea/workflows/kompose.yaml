@@ -27,7 +27,7 @@ jobs:
         CI_COMMIT_EMAIL: admin@pivoine.art
       run: |
         cd kompose
-        git config user.name "${{ vars.CI_COMMIT_AUTHOR }}"
-        git config user.email "${{ vars.CI_COMMIT_EMAIL }}"
+        git config user.name "${{ env.CI_COMMIT_AUTHOR }}"
+        git config user.email "${{ env.CI_COMMIT_EMAIL }}"
 
-        ${{ github.workspace }}/home/.init/bin/mirror_project.sh "${{ vars.CI_COMMIT_MESSAGE }}" ../home  
+        ${{ github.workspace }}/home/.init/bin/mirror_project.sh "${{ env.CI_COMMIT_MESSAGE }}" ../home  
