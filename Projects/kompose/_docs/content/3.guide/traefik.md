@@ -3,7 +3,6 @@ title: Traefik Configuration
 description: Configure reverse proxy and routing with Traefik labels
 ---
 
-# Traefik Labels - Best Practices & Standards
 
 ## Overview
 
@@ -43,74 +42,90 @@ labels:
 
 ## Label Breakdown
 
-### Enable Traefik
+### 1. Enable Traefik
 
 ```yaml
 - 'traefik.enable=${TRAEFIK_ENABLED:-true}'
 ```
 
-Enable Traefik routing for this container. Set `TRAEFIK_ENABLED=false` in stack .env for internal-only services.
+**Purpose**: Enable Traefik routing for this container  
+**Variable**: `TRAEFIK_ENABLED` from stack .env (defaults to true)  
+**When to disable**: Set `TRAEFIK_ENABLED=false` in stack .env for internal-only services
 
-### HTTP Router (Port 80)
+### 2. HTTP Router (Port 80)
 
 ```yaml
 - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.rule=Host(`${TRAEFIK_HOST}`)'
 - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.entrypoints=web'
 ```
 
-Routes HTTP traffic (port 80) to the service.
+**Purpose**: Route HTTP traffic (port 80)  
+**Naming**: `${COMPOSE_PROJECT_NAME}-web` ensures unique router name  
+**Entrypoint**: `web` = port 80
 
-### HTTP to HTTPS Redirect
+### 3. HTTP to HTTPS Redirect
 
 ```yaml
 - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-redirect-web-secure.redirectscheme.scheme=https'
 - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.middlewares=${COMPOSE_PROJECT_NAME}-redirect-web-secure'
 ```
 
-Automatically redirects HTTP requests to HTTPS.
+**Purpose**: Automatically redirect HTTP to HTTPS  
+**Middleware**: Creates a redirect middleware  
+**Applied to**: HTTP router only
 
-### HTTPS Router (Port 443)
+### 4. HTTPS Router (Port 443)
 
 ```yaml
 - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.rule=Host(`${TRAEFIK_HOST}`)'
 - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.entrypoints=web-secure'
 ```
 
-Routes HTTPS traffic (port 443) to the service.
+**Purpose**: Route HTTPS traffic (port 443)  
+**Naming**: `${COMPOSE_PROJECT_NAME}-web-secure` for HTTPS router  
+**Entrypoint**: `web-secure` = port 443
 
-### TLS/SSL Configuration
+### 5. TLS/SSL Configuration
 
 ```yaml
 - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.tls=true'
 - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.tls.certresolver=resolver'
 ```
 
-Enables TLS and automatic Let's Encrypt certificate generation.
+**Purpose**: Enable TLS and automatic certificate generation  
+**Certificate resolver**: `resolver` is configured in Traefik for Let's Encrypt  
+**Automatic**: Certificates are automatically obtained and renewed
 
-### Compression Middleware
+### 6. Compression Middleware
 
 ```yaml
 - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-compress.compress=true'
 - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.middlewares=${COMPOSE_PROJECT_NAME}-compress'
 ```
 
-Enables gzip compression for faster response times.
+**Purpose**: Enable gzip compression for faster response times  
+**Applied to**: HTTPS router only  
+**Benefit**: Reduces bandwidth usage
 
-### Service Port
+### 7. Service Port
 
 ```yaml
 - 'traefik.http.services.${COMPOSE_PROJECT_NAME}-web-secure.loadbalancer.server.port=${APP_PORT}'
 ```
 
-Specifies which internal container port Traefik should forward to.
+**Purpose**: Tell Traefik which internal container port to forward to  
+**Variable**: `${APP_PORT}` from stack .env  
+**Important**: This is the container's internal port, not the host port
 
-### Network Specification
+### 8. Network Specification
 
 ```yaml
 - 'traefik.docker.network=${NETWORK_NAME:-kompose}'
 ```
 
-Specifies which Docker network Traefik should use (required when container is on multiple networks).
+**Purpose**: Specify which Docker network Traefik should use  
+**Network**: `kompose` (the shared network for all stacks)  
+**Required**: When container is on multiple networks
 
 ## Optional Middleware
 
@@ -120,7 +135,10 @@ Specifies which Docker network Traefik should use (required when container is on
 - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.middlewares=${COMPOSE_PROJECT_NAME}-compress,kompose-sso'
 ```
 
-Requires authentication via OAuth2 Proxy. Protects admin interfaces and private applications.
+**Purpose**: Require authentication via OAuth2 Proxy  
+**Middleware**: `kompose-sso` is defined in auth stack  
+**Use case**: Protect admin interfaces, private applications  
+**Note**: Requires auth stack to be running
 
 ### Rate Limiting
 
@@ -130,7 +148,10 @@ Requires authentication via OAuth2 Proxy. Protects admin interfaces and private 
 - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.middlewares=${COMPOSE_PROJECT_NAME}-compress,${COMPOSE_PROJECT_NAME}-ratelimit'
 ```
 
-Limits requests to protect against abuse and DDoS attacks.
+**Purpose**: Limit requests per second  
+**Average**: Sustained rate (requests/second)  
+**Burst**: Maximum temporary spike  
+**Use case**: Protect against abuse, DDoS
 
 ### IP Whitelist
 
@@ -139,7 +160,14 @@ Limits requests to protect against abuse and DDoS attacks.
 - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.middlewares=${COMPOSE_PROJECT_NAME}-compress,${COMPOSE_PROJECT_NAME}-ipwhitelist'
 ```
 
-Restricts access to specific IP ranges for internal-only services.
+**Purpose**: Restrict access to specific IP ranges  
+**Source range**: Comma-separated CIDR blocks  
+**Use case**: Internal-only services, admin panels  
+**Common ranges**:
+- `127.0.0.1/32` - Localhost only
+- `192.168.0.0/16` - Private network
+- `10.0.0.0/8` - Private network
+- `172.16.0.0/12` - Private network
 
 ### Basic Auth
 
@@ -148,7 +176,28 @@ Restricts access to specific IP ranges for internal-only services.
 - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.middlewares=${COMPOSE_PROJECT_NAME}-compress,${COMPOSE_PROJECT_NAME}-auth'
 ```
 
-Simple username/password authentication (generate with `htpasswd -nb user password`).
+**Purpose**: Simple username/password authentication  
+**Users**: htpasswd format (generate with `htpasswd -nb user password`)  
+**Use case**: Quick protection without SSO  
+**Note**: Less secure than SSO, use for non-critical services
+
+### Headers Security
+
+```yaml
+- 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-headers.headers.browserXssFilter=true'
+- 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-headers.headers.contentTypeNosniff=true'
+- 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-headers.headers.frameDeny=true'
+- 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-headers.headers.sslRedirect=true'
+- 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.middlewares=${COMPOSE_PROJECT_NAME}-compress,${COMPOSE_PROJECT_NAME}-headers'
+```
+
+**Purpose**: Add security headers  
+**Headers**:
+- XSS filter
+- Content type sniffing protection
+- Clickjacking protection
+- SSL redirect
+**Use case**: Enhanced security for public services
 
 ## Middleware Chaining
 
@@ -159,10 +208,10 @@ Multiple middleware can be chained together:
 - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.middlewares=${COMPOSE_PROJECT_NAME}-compress,kompose-sso,${COMPOSE_PROJECT_NAME}-ratelimit'
 ```
 
-**Order matters**: Middleware are applied left to right.
+**Order matters**: Middleware are applied left to right
 
-**Recommended chain order:**
-1. `compress` - Reduces bandwidth
+**Common chains:**
+1. `compress` - Always first (reduces bandwidth)
 2. `ratelimit` - Before authentication
 3. `sso` or `auth` - Authentication
 4. `ipwhitelist` - After authentication
@@ -183,6 +232,26 @@ For services with multiple paths:
 - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-api.entrypoints=web-secure'
 - 'traefik.http.services.${COMPOSE_PROJECT_NAME}-api.loadbalancer.server.port=8081'
 ```
+
+## Multiple Domains
+
+Serve same service on multiple domains:
+
+```yaml
+- 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.rule=Host(`${TRAEFIK_HOST}`) || Host(`${TRAEFIK_HOST_ALT}`)'
+```
+
+## WebSocket Support
+
+For services using WebSockets:
+
+```yaml
+# Standard labels, plus:
+- 'traefik.http.services.${COMPOSE_PROJECT_NAME}-web-secure.loadbalancer.server.port=${APP_PORT}'
+# Traefik automatically handles WebSocket upgrades
+```
+
+**No special configuration needed** - Traefik handles WS automatically
 
 ## Debugging Labels
 
@@ -243,6 +312,16 @@ docker exec <container> netstat -tlnp
 
 ```bash
 ./kompose.sh logs proxy | grep -i acme
+```
+
+### Issue: Middleware Not Applied
+
+**Cause**: Typo in middleware name or incorrect reference  
+**Fix**: Check middleware is defined and referenced correctly
+
+```bash
+# View Traefik configuration
+curl http://localhost:8080/api/http/middlewares
 ```
 
 ## Best Practices
