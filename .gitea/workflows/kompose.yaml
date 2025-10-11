@@ -3,31 +3,13 @@ name: Sync Repository Kompose via git
 on:
   workflow_dispatch: # Allows workflow to be run manually
   push:
-    branches:
-    - main # Or your default branch
+    tags:
+    - bot-merge
     paths:
     - 'Projects/kompose/**'
-env:
-  BOT_MESSAGE: "true"
 jobs:
-  check:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - name: Get head commit
-      run: |
-        export COMMIT_MESSAGE=`git log --format=%B -n 1 HEAD | head -n 1`
-        echo "CHECK: '${COMMIT_MESSAGE}'"
-        if ! [ "${COMMIT_MESSAGE/#bot-message: /''}" = "$COMMIT_MESSAGE" ]; then
-          echo "FOUND: '#bot-message: '"
-          echo "BOT_MESSAGE='true'" >> "${GITHUB_ENV}"
-        else
-          echo "NOT FOUND: '#bot-message: '"
-          echo 'BOT_MESSAGE=' >> "${GITHUB_ENV}"
-        fi
   build:
     runs-on: ubuntu-latest
-    if: ${{ vars.BOT_MESSAGE == 'true' }}
     steps:
     - uses: actions/checkout@v4
       with:
@@ -48,6 +30,4 @@ jobs:
         git config --global user.name "${{ vars.CI_COMMIT_AUTHOR }}"
         git config --global user.email "${{ vars.CI_COMMIT_EMAIL }}"
 
-        export CI_COMMIT_MESSAGE="${{ vars.CI_COMMIT_MESSAGE }}"
-
-        ${{ github.workspace }}/home/.init/bin/mirror_project.sh "${CI_COMMIT_MESSAGE/#bot-message: /""}" ../home  
+        ${{ github.workspace }}/home/.init/bin/mirror_project.sh "${{ vars.CI_COMMIT_MESSAGE }}" ../home  
