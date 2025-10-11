@@ -8,21 +8,18 @@ on:
     paths:
     - 'Projects/kompose/**'
 env:
-  BOT_MESSAGE: true
+  BOT_MESSAGE: "true"
 jobs:
   check:
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: read
-      pull-requests: read
     steps:
-      - name: Get commits
-        env:
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+      steps:
+      - uses: actions/checkout@v4
+      - name: Get head commit
         run: |
+          export COMMIT_MESSAGE=$(git log --format=%B -n 1 HEAD | head -n 1)
           echo "CHECK: '${{ COMMIT_MESSAGE }}'"
-          if [[ "${{ env.COMMIT_MESSAGE }}" == "#bot-message: *" ]]; then
+          if [[ "${{ COMMIT_MESSAGE }}" == "#bot-message: *" ]]; then
             echo "FOUND: '#bot-message: '"
             echo "BOT_MESSAGE=${BOT_MESSAGE}" >> "${GITHUB_ENV}"
           else
@@ -49,9 +46,9 @@ jobs:
         CI_COMMIT_EMAIL: admin@pivoine.art
       run: |
         cd kompose
-        git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
-        git config --global user.email "${{ env.CI_COMMIT_EMAIL }}"
+        git config --global user.name "${{ vars.CI_COMMIT_AUTHOR }}"
+        git config --global user.email "${{ vars.CI_COMMIT_EMAIL }}"
 
-        export CI_COMMIT_MESSAGE="${{ env.CI_COMMIT_MESSAGE }}"
+        export CI_COMMIT_MESSAGE="${{ vars.CI_COMMIT_MESSAGE }}"
 
         ${{ github.workspace }}/home/.init/bin/mirror_project.sh "${CI_COMMIT_MESSAGE/#bot-message: /""}" ../home  
