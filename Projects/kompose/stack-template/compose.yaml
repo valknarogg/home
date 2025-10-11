@@ -1,0 +1,96 @@
+# ===================================================================
+# STACK TEMPLATE - Copy this to create new stacks
+# ===================================================================
+# This is a template for creating new stacks in Kompose
+# 
+# Usage:
+# 1. Copy this template to your stack directory:
+#    cp -r stack-template mynewstack
+# 2. Update compose.yaml with your service
+# 3. Update .env with your configuration
+# 4. Add subdomain to domain.env: SUBDOMAIN_MYNEWSTACK=mynewstack
+# 5. Add hostname to .env: TRAEFIK_HOST_MYNEWSTACK=${SUBDOMAIN_MYNEWSTACK}.${ROOT_DOMAIN}
+# 6. Start: ./kompose.sh up mynewstack
+# ===================================================================
+
+name: mystack
+
+services:
+  # Main application service
+  app:
+    image: ${DOCKER_IMAGE}
+    container_name: ${COMPOSE_PROJECT_NAME}_app
+    restart: unless-stopped
+    
+    environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
+      # Add your environment variables here
+      
+    volumes:
+      - app_data:/data
+      
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:${APP_PORT}/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+      
+    networks:
+      - kompose_network
+      
+    labels:
+      # ================================================================
+      # Traefik Configuration - Standard Labels
+      # ================================================================
+      - 'traefik.enable=${TRAEFIK_ENABLED:-true}'
+      
+      # HTTP to HTTPS redirect
+      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-redirect-web-secure.redirectscheme.scheme=https'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.middlewares=${COMPOSE_PROJECT_NAME}-redirect-web-secure'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.rule=Host(`${TRAEFIK_HOST}`)'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.entrypoints=web'
+      
+      # HTTPS configuration
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.rule=Host(`${TRAEFIK_HOST}`)'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.tls=true'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.tls.certresolver=resolver'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.entrypoints=web-secure'
+      
+      # Compression middleware
+      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-compress.compress=true'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.middlewares=${COMPOSE_PROJECT_NAME}-compress'
+      
+      # Service port
+      - 'traefik.http.services.${COMPOSE_PROJECT_NAME}-web-secure.loadbalancer.server.port=${APP_PORT}'
+      
+      # Network specification
+      - 'traefik.docker.network=${NETWORK_NAME:-kompose}'
+      
+      # ================================================================
+      # Optional: SSO Protection
+      # Uncomment to require authentication via OAuth2 Proxy
+      # ================================================================
+      # - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.middlewares=${COMPOSE_PROJECT_NAME}-compress,kompose-sso'
+      
+      # ================================================================
+      # Optional: Rate Limiting
+      # Uncomment to enable rate limiting
+      # ================================================================
+      # - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-ratelimit.ratelimit.average=100'
+      # - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-ratelimit.ratelimit.burst=50'
+      
+      # ================================================================
+      # Optional: IP Whitelist (Internal Only)
+      # Uncomment to restrict access to internal IPs
+      # ================================================================
+      # - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-ipwhitelist.ipwhitelist.sourcerange=127.0.0.1/32,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16'
+
+volumes:
+  app_data:
+    name: ${COMPOSE_PROJECT_NAME}_app_data
+
+networks:
+  kompose_network:
+    name: ${NETWORK_NAME:-kompose}
+    external: true
