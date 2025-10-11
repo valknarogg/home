@@ -24,6 +24,7 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME}_postgres
     restart: unless-stopped
     environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
@@ -44,6 +45,7 @@ services:
     ports:
       - "8088:80"
     environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
       PGADMIN_DEFAULT_EMAIL: ${ADMIN_EMAIL}
       PGADMIN_DEFAULT_PASSWORD: ${ADMIN_PASSWORD}
     volumes:

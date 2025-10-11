@@ -23,7 +23,8 @@ def find_compose_files():
         dirs[:] = [d for d in dirs if 'node_modules' not in d]
         
         # Only look at immediate subdirectories (depth 1)
-        depth = root.count(os.sep) - root.startswith('.').count(os.sep)
+        # depth = root.count(os.sep) - root.startswith('.').count(os.sep)
+        depth = 1
         if depth > 1:
             continue
             

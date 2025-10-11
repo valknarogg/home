@@ -6,6 +6,7 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME}_app
     restart: unless-stopped
     environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
       HOMEPAGE_ALLOWED_HOSTS: ${ALLOWED_HOST}:4000
       PUID: ${PUID}
       PGID: ${PGID}

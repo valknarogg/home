@@ -8,6 +8,7 @@ services:
     volumes:
       - gotify_data:/app/data
     environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
       GOTIFY_DEFAULTUSER_NAME: ${GOTIFY_DEFAULTUSER_NAME}
       GOTIFY_DEFAULTUSER_PASS: ${GOTIFY_DEFAULTUSER_PASS}
     # Gotify is a Go binary - no wget/curl, but has built-in health endpoint

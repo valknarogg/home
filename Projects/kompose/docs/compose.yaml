@@ -10,6 +10,7 @@ services:
     # No healthcheck - static-web-server doesn't include wget/curl
     # Traefik will detect via port check
     environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
       SERVER_REDIRECT_TRAILING_SLASH: false
     networks:
       - kompose_network

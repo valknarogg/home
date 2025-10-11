@@ -6,6 +6,7 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME}_app
     restart: unless-stopped
     environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
       DB_TYPE: postgresdb
       DB_POSTGRESDB_HOST: ${DB_HOST}
       DB_POSTGRESDB_PORT: 5432

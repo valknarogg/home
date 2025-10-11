@@ -12,6 +12,7 @@ services:
       - ./uploads:/directus/uploads
       - ${DIRECTUS_BUNDLE}:/directus/extensions/sexy.pivoine.art
     environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
       SECRET: ${DIRECTUS_SECRET}
       DB_CLIENT: pg
       DB_HOST: ${DB_HOST}
@@ -73,6 +74,7 @@ services:
     networks:
       - kompose_network
     environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
       NODE_ENV: production
     volumes:
       - /var/www/sexy.pivoine.art:/home/node/app

@@ -6,6 +6,7 @@ services:
     container_name: ${COMPOSE_PROJECT_NAME}_keycloak
     restart: unless-stopped
     environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
       KC_DB: postgres
       KC_DB_URL: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${DB_NAME}
       KC_DB_USERNAME: ${DB_USER}

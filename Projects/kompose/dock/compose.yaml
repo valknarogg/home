@@ -9,6 +9,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ${DOCKGE_STACKS_DIR}:${DOCKGE_STACKS_DIR}
     environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
       - DOCKGE_STACKS_DIR=${DOCKGE_STACKS_DIR}
     # healthcheck:
     #   test: ["CMD-SHELL", "wget --spider -q http://localhost:$APP_PORT/ || exit 1"]

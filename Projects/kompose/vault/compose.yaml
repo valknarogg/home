@@ -8,6 +8,7 @@ services:
     volumes:
       - ./bitwarden:/data:rw
     environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
       ADMIN_TOKEN: ${JWT_TOKEN}
       WEBSOCKET_ENABLED: ${WEBSOCKET_ENABLED}
       SIGNUPS_ALLOWED: ${SIGNUPS_ALLOWED}
