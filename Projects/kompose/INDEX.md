@@ -1,74 +1,229 @@
-# 📚 Kompose Update Documentation Index
+# 📚 Kompose Documentation Index
 
 ## Overview
 
-This index helps you navigate all the documentation created for the kompose system update.
+This index helps you navigate all the documentation for the kompose system - a comprehensive Docker Compose stack management system.
 
 ---
 
 ## 🎯 Start Here
 
-### If you're ready to execute the changes:
-➡️ **[EXECUTION_CHECKLIST.md](EXECUTION_CHECKLIST.md)** - Step-by-step execution guide with verification
+### New to kompose?
+➡️ **[README.md](README.md)** - System overview  
+➡️ **[CORE_QUICK_REF.md](CORE_QUICK_REF.md)** - Core infrastructure reference  
+➡️ **[VPN_QUICK_REF.md](VPN_QUICK_REF.md)** - VPN quick reference
 
-### If you want to understand what's changing:
-➡️ **[COMPLETE_UPDATE_SUMMARY.md](COMPLETE_UPDATE_SUMMARY.md)** - Comprehensive overview of all changes
+### Setting up VPN for remote access?
+➡️ **[vpn/README.md](vpn/README.md)** - Complete VPN setup guide  
+➡️ **[VPN_INTEGRATION.md](VPN_INTEGRATION.md)** - Private intranet integration
+
+### Working with automation?
+➡️ **[CHAIN_QUICK_REF.md](CHAIN_QUICK_REF.md)** - Automation stack reference  
+➡️ **[chain/INTEGRATION_GUIDE.md](chain/INTEGRATION_GUIDE.md)** - Integration guide
 
 ---
 
-## 📋 Documentation by Purpose
+## 📋 Documentation by Stack
 
-### For Quick Reference
+### 🔒 VPN Stack (WireGuard/wg-easy)
 | Document | Purpose | Time to Read |
 |----------|---------|--------------|
-| **[CHAIN_QUICK_REF.md](CHAIN_QUICK_REF.md)** | One-page command reference | 2 min |
-| **[EXECUTION_CHECKLIST.md](EXECUTION_CHECKLIST.md)** | Step-by-step execution | 5 min |
-| **[COMPLETE_UPDATE_SUMMARY.md](COMPLETE_UPDATE_SUMMARY.md)** | Full overview | 10 min |
+| **[vpn/README.md](vpn/README.md)** | Complete VPN setup guide | 20 min |
+| **[VPN_QUICK_REF.md](VPN_QUICK_REF.md)** | Quick commands & reference | 5 min |
+| **[VPN_INTEGRATION.md](VPN_INTEGRATION.md)** | Private intranet setup | 30 min |
 
-### For Detailed Information
+**Key Features:**
+- Secure remote access to all services
+- Mobile & desktop client support
+- QR code configuration
+- Web-based client management
+- Integration with all kompose stacks
+
+### 🏗️ Core Stack (Infrastructure)
 | Document | Purpose | Time to Read |
 |----------|---------|--------------|
-| **[RENAME_HOME_TO_CORE.md](RENAME_HOME_TO_CORE.md)** | Detailed rename guide | 10 min |
+| **[core/README.md](core/README.md)** | Complete core documentation | 15 min |
+| **[CORE_QUICK_REF.md](CORE_QUICK_REF.md)** | Quick commands & reference | 5 min |
+| **[CORE_STACK_SUMMARY.md](CORE_STACK_SUMMARY.md)** | Stack summary | 10 min |
+
+**Services:**
+- PostgreSQL - Database
+- Redis - Cache & sessions
+- Mosquitto - MQTT broker
+- Redis Commander - Web UI
+
+### 🔗 Chain Stack (Automation)
+| Document | Purpose | Time to Read |
+|----------|---------|--------------|
+| **[chain/INTEGRATION_GUIDE.md](chain/INTEGRATION_GUIDE.md)** | Complete integration guide | 30 min |
+| **[CHAIN_QUICK_REF.md](CHAIN_QUICK_REF.md)** | Quick commands & reference | 5 min |
 | **[CHAIN_INTEGRATION_SUMMARY.md](CHAIN_INTEGRATION_SUMMARY.md)** | Integration overview | 15 min |
-| **[chain/INTEGRATION_GUIDE.md](chain/INTEGRATION_GUIDE.md)** | Comprehensive guide | 30 min |
+
+**Services:**
+- n8n - Workflow automation
+- Semaphore - Ansible UI
+- Gitea - Git repository (optional)
 
 ---
 
-## 🛠️ Executable Scripts
+## 🛠️ Management Tools
 
-| Script | Purpose | Documentation |
-|--------|---------|---------------|
-| **rename-home-to-core.sh** | Automate home→core rename | [RENAME_HOME_TO_CORE.md](RENAME_HOME_TO_CORE.md) |
-| **migrate-auto-to-chain.sh** | Integrate Semaphore | [CHAIN_INTEGRATION_SUMMARY.md](CHAIN_INTEGRATION_SUMMARY.md) |
-| **kompose.sh** | Main stack manager | `./kompose.sh help` |
+### Main Script
+| Tool | Purpose | Documentation |
+|------|---------|---------------|
+| **kompose.sh** | Stack management CLI | `./kompose.sh help` |
 
-**Make executable:**
+**Key Commands:**
 ```bash
-chmod +x rename-home-to-core.sh migrate-auto-to-chain.sh kompose.sh
+./kompose.sh up [STACK]          # Start stack
+./kompose.sh down [STACK]        # Stop stack
+./kompose.sh logs [STACK]        # View logs
+./kompose.sh status [STACK]      # Check status
+./kompose.sh db backup          # Backup databases
 ```
 
+### Helper Scripts
+| Script | Purpose | Documentation |
+|--------|---------|---------------|
+| **rename-home-to-core.sh** | Rename home→core | [RENAME_HOME_TO_CORE.md](RENAME_HOME_TO_CORE.md) |
+| **migrate-auto-to-chain.sh** | Migrate auto→chain | [CHAIN_INTEGRATION_SUMMARY.md](CHAIN_INTEGRATION_SUMMARY.md) |
+
 ---
 
-## 🎓 Reading Path by Experience Level
+## 🎓 Quick Start Guides
 
-### Beginner (New to the system)
-1. Start with **COMPLETE_UPDATE_SUMMARY.md** (10 min)
-2. Review **EXECUTION_CHECKLIST.md** (5 min)
-3. Execute the scripts following the checklist
-4. Reference **CHAIN_QUICK_REF.md** as needed
+### Setting Up VPN for Remote Access
 
-### Intermediate (Familiar with kompose)
-1. Skim **COMPLETE_UPDATE_SUMMARY.md** (5 min)
-2. Jump to **EXECUTION_CHECKLIST.md** Phase 1
-3. Execute and verify
-4. Keep **CHAIN_QUICK_REF.md** open for reference
+**Goal:** Access all kompose services securely from anywhere
 
-### Advanced (Want full details)
-1. Read **RENAME_HOME_TO_CORE.md** (10 min)
-2. Read **CHAIN_INTEGRATION_SUMMARY.md** (15 min)
-3. Read **chain/INTEGRATION_GUIDE.md** (30 min)
-4. Review scripts before executing
-5. Execute with full understanding
+```bash
+# 1. Configure VPN
+cd vpn
+nano .env  # Set WG_HOST and generate PASSWORD_HASH
+
+# 2. Start VPN stack
+./kompose.sh up vpn
+
+# 3. Create client
+# Open https://vpn.pivoine.art
+# Click "+" → Create client → Download/Scan QR
+
+# 4. Connect & Access
+# Connect to VPN → Access services via:
+# https://chain.pivoine.art (n8n)
+# https://vault.pivoine.art (Vaultwarden)
+# postgresql://core-postgres:5432 (Database)
+```
+
+**Next Steps:**
+- [vpn/README.md](vpn/README.md) - Full setup
+- [VPN_INTEGRATION.md](VPN_INTEGRATION.md) - Integration patterns
+- [VPN_QUICK_REF.md](VPN_QUICK_REF.md) - Commands
+
+### Setting Up Core Infrastructure
+
+**Goal:** Deploy shared database, cache, and MQTT services
+
+```bash
+# 1. Create network
+docker network create kompose
+
+# 2. Configure secrets
+echo "POSTGRES_PASSWORD=$(openssl rand -base64 32)" >> secrets.env
+echo "REDIS_PASSWORD=$(openssl rand -base64 32)" >> secrets.env
+
+# 3. Start core
+./kompose.sh up core
+
+# 4. Verify
+./kompose.sh status core
+docker exec core-postgres psql -U kompose -l
+```
+
+**Next Steps:**
+- [core/README.md](core/README.md) - Full documentation
+- [CORE_QUICK_REF.md](CORE_QUICK_REF.md) - Quick reference
+
+### Setting Up Automation Stack
+
+**Goal:** Deploy n8n and Semaphore for workflow automation
+
+```bash
+# 1. Ensure core is running
+./kompose.sh status core
+
+# 2. Start chain stack
+./kompose.sh up chain
+
+# 3. Access services
+# n8n: https://chain.pivoine.art
+# Semaphore: https://chain.pivoine.art/semaphore
+
+# 4. Configure
+# Set up n8n workflows
+# Configure Ansible playbooks in Semaphore
+```
+
+**Next Steps:**
+- [chain/INTEGRATION_GUIDE.md](chain/INTEGRATION_GUIDE.md) - Integration
+- [CHAIN_QUICK_REF.md](CHAIN_QUICK_REF.md) - Commands
+
+---
+
+## 🎯 Common Use Cases
+
+### Remote Development Environment
+
+**Access your development stack from anywhere:**
+
+1. **Set up VPN**: [vpn/README.md](vpn/README.md)
+2. **Connect to VPN**: Use WireGuard client
+3. **Access services**:
+   ```bash
+   psql -h core-postgres -U valknar
+   redis-cli -h core-redis
+   ssh dev-server.kompose.local
+   ```
+
+**Documentation:**
+- [VPN_INTEGRATION.md](VPN_INTEGRATION.md) - Pattern 1: Remote Development
+
+### Team Collaboration
+
+**Provide secure access for team members:**
+
+1. **Create VPN clients** for each team member
+2. **Set up access levels** via AllowedIPs
+3. **Document access** in vpn/clients.md
+
+**Documentation:**
+- [VPN_INTEGRATION.md](VPN_INTEGRATION.md) - Pattern 5: Team Collaboration
+- [vpn/README.md](vpn/README.md) - Client Management
+
+### Automated Deployments
+
+**Set up CI/CD with n8n and Semaphore:**
+
+1. **Configure Git webhooks** in Gitea
+2. **Create n8n workflow** for deployment pipeline
+3. **Set up Ansible playbooks** in Semaphore
+4. **Test deployment** via VPN
+
+**Documentation:**
+- [chain/INTEGRATION_GUIDE.md](chain/INTEGRATION_GUIDE.md) - Deployment workflows
+- [VPN_INTEGRATION.md](VPN_INTEGRATION.md) - Pattern 2: Automated Deployment
+
+### IoT Device Integration
+
+**Connect IoT devices to private network:**
+
+1. **Configure device** with WireGuard
+2. **Set up MQTT** connection to core-mqtt
+3. **Create workflows** in n8n for data processing
+
+**Documentation:**
+- [VPN_INTEGRATION.md](VPN_INTEGRATION.md) - Pattern 4: IoT Integration
+- [core/README.md](core/README.md) - MQTT Broker
 
 ---
 
@@ -76,192 +231,238 @@ chmod +x rename-home-to-core.sh migrate-auto-to-chain.sh kompose.sh
 
 ```
 kompose/
-├── 🚀 EXECUTION_CHECKLIST.md          # START HERE - Step-by-step guide
-├── 📖 COMPLETE_UPDATE_SUMMARY.md      # Full overview of changes
-├── 🔄 RENAME_HOME_TO_CORE.md          # Detailed rename documentation
-├── 🔗 CHAIN_INTEGRATION_SUMMARY.md    # Integration overview
-├── 📝 CHAIN_QUICK_REF.md              # Quick command reference
-├── 📄 INDEX.md                        # This file
 │
-├── 🔧 rename-home-to-core.sh          # Rename automation script
-├── 🔧 migrate-auto-to-chain.sh        # Integration automation script
-├── 🔧 kompose.sh                      # Main stack manager (updated)
+├── 📖 README.md                       # Main overview
+├── 📄 INDEX.md                        # This file - documentation index
 │
-└── chain/
-    └── 📚 INTEGRATION_GUIDE.md         # Comprehensive integration guide
+├── 🔒 VPN Stack
+│   ├── vpn/README.md                  # Complete VPN guide
+│   ├── VPN_QUICK_REF.md              # Quick reference
+│   └── VPN_INTEGRATION.md            # Integration patterns
+│
+├── 🏗️ Core Stack
+│   ├── core/README.md                # Complete core guide
+│   ├── CORE_QUICK_REF.md            # Quick reference
+│   └── CORE_STACK_SUMMARY.md        # Stack summary
+│
+├── 🔗 Chain Stack
+│   ├── chain/INTEGRATION_GUIDE.md   # Complete integration guide
+│   ├── CHAIN_QUICK_REF.md           # Quick reference
+│   └── CHAIN_INTEGRATION_SUMMARY.md # Integration summary
+│
+├── 🔧 Management Scripts
+│   ├── kompose.sh                    # Main stack manager
+│   ├── rename-home-to-core.sh       # Rename automation
+│   └── migrate-auto-to-chain.sh     # Migration automation
+│
+└── 📚 Additional Documentation
+    ├── EXECUTION_CHECKLIST.md        # Step-by-step execution
+    ├── RENAME_HOME_TO_CORE.md       # Rename guide
+    ├── DATABASE-MANAGEMENT.md        # Database operations
+    └── TIMEZONE_*.md                 # Timezone configuration
 ```
 
 ---
 
-## 🎯 Common Scenarios
+## 🔍 Finding What You Need
 
-### "I just want to get started quickly"
-1. Read **EXECUTION_CHECKLIST.md** sections: Pre-Flight, Phase 1, Phase 2, Phase 3
-2. Execute scripts
-3. Verify with Phase 4
-4. Done!
+### By Task
 
-### "I want to understand what's changing"
-1. Read **COMPLETE_UPDATE_SUMMARY.md** 
-2. Review architecture diagrams
-3. Check verification sections
-4. Execute when ready
+**I want to...**
 
-### "I need to rollback changes"
-1. Go to **EXECUTION_CHECKLIST.md** → Rollback Procedures
-2. Or **RENAME_HOME_TO_CORE.md** → Rollback Instructions
-3. Follow step-by-step instructions
+| Task | Documentation |
+|------|---------------|
+| Set up remote access | [vpn/README.md](vpn/README.md) |
+| Deploy core services | [core/README.md](core/README.md) |
+| Create workflows | [chain/INTEGRATION_GUIDE.md](chain/INTEGRATION_GUIDE.md) |
+| Backup databases | [DATABASE-MANAGEMENT.md](DATABASE-MANAGEMENT.md) |
+| Manage VPN clients | [VPN_QUICK_REF.md](VPN_QUICK_REF.md) |
+| Access via VPN | [VPN_INTEGRATION.md](VPN_INTEGRATION.md) |
+| Configure timezone | [TIMEZONE_QUICKSTART.md](TIMEZONE_QUICKSTART.md) |
 
-### "I want to learn about n8n + Semaphore integration"
-1. Read **chain/INTEGRATION_GUIDE.md** → Integration Use Cases
-2. Review API endpoint documentation
-3. Check example workflows
+### By Stack
 
-### "I need a quick command reference"
-1. Open **CHAIN_QUICK_REF.md**
-2. Bookmark for future use
+**Which stack handles...**
 
----
+| Function | Stack | Documentation |
+|----------|-------|---------------|
+| Database (PostgreSQL) | core | [core/README.md](core/README.md) |
+| Cache (Redis) | core | [core/README.md](core/README.md) |
+| MQTT Messaging | core | [core/README.md](core/README.md) |
+| VPN Access | vpn | [vpn/README.md](vpn/README.md) |
+| Workflows (n8n) | chain | [chain/INTEGRATION_GUIDE.md](chain/INTEGRATION_GUIDE.md) |
+| Ansible (Semaphore) | chain | [chain/INTEGRATION_GUIDE.md](chain/INTEGRATION_GUIDE.md) |
+| Password Manager | vault | Check vault directory |
+| Notifications | chat | Check chat directory |
 
-## ✅ Pre-Execution Checklist
+### By Experience Level
 
-Before starting, ensure you've:
+**Beginner:**
+1. [README.md](README.md) - System overview
+2. [CORE_QUICK_REF.md](CORE_QUICK_REF.md) - Core basics
+3. [VPN_QUICK_REF.md](VPN_QUICK_REF.md) - VPN basics
+4. Use quick reference guides
 
-- [ ] Read **COMPLETE_UPDATE_SUMMARY.md** → Overview section
-- [ ] Reviewed **EXECUTION_CHECKLIST.md** → Pre-Flight Checks
-- [ ] Made scripts executable: `chmod +x *.sh`
-- [ ] Created a full backup: `tar czf ~/kompose-backup.tar.gz .`
-- [ ] Have access to `secrets.env` for configuration
-- [ ] Understand the changes (rename + integration)
+**Intermediate:**
+1. Stack-specific README files
+2. Integration guides
+3. `./kompose.sh help` for commands
+
+**Advanced:**
+1. Complete integration guides
+2. Source code in compose.yaml files
+3. Custom modifications
 
 ---
 
 ## 📞 Support & Help
 
-### If you encounter issues:
+### Getting Help
 
-1. **Check logs**:
+1. **Check relevant documentation**:
+   - Quick reference for commands
+   - README for detailed setup
+   - Integration guide for advanced usage
+
+2. **Use built-in help**:
    ```bash
-   ./kompose.sh logs core
-   ./kompose.sh logs chain
+   ./kompose.sh help
+   ./kompose.sh db --help
+   ./kompose.sh tag --help
    ```
 
-2. **Verify configuration**:
+3. **Check logs**:
    ```bash
-   ./kompose.sh validate core
-   ./kompose.sh validate chain
+   ./kompose.sh logs [STACK] -f
+   docker logs [CONTAINER] -f
    ```
 
-3. **Review documentation**:
-   - **EXECUTION_CHECKLIST.md** → Troubleshooting section
-   - **RENAME_HOME_TO_CORE.md** → Common Issues section
-   - **chain/INTEGRATION_GUIDE.md** → Troubleshooting section
-
-4. **Check database**:
+4. **Verify status**:
    ```bash
-   ./kompose.sh db status
-   docker exec core-postgres psql -U kompose -l
+   ./kompose.sh status [STACK]
+   docker ps
+   docker network inspect kompose
    ```
 
----
+### Troubleshooting
 
-## 🔗 Quick Links
+**VPN Issues:**
+- [VPN_QUICK_REF.md](VPN_QUICK_REF.md) - Troubleshooting section
+- [vpn/README.md](vpn/README.md) - Troubleshooting guide
 
-### Most Used Documents
-- [Execution Checklist](EXECUTION_CHECKLIST.md) ⭐
-- [Complete Summary](COMPLETE_UPDATE_SUMMARY.md) ⭐
-- [Quick Reference](CHAIN_QUICK_REF.md) ⭐
+**Core Services Issues:**
+- [CORE_QUICK_REF.md](CORE_QUICK_REF.md) - Troubleshooting section
+- [core/README.md](core/README.md) - Troubleshooting guide
 
-### Detailed Guides
-- [Rename Guide](RENAME_HOME_TO_CORE.md)
-- [Integration Summary](CHAIN_INTEGRATION_SUMMARY.md)
-- [Integration Guide](chain/INTEGRATION_GUIDE.md)
-
-### Scripts
-- `rename-home-to-core.sh` - Automate rename
-- `migrate-auto-to-chain.sh` - Automate integration
-- `kompose.sh help` - Main command help
+**Automation Issues:**
+- [CHAIN_QUICK_REF.md](CHAIN_QUICK_REF.md) - Troubleshooting section
+- [chain/INTEGRATION_GUIDE.md](chain/INTEGRATION_GUIDE.md) - Troubleshooting
 
 ---
 
-## 📈 Update Statistics
+## 🔗 External Resources
 
-**Documentation Created:**
-- 📄 7 comprehensive documents
-- 📝 3 automated scripts (2 new, 1 updated)
-- ⏱️ ~2000 lines of documentation
-- 🔧 100+ command examples
+### WireGuard VPN
+- [WireGuard Official](https://www.wireguard.com/)
+- [wg-easy GitHub](https://github.com/wg-easy/wg-easy)
+- [WireGuard Quick Start](https://www.wireguard.com/quickstart/)
 
-**System Changes:**
-- 🔄 1 stack renamed (home → core)
-- 🔗 2 stacks integrated (auto → chain)
-- 📦 3 new services in chain stack
-- 🗄️ 2 databases added (n8n, semaphore)
+### Core Services
+- [PostgreSQL Docs](https://www.postgresql.org/docs/)
+- [Redis Documentation](https://redis.io/documentation)
+- [Mosquitto MQTT](https://mosquitto.org/documentation/)
 
-**Time Estimates:**
-- 📖 Reading all docs: ~1.5 hours
-- ⚡ Quick execution: ~30 minutes
-- ✅ Full verification: ~45 minutes
+### Automation
+- [n8n Documentation](https://docs.n8n.io/)
+- [Semaphore Ansible UI](https://docs.ansible-semaphore.com/)
+- [Ansible Documentation](https://docs.ansible.com/)
 
 ---
 
-## 🎯 Recommended Path
+## ✅ Quick Checklist
 
-**For most users, we recommend:**
+### Initial Setup
+- [ ] Install Docker & Docker Compose
+- [ ] Clone kompose repository
+- [ ] Create `secrets.env` from template
+- [ ] Create kompose network: `docker network create kompose`
+- [ ] Start core stack: `./kompose.sh up core`
 
-1. **Read** (15 min):
-   - COMPLETE_UPDATE_SUMMARY.md
-   - EXECUTION_CHECKLIST.md (Pre-Flight + Phase summaries)
+### VPN Setup
+- [ ] Configure vpn/.env (WG_HOST, PASSWORD_HASH)
+- [ ] Configure port forwarding (UDP 51820)
+- [ ] Start VPN: `./kompose.sh up vpn`
+- [ ] Create first client
+- [ ] Test connection
 
-2. **Execute** (30 min):
-   - Follow EXECUTION_CHECKLIST.md step-by-step
-   - Run scripts with verification at each phase
+### Automation Setup
+- [ ] Start chain stack: `./kompose.sh up chain`
+- [ ] Access n8n: https://chain.pivoine.art
+- [ ] Configure first workflow
+- [ ] Set up Semaphore project
 
-3. **Verify** (15 min):
-   - Complete Phase 4 verification
-   - Test all services
-   - Review CHAIN_QUICK_REF.md
-
-4. **Reference** (ongoing):
-   - Keep CHAIN_QUICK_REF.md handy
-   - Bookmark chain/INTEGRATION_GUIDE.md
-   - Use kompose.sh help for commands
-
----
-
-## 💡 Tips for Success
-
-1. **Don't skip the backup** - Create full backup before starting
-2. **Read before executing** - Understand what each script does
-3. **Verify at each phase** - Don't proceed if something fails
-4. **Keep docs open** - Have EXECUTION_CHECKLIST.md and CHAIN_QUICK_REF.md ready
-5. **Test thoroughly** - Run all verification commands
+### Security Hardening
+- [ ] Change all default passwords
+- [ ] Enable firewall rules
+- [ ] Configure VPN client restrictions
+- [ ] Set up monitoring
+- [ ] Configure backups
 
 ---
 
-## 🎉 After Completion
+## 📈 System Statistics
 
-Once everything is running:
+**Available Stacks:**
+- 🏗️ Core - Infrastructure (PostgreSQL, Redis, MQTT)
+- 🔒 VPN - WireGuard remote access
+- 🔗 Chain - Automation (n8n, Semaphore)
+- 💬 Chat - Notifications (Gotify)
+- 🔐 Vault - Password manager (Vaultwarden)
+- 📝 And more...
 
-1. **Learn the new system**:
-   - Explore n8n at http://localhost:5678
-   - Check Semaphore at http://localhost:3000
-   
-2. **Start building**:
-   - Configure Ansible playbooks
-   - Create n8n workflows
-   - Set up integrations
-
-3. **Reference docs**:
-   - chain/INTEGRATION_GUIDE.md for examples
-   - CHAIN_QUICK_REF.md for commands
-
----
-
-**Last Updated**: {{timestamp}}
-**Version**: 1.0
-**Status**: ✅ Complete and Ready for Execution
+**Documentation:**
+- 📄 15+ comprehensive documents
+- 🔧 Multiple automated scripts
+- ⏱️ 10,000+ lines of documentation
+- 💡 100+ command examples
 
 ---
 
-Need help navigating? Start with **[EXECUTION_CHECKLIST.md](EXECUTION_CHECKLIST.md)** 🚀
+## 🎯 Recommended Learning Path
+
+### Day 1: Foundation
+1. Read [README.md](README.md)
+2. Deploy core stack with [core/README.md](core/README.md)
+3. Test with [CORE_QUICK_REF.md](CORE_QUICK_REF.md)
+
+### Day 2: Remote Access
+1. Set up VPN with [vpn/README.md](vpn/README.md)
+2. Create clients and test connectivity
+3. Access services via VPN
+
+### Day 3: Automation
+1. Deploy chain stack with [chain/INTEGRATION_GUIDE.md](chain/INTEGRATION_GUIDE.md)
+2. Create first n8n workflow
+3. Set up Ansible playbook in Semaphore
+
+### Day 4: Integration
+1. Study [VPN_INTEGRATION.md](VPN_INTEGRATION.md)
+2. Implement your use case
+3. Set up monitoring and backups
+
+### Ongoing: Operations
+1. Use quick reference guides daily
+2. Implement backup strategy
+3. Monitor and optimize
+
+---
+
+**Last Updated**: 2024-10-11  
+**Version**: 2.0  
+**Status**: ✅ Complete with VPN Integration
+
+---
+
+**🚀 Quick Start:** [README.md](README.md) → [CORE_QUICK_REF.md](CORE_QUICK_REF.md) → [VPN_QUICK_REF.md](VPN_QUICK_REF.md)  
+**🔒 VPN Setup:** [vpn/README.md](vpn/README.md) → [VPN_INTEGRATION.md](VPN_INTEGRATION.md)  
+**📞 Need Help?** Check the relevant quick reference guide first!
