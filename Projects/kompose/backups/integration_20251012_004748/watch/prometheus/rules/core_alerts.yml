@@ -1,0 +1,158 @@
+groups:
+  - name: core_services
+    interval: 30s
+    rules:
+      # PostgreSQL Alerts
+      - alert: PostgreSQLDown
+        expr: up{job="postgresql"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: postgresql
+          stack: core
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL database ({{ $labels.instance }}) has been down for more than 1 minute."
+
+      - alert: PostgreSQLTooManyConnections
+        expr: sum(pg_stat_activity_count) > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: postgresql
+          stack: core
+        annotations:
+          summary: "PostgreSQL has too many connections"
+          description: "PostgreSQL has {{ $value }} active connections (threshold: 80)."
+
+      - alert: PostgreSQLHighReplicationLag
+        expr: pg_replication_lag > 30
+        for: 5m
+        labels:
+          severity: warning
+          service: postgresql
+          stack: core
+        annotations:
+          summary: "PostgreSQL replication lag is high"
+          description: "PostgreSQL replication lag is {{ $value }} seconds."
+
+      # Redis Alerts
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: redis
+          stack: core
+        annotations:
+          summary: "Redis is down"
+          description: "Redis cache ({{ $labels.instance }}) has been down for more than 1 minute."
+
+      - alert: RedisHighMemoryUsage
+        expr: redis_memory_used_bytes / redis_memory_max_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          service: redis
+          stack: core
+        annotations:
+          summary: "Redis memory usage is high"
+          description: "Redis is using {{ $value | humanizePercentage }} of available memory."
+
+      - alert: RedisMissingBackup
+        expr: time() - redis_rdb_last_save_timestamp_seconds > 3600
+        for: 5m
+        labels:
+          severity: warning
+          service: redis
+          stack: core
+        annotations:
+          summary: "Redis backup is missing"
+          description: "Redis has not been backed up for more than 1 hour."
+
+      # MQTT Broker Alerts
+      - alert: MQTTBrokerDown
+        expr: up{job="mqtt"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: mqtt
+          stack: core
+        annotations:
+          summary: "MQTT Broker is down"
+          description: "MQTT Broker ({{ $labels.instance }}) has been down for more than 1 minute."
+
+      # Container Alerts
+      - alert: ContainerHighCPU
+        expr: rate(container_cpu_usage_seconds_total{name!=""}[5m]) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          type: container-metrics
+        annotations:
+          summary: "Container {{ $labels.name }} has high CPU usage"
+          description: "Container {{ $labels.name }} is using {{ $value | humanizePercentage }} CPU."
+
+      - alert: ContainerHighMemory
+        expr: container_memory_usage_bytes{name!=""} / container_spec_memory_limit_bytes{name!=""} > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          type: container-metrics
+        annotations:
+          summary: "Container {{ $labels.name }} has high memory usage"
+          description: "Container {{ $labels.name }} is using {{ $value | humanizePercentage }} of its memory limit."
+
+      # Host System Alerts
+      - alert: HostHighCPU
+        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+          type: host-metrics
+        annotations:
+          summary: "Host {{ $labels.instance }} has high CPU usage"
+          description: "Host {{ $labels.instance }} CPU usage is {{ $value }}%."
+
+      - alert: HostHighMemory
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          type: host-metrics
+        annotations:
+          summary: "Host {{ $labels.instance }} has high memory usage"
+          description: "Host {{ $labels.instance }} memory usage is {{ $value | humanizePercentage }}."
+
+      - alert: HostLowDiskSpace
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) < 0.1
+        for: 5m
+        labels:
+          severity: critical
+          type: host-metrics
+        annotations:
+          summary: "Host {{ $labels.instance }} has low disk space"
+          description: "Host {{ $labels.instance }} has less than 10% disk space remaining on /."
+
+      # Traefik Alerts
+      - alert: TraefikDown
+        expr: up{job="traefik"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: traefik
+          stack: proxy
+        annotations:
+          summary: "Traefik is down"
+          description: "Traefik reverse proxy has been down for more than 1 minute."
+
+      - alert: TraefikHighRequestRate
+        expr: rate(traefik_entrypoint_requests_total[5m]) > 1000
+        for: 5m
+        labels:
+          severity: warning
+          service: traefik
+          stack: proxy
+        annotations:
+          summary: "Traefik has high request rate"
+          description: "Traefik is receiving {{ $value }} requests per second."

@@ -1,0 +1,162 @@
+# OpenTelemetry Collector Configuration for Kompose.sh
+# Receives, processes, and exports telemetry data from all services
+
+receivers:
+  # OTLP receivers for traces, metrics, and logs
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+  # Prometheus receiver for scraping metrics
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: 'otel-collector'
+          scrape_interval: 10s
+          static_configs:
+            - targets: ['localhost:8888']
+
+  # MQTT receiver for IoT telemetry
+  mqtt:
+    endpoint: core-mqtt:1883
+    topics:
+      - homeassistant/#
+      - sensor/#
+      - device/#
+      - telemetry/#
+    qos: 1
+    client_id: otel-collector
+
+  # Host metrics receiver
+  hostmetrics:
+    collection_interval: 30s
+    scrapers:
+      cpu:
+      disk:
+      filesystem:
+      load:
+      memory:
+      network:
+      paging:
+
+  # Docker stats receiver
+  docker_stats:
+    endpoint: unix:///var/run/docker.sock
+    collection_interval: 30s
+    timeout: 10s
+
+processors:
+  # Batch processor for efficient data export
+  batch:
+    timeout: 10s
+    send_batch_size: 1024
+
+  # Memory limiter to prevent OOM
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 512
+    spike_limit_mib: 128
+
+  # Resource detection
+  resourcedetection:
+    detectors: [env, system, docker]
+    timeout: 5s
+
+  # Attributes processor for enrichment
+  attributes:
+    actions:
+      - key: service.namespace
+        value: kompose
+        action: insert
+      - key: deployment.environment
+        value: production
+        action: insert
+
+  # Filter processor to drop unwanted metrics
+  filter:
+    metrics:
+      exclude:
+        match_type: strict
+        metric_names:
+          - unwanted_metric
+
+  # Transform processor for metric conversion
+  metricstransform:
+    transforms:
+      - include: .*
+        match_type: regexp
+        action: update
+        operations:
+          - action: add_label
+            new_label: cluster
+            new_value: kompose
+
+exporters:
+  # Prometheus exporter for metrics
+  prometheus:
+    endpoint: "0.0.0.0:8889"
+    namespace: otel
+    const_labels:
+      cluster: kompose
+
+  # Prometheus Remote Write
+  prometheusremotewrite:
+    endpoint: http://watch_prometheus:9090/api/v1/write
+    tls:
+      insecure: true
+
+  # Logging exporter for debugging
+  logging:
+    loglevel: info
+    sampling_initial: 5
+    sampling_thereafter: 200
+
+  # OTLP exporters (if needed for external platforms)
+  # otlp/jaeger:
+  #   endpoint: jaeger:4317
+  #   tls:
+  #     insecure: true
+
+extensions:
+  # Health check extension
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+  # Performance profiler
+  pprof:
+    endpoint: 0.0.0.0:1777
+
+  # zPages for debugging
+  zpages:
+    endpoint: 0.0.0.0:55679
+
+service:
+  extensions: [health_check, pprof, zpages]
+  
+  pipelines:
+    # Metrics pipeline
+    metrics:
+      receivers: [otlp, prometheus, hostmetrics, docker_stats]
+      processors: [memory_limiter, batch, resourcedetection, attributes, metricstransform]
+      exporters: [prometheus, prometheusremotewrite, logging]
+
+    # Traces pipeline (if needed)
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, resourcedetection, attributes]
+      exporters: [logging]
+
+    # Logs pipeline
+    logs:
+      receivers: [otlp]
+      processors: [memory_limiter, batch, resourcedetection, attributes]
+      exporters: [logging]
+
+  telemetry:
+    logs:
+      level: info
+    metrics:
+      address: 0.0.0.0:8888

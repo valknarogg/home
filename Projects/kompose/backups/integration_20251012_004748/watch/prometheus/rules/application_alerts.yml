@@ -1,0 +1,84 @@
+groups:
+  - name: application_services
+    interval: 30s
+    rules:
+      # Home Assistant Alerts
+      - alert: HomeAssistantDown
+        expr: up{job="homeassistant"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: homeassistant
+          stack: home
+        annotations:
+          summary: "Home Assistant is down"
+          description: "Home Assistant has been down for more than 2 minutes."
+
+      # Umami Analytics Alerts
+      - alert: UmamiDown
+        expr: up{job="umami"} == 0
+        for: 2m
+        labels:
+          severity: warning
+          service: umami
+          stack: track
+        annotations:
+          summary: "Umami Analytics is down"
+          description: "Umami analytics service has been down for more than 2 minutes."
+
+      # Endpoint Availability Alerts
+      - alert: EndpointDown
+        expr: probe_success{job="blackbox"} == 0
+        for: 2m
+        labels:
+          severity: warning
+          type: endpoint-check
+        annotations:
+          summary: "Endpoint {{ $labels.instance }} is down"
+          description: "Endpoint {{ $labels.instance }} has failed health checks for more than 2 minutes."
+
+      - alert: SSLCertificateExpiry
+        expr: probe_ssl_earliest_cert_expiry - time() < 86400 * 30
+        for: 5m
+        labels:
+          severity: warning
+          type: ssl-certificate
+        annotations:
+          summary: "SSL certificate for {{ $labels.instance }} expires soon"
+          description: "SSL certificate for {{ $labels.instance }} will expire in {{ $value | humanizeDuration }}."
+
+      # Grafana Alerts
+      - alert: GrafanaDown
+        expr: up{job="grafana"} == 0
+        for: 2m
+        labels:
+          severity: warning
+          service: grafana
+          stack: watch
+        annotations:
+          summary: "Grafana is down"
+          description: "Grafana visualization platform has been down for more than 2 minutes."
+
+      # OpenTelemetry Collector Alerts
+      - alert: OtelCollectorDown
+        expr: up{job="otel-collector"} == 0
+        for: 2m
+        labels:
+          severity: warning
+          service: otel-collector
+          stack: watch
+        annotations:
+          summary: "OpenTelemetry Collector is down"
+          description: "OpenTelemetry Collector has been down for more than 2 minutes."
+
+      # MQTT Topic Activity
+      - alert: MQTTNoActivity
+        expr: rate(mqtt_messages_received_total[5m]) == 0
+        for: 10m
+        labels:
+          severity: info
+          service: mqtt
+          stack: core
+        annotations:
+          summary: "No MQTT activity detected"
+          description: "No MQTT messages received in the last 10 minutes on monitored topics."

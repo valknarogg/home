@@ -1,107 +1,141 @@
+# =================================================================
+# Alertmanager Configuration - Kompose Stack
+# Routes alerts to Gotify for push notifications
+# =================================================================
+
 global:
   resolve_timeout: 5m
-  smtp_from: 'alertmanager@kompose.local'
-  smtp_smarthost: 'localhost:25'
+  smtp_from: '${EMAIL_FROM}'
+  smtp_smarthost: 'messaging_mailhog:1025'
   smtp_require_tls: false
 
-# Templates for notifications
-templates:
-  - '/etc/alertmanager/templates/*.tmpl'
-
-# Route configuration
+# Alert routing tree
 route:
+  # Root route - all alerts start here
+  receiver: 'gotify-default'
   group_by: ['alertname', 'cluster', 'service']
   group_wait: 10s
   group_interval: 10s
   repeat_interval: 12h
-  receiver: 'default'
   
+  # Child routes for specific alert categories
   routes:
-    # Critical alerts
+    # Critical alerts - immediate notification
     - match:
         severity: critical
-      receiver: 'critical'
+      receiver: 'gotify-critical'
+      group_wait: 0s
+      group_interval: 5m
+      repeat_interval: 30m
       continue: true
     
-    # Warning alerts
+    # Warning alerts - grouped notification
     - match:
         severity: warning
-      receiver: 'warning'
+      receiver: 'gotify-warning'
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 4h
     
-    # Info alerts
+    # Security alerts - special handling
     - match:
-        severity: info
-      receiver: 'info'
+        category: security
+      receiver: 'gotify-security'
+      group_wait: 0s
+      repeat_interval: 1h
+      continue: true
     
-    # PostgreSQL specific
+    # Database alerts
     - match:
-        service: postgresql
-      receiver: 'database-team'
+        category: database
+      receiver: 'gotify-database'
+      group_wait: 1m
+      repeat_interval: 2h
     
-    # Home automation specific
+    # System resource alerts
     - match:
-        stack: home
-      receiver: 'home-team'
+        category: system
+      receiver: 'gotify-system'
+      group_wait: 2m
+      repeat_interval: 4h
 
-# Inhibition rules
+# Alert receivers
+receivers:
+  # Default Gotify receiver
+  - name: 'gotify-default'
+    webhook_configs:
+      - url: 'http://messaging_gotify:80/message?token=${GOTIFY_APP_TOKEN}'
+        send_resolved: true
+        http_config:
+          follow_redirects: true
+
+  # Critical alerts - high priority
+  - name: 'gotify-critical'
+    webhook_configs:
+      - url: 'http://messaging_gotify:80/message?token=${GOTIFY_APP_TOKEN}'
+        send_resolved: true
+        http_config:
+          follow_redirects: true
+        # Gotify priority: 10 (highest)
+        max_alerts: 0
+
+  # Warning alerts - medium priority
+  - name: 'gotify-warning'
+    webhook_configs:
+      - url: 'http://messaging_gotify:80/message?token=${GOTIFY_APP_TOKEN}'
+        send_resolved: true
+
+  # Security alerts - high priority with email backup
+  - name: 'gotify-security'
+    webhook_configs:
+      - url: 'http://messaging_gotify:80/message?token=${GOTIFY_APP_TOKEN}'
+        send_resolved: true
+    email_configs:
+      - to: '${ADMIN_EMAIL}'
+        headers:
+          Subject: '[SECURITY] Kompose Alert: {{ .GroupLabels.alertname }}'
+        html: |
+          <h2>Security Alert</h2>
+          <p><strong>Alert:</strong> {{ .GroupLabels.alertname }}</p>
+          <p><strong>Severity:</strong> {{ .CommonLabels.severity }}</p>
+          <p><strong>Service:</strong> {{ .CommonLabels.service }}</p>
+          <p><strong>Description:</strong> {{ range .Alerts }}{{ .Annotations.description }}{{ end }}</p>
+
+  # Database alerts
+  - name: 'gotify-database'
+    webhook_configs:
+      - url: 'http://messaging_gotify:80/message?token=${GOTIFY_APP_TOKEN}'
+        send_resolved: true
+
+  # System alerts
+  - name: 'gotify-system'
+    webhook_configs:
+      - url: 'http://messaging_gotify:80/message?token=${GOTIFY_APP_TOKEN}'
+        send_resolved: true
+
+# Inhibition rules - suppress certain alerts when others are firing
 inhibit_rules:
+  # Inhibit warning if critical is firing for same service
   - source_match:
       severity: 'critical'
     target_match:
       severity: 'warning'
-    equal: ['alertname', 'cluster', 'service']
+    equal: ['alertname', 'service', 'instance']
 
-# Receivers configuration
-receivers:
-  - name: 'default'
-    webhook_configs:
-      - url: 'http://localhost:5001/'
-        send_resolved: true
+  # Inhibit service down if host is down
+  - source_match:
+      alertname: 'HostDown'
+    target_match_re:
+      alertname: '.*Down'
+    equal: ['instance']
 
-  - name: 'critical'
-    # Email notification
-    email_configs:
-      - to: 'admin@kompose.local'
-        headers:
-          Subject: '🔴 CRITICAL: {{ .GroupLabels.alertname }}'
-        html: '{{ template "email.default.html" . }}'
-    
-    # Slack notification (configure webhook_url)
-    # slack_configs:
-    #   - api_url: 'YOUR_SLACK_WEBHOOK_URL'
-    #     channel: '#alerts-critical'
-    #     title: '🔴 Critical Alert'
-    #     text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
-    
-    # PagerDuty notification (configure routing_key)
-    # pagerduty_configs:
-    #   - routing_key: 'YOUR_PAGERDUTY_KEY'
-    #     description: '{{ .GroupLabels.alertname }}'
-    
-    # MQTT notification to Home Assistant
-    webhook_configs:
-      - url: 'http://home_homeassistant:8123/api/webhook/alertmanager'
-        send_resolved: true
+  # Inhibit all alerts if PostgreSQL is down (many services depend on it)
+  - source_match:
+      alertname: 'PostgreSQLDown'
+    target_match_re:
+      category: 'database|utility'
+    equal: ['cluster']
 
-  - name: 'warning'
-    email_configs:
-      - to: 'team@kompose.local'
-        headers:
-          Subject: '⚠️  WARNING: {{ .GroupLabels.alertname }}'
-        html: '{{ template "email.default.html" . }}'
-
-  - name: 'info'
-    webhook_configs:
-      - url: 'http://localhost:5001/'
-        send_resolved: true
-
-  - name: 'database-team'
-    email_configs:
-      - to: 'dba@kompose.local'
-        headers:
-          Subject: 'Database Alert: {{ .GroupLabels.alertname }}'
-
-  - name: 'home-team'
-    webhook_configs:
-      - url: 'http://home_homeassistant:8123/api/webhook/monitoring'
-        send_resolved: true
+# Templates for alert messages
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'

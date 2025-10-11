@@ -1,5 +1,8 @@
-# Prometheus Configuration for Kompose.sh Monitoring Stack
-# This configuration scrapes metrics from all core services and integrations
+# =================================================================
+# Prometheus Configuration - Kompose Full Stack Monitoring
+# =================================================================
+# Scrapes metrics from all core and utility services
+# =================================================================
 
 global:
   scrape_interval: 15s
@@ -8,137 +11,138 @@ global:
     cluster: 'kompose'
     environment: 'production'
 
-# Alertmanager configuration
+# Alertmanager Configuration
 alerting:
   alertmanagers:
     - static_configs:
         - targets:
-            - 'watch_alertmanager:9093'
+          - watch_alertmanager:9093
 
-# Load rules once and periodically evaluate them
+# Alert Rules
 rule_files:
-  - '/etc/prometheus/rules/*.yml'
+  - 'alerts/*.yml'
 
-# Scrape configurations
 scrape_configs:
-  # Prometheus itself
+  # =================================================================
+  # Core Services Monitoring
+  # =================================================================
+  
+  # Prometheus Self-Monitoring
   - job_name: 'prometheus'
     static_configs:
       - targets: ['localhost:9090']
         labels:
           service: 'prometheus'
-          stack: 'watch'
+          layer: 'monitoring'
 
-  # Grafana
-  - job_name: 'grafana'
-    static_configs:
-      - targets: ['watch_grafana:3000']
-        labels:
-          service: 'grafana'
-          stack: 'watch'
-
-  # OpenTelemetry Collector
-  - job_name: 'otel-collector'
-    static_configs:
-      - targets: ['watch_otel:8888']
-        labels:
-          service: 'otel-collector'
-          stack: 'watch'
-
-  # PostgreSQL Exporter - Core Database
+  # PostgreSQL Database
   - job_name: 'postgresql'
     static_configs:
       - targets: ['watch_postgres_exporter:9187']
         labels:
           service: 'postgresql'
-          stack: 'core'
+          layer: 'core'
           database: 'postgres'
 
-  # Redis Exporter - Core Cache
+  # Redis Cache
   - job_name: 'redis'
     static_configs:
       - targets: ['watch_redis_exporter:9121']
         labels:
           service: 'redis'
-          stack: 'core'
+          layer: 'core'
           cache: 'redis'
 
-  # MQTT Exporter - Core Message Broker
+  # MQTT Broker
   - job_name: 'mqtt'
     static_configs:
       - targets: ['watch_mqtt_exporter:9000']
         labels:
-          service: 'mqtt'
-          stack: 'core'
-          broker: 'mosquitto'
+          service: 'mosquitto'
+          layer: 'core'
+          broker: 'mqtt'
 
-  # cAdvisor - Docker Container Metrics
+  # Container Metrics (cAdvisor)
   - job_name: 'cadvisor'
     static_configs:
       - targets: ['watch_cadvisor:8080']
         labels:
           service: 'cadvisor'
-          stack: 'watch'
-          type: 'container-metrics'
+          layer: 'monitoring'
 
-  # Node Exporter - Host System Metrics
+  # Host System Metrics (Node Exporter)
   - job_name: 'node'
     static_configs:
       - targets: ['localhost:9100']
         labels:
           service: 'node-exporter'
-          stack: 'watch'
-          type: 'host-metrics'
+          layer: 'system'
 
-  # Traefik - Reverse Proxy Metrics
-  - job_name: 'traefik'
+  # =================================================================
+  # Utility Services Monitoring
+  # =================================================================
+  
+  # Linkwarden
+  - job_name: 'linkwarden'
     static_configs:
-      - targets: ['proxy_app:8080']
+      - targets: ['link_metrics:9100']
         labels:
-          service: 'traefik'
-          stack: 'proxy'
-          type: 'reverse-proxy'
-    metrics_path: '/metrics'
+          service: 'linkwarden'
+          layer: 'utility'
+          category: 'bookmarks'
 
-  # Home Assistant - Smart Home Platform
-  - job_name: 'homeassistant'
-    metrics_path: '/api/prometheus'
-    bearer_token: 'YOUR_LONG_LIVED_ACCESS_TOKEN'
+  # Letterpress/News
+  - job_name: 'letterpress'
     static_configs:
-      - targets: ['home_homeassistant:8123']
+      - targets: ['news_backend:9090']
         labels:
-          service: 'homeassistant'
-          stack: 'home'
-          type: 'smart-home'
+          service: 'letterpress'
+          layer: 'utility'
+          category: 'content'
+    metrics_path: /metrics
 
-  # Umami - Web Analytics (Custom metrics endpoint if available)
+  # Umami Analytics
   - job_name: 'umami'
     static_configs:
       - targets: ['track_app:3000']
         labels:
           service: 'umami'
-          stack: 'track'
-          type: 'analytics'
-    scrape_interval: 60s
-    metrics_path: '/api/metrics'
-    # Note: Umami doesn't have native Prometheus metrics
-    # Consider using blackbox exporter to monitor availability
+          layer: 'utility'
+          category: 'analytics'
+    metrics_path: /api/metrics
 
-  # Blackbox Exporter - Endpoint Monitoring
-  - job_name: 'blackbox'
+  # Vaultwarden
+  - job_name: 'vaultwarden'
+    static_configs:
+      - targets: ['vault_app:80']
+        labels:
+          service: 'vaultwarden'
+          layer: 'utility'
+          category: 'security'
+    metrics_path: /metrics
+
+  # =================================================================
+  # Blackbox Monitoring (Endpoint Health Checks)
+  # =================================================================
+  
+  - job_name: 'blackbox-http'
     metrics_path: /probe
     params:
       module: [http_2xx]
     static_configs:
       - targets:
-          # Core Services
-          - http://core-postgres:5432
-          - http://core-redis:6379
-          - http://core-mqtt:1883
-          # Utility Services
-          - http://track_app:3000
-          # Home Services
-          - http://home_homeassistant:8123
+        # Utility Services
+        - https://${TRAEFIK_HOST_LINK}
+        - https://${TRAEFIK_HOST_NEWS}
+        - https://${TRAEFIK_HOST_TRACK}
+        - https://${TRAEFIK_HOST_VAULT}
+        # Auth Services
+        - https://${TRAEFIK_HOST_AUTH}
+        - https://${OAUTH2_PROXY_HOST}
+        # Management
+        - https://${TRAEFIK_HOST_KMPS}
+        labels:
+          probe: 'https'
     relabel_configs:
       - source_labels: [__address__]
         target_label: __param_target
@@ -147,37 +151,63 @@ scrape_configs:
       - target_label: __address__
         replacement: watch_blackbox_exporter:9115
 
-  # Blackbox Exporter - HTTPS Endpoints
-  - job_name: 'blackbox-https'
-    metrics_path: /probe
-    params:
-      module: [http_2xx]
+  # =================================================================
+  # OpenTelemetry Collector
+  # =================================================================
+  
+  - job_name: 'otel-collector'
     static_configs:
-      - targets:
-          - https://grafana.localhost
-          - https://prometheus.localhost
+      - targets: ['watch_otel:8888']
+        labels:
+          service: 'otel-collector'
+          layer: 'monitoring'
+
+  # =================================================================
+  # Grafana Monitoring
+  # =================================================================
+  
+  - job_name: 'grafana'
+    static_configs:
+      - targets: ['watch_grafana:3000']
+        labels:
+          service: 'grafana'
+          layer: 'monitoring'
+    metrics_path: /metrics
+
+  # =================================================================
+  # Docker Service Discovery (for additional services)
+  # =================================================================
+  
+  - job_name: 'docker-services'
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
     relabel_configs:
-      - source_labels: [__address__]
-        target_label: __param_target
-      - source_labels: [__param_target]
-        target_label: instance
-      - target_label: __address__
-        replacement: watch_blackbox_exporter:9115
-
-  # MQTT Topics Monitoring
-  - job_name: 'mqtt-topics'
-    static_configs:
-      - targets: ['watch_mqtt_exporter:9000']
-        labels:
-          service: 'mqtt-topics'
-          stack: 'core'
-          type: 'mqtt-data'
-    scrape_interval: 30s
-
-  # Self-monitoring - Alertmanager
-  - job_name: 'alertmanager'
-    static_configs:
-      - targets: ['watch_alertmanager:9093']
-        labels:
-          service: 'alertmanager'
-          stack: 'watch'
+      # Only scrape containers with prometheus.scrape=true label
+      - source_labels: [__meta_docker_container_label_prometheus_scrape]
+        action: keep
+        regex: true
+      
+      # Use custom port if specified
+      - source_labels: [__meta_docker_container_label_prometheus_port]
+        action: replace
+        target_label: __address__
+        regex: (.+)
+        replacement: ${__meta_docker_container_network_ip}:$1
+      
+      # Use custom path if specified
+      - source_labels: [__meta_docker_container_label_prometheus_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      
+      # Add container name as label
+      - source_labels: [__meta_docker_container_name]
+        target_label: container
+      
+      # Add compose project name
+      - source_labels: [__meta_docker_container_label_com_docker_compose_project]
+        target_label: compose_project
+      
+      # Add service name
+      - source_labels: [__meta_docker_container_label_com_docker_compose_service]
+        target_label: compose_service

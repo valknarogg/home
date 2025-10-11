@@ -1,0 +1,37 @@
+name: track
+
+services:
+  umami:
+    image: ${TRACK_DOCKER_IMAGE}
+    container_name: ${COMPOSE_PROJECT_NAME}_app
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${TRACK_DB_NAME}
+      DATABASE_TYPE: postgresql
+      APP_SECRET: ${TRACK_APP_SECRET}
+    networks:
+      - kompose_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:3000/api/heartbeat || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
+    labels:
+      - 'traefik.enable=${TRACK_TRAEFIK_ENABLED}'
+      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-redirect-web-secure.redirectscheme.scheme=https'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.middlewares=${COMPOSE_PROJECT_NAME}-redirect-web-secure'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.rule=Host(`${TRACK_TRAEFIK_HOST}`)'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.entrypoints=web'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.rule=Host(`${TRACK_TRAEFIK_HOST}`)'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.tls.certresolver=resolver'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.entrypoints=web-secure'
+      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-web-secure-compress.compress=true'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.middlewares=${COMPOSE_PROJECT_NAME}-web-secure-compress'
+      - 'traefik.http.services.${COMPOSE_PROJECT_NAME}-web-secure.loadbalancer.server.port=3000'
+      - 'traefik.docker.network=${NETWORK_NAME:-kompose}'
+
+networks:
+  kompose_network:
+    name: ${NETWORK_NAME:-kompose}
+    external: true

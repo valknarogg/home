@@ -1,0 +1,316 @@
+name: watch
+
+services:
+  # Prometheus - Metrics Collection & Storage
+  prometheus:
+    image: ${PROMETHEUS_IMAGE:-prom/prometheus:latest}
+    container_name: ${COMPOSE_PROJECT_NAME}_prometheus
+    restart: unless-stopped
+    user: root
+    environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=${PROMETHEUS_RETENTION:-30d}'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+      - '--web.enable-lifecycle'
+      - '--web.enable-admin-api'
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9090/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - kompose_network
+    ports:
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_prometheus-redirect-web-secure.redirectscheme.scheme=https'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_prometheus-web.middlewares=${COMPOSE_PROJECT_NAME}_prometheus-redirect-web-secure'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_prometheus-web.rule=Host(`${TRAEFIK_HOST_PROMETHEUS}`)'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_prometheus-web.entrypoints=web'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_prometheus-web-secure.rule=Host(`${TRAEFIK_HOST_PROMETHEUS}`)'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_prometheus-web-secure.tls.certresolver=resolver'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_prometheus-web-secure.entrypoints=web-secure'
+      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_prometheus-web-secure-compress.compress=true'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_prometheus-web-secure.middlewares=${COMPOSE_PROJECT_NAME}_prometheus-web-secure-compress,${COMPOSE_PROJECT_NAME}_prometheus-auth'
+      - 'traefik.http.services.${COMPOSE_PROJECT_NAME}_prometheus-web-secure.loadbalancer.server.port=9090'
+      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_prometheus-auth.basicauth.users=${PROMETHEUS_AUTH}'
+      - 'traefik.docker.network=${NETWORK_NAME:-kompose}'
+
+  # Grafana - Metrics Visualization
+  grafana:
+    image: ${GRAFANA_IMAGE:-grafana/grafana:latest}
+    container_name: ${COMPOSE_PROJECT_NAME}_grafana
+    restart: unless-stopped
+    user: root
+    environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD}
+      GF_INSTALL_PLUGINS: ${GRAFANA_PLUGINS:-grafana-clock-panel,grafana-simple-json-datasource,grafana-piechart-panel,grafana-worldmap-panel}
+      GF_USERS_ALLOW_SIGN_UP: false
+      GF_SERVER_ROOT_URL: https://${TRAEFIK_HOST_GRAFANA}
+      GF_DATABASE_TYPE: postgres
+      GF_DATABASE_HOST: core-postgres:5432
+      GF_DATABASE_NAME: ${GRAFANA_DB_NAME:-grafana}
+      GF_DATABASE_USER: ${GRAFANA_DB_USER:-grafana}
+      GF_DATABASE_PASSWORD: ${GRAFANA_DB_PASSWORD}
+      GF_DATABASE_SSL_MODE: disable
+      GF_ANALYTICS_REPORTING_ENABLED: false
+      GF_ANALYTICS_CHECK_FOR_UPDATES: true
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./grafana/provisioning:/etc/grafana/provisioning
+      - ./grafana/dashboards:/var/lib/grafana/dashboards
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - kompose_network
+    ports:
+      - "${GRAFANA_PORT:-3001}:3000"
+    depends_on:
+      prometheus:
+        condition: service_healthy
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_grafana-redirect-web-secure.redirectscheme.scheme=https'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_grafana-web.middlewares=${COMPOSE_PROJECT_NAME}_grafana-redirect-web-secure'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_grafana-web.rule=Host(`${TRAEFIK_HOST_GRAFANA}`)'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_grafana-web.entrypoints=web'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_grafana-web-secure.rule=Host(`${TRAEFIK_HOST_GRAFANA}`)'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_grafana-web-secure.tls.certresolver=resolver'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_grafana-web-secure.entrypoints=web-secure'
+      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_grafana-web-secure-compress.compress=true'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_grafana-web-secure.middlewares=${COMPOSE_PROJECT_NAME}_grafana-web-secure-compress'
+      - 'traefik.http.services.${COMPOSE_PROJECT_NAME}_grafana-web-secure.loadbalancer.server.port=3000'
+      - 'traefik.docker.network=${NETWORK_NAME:-kompose}'
+
+  # OpenTelemetry Collector - Telemetry Pipeline
+  otel-collector:
+    image: ${OTEL_IMAGE:-otel/opentelemetry-collector-contrib:latest}
+    container_name: ${COMPOSE_PROJECT_NAME}_otel
+    restart: unless-stopped
+    environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector/config.yaml:/etc/otel-collector-config.yaml:ro
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:13133/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - kompose_network
+    ports:
+      - "${OTEL_GRPC_PORT:-4317}:4317"   # OTLP gRPC receiver
+      - "${OTEL_HTTP_PORT:-4318}:4318"   # OTLP HTTP receiver
+      - "${OTEL_HEALTH_PORT:-13133}:13133" # Health check
+      - "${OTEL_ZPAGES_PORT:-55679}:55679" # zPages extension
+    depends_on:
+      prometheus:
+        condition: service_healthy
+
+  # PostgreSQL Exporter - Core Database Metrics
+  postgres-exporter:
+    image: ${POSTGRES_EXPORTER_IMAGE:-prometheuscommunity/postgres-exporter:latest}
+    container_name: ${COMPOSE_PROJECT_NAME}_postgres_exporter
+    restart: unless-stopped
+    environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
+      DATA_SOURCE_NAME: postgresql://${POSTGRES_EXPORTER_USER:-kompose}:${POSTGRES_EXPORTER_PASSWORD}@core-postgres:5432/${POSTGRES_EXPORTER_DB:-kompose}?sslmode=disable
+      PG_EXPORTER_EXTEND_QUERY_PATH: /etc/postgres_exporter/queries.yaml
+    volumes:
+      - ./postgres-exporter/queries.yaml:/etc/postgres_exporter/queries.yaml:ro
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9187/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - kompose_network
+    ports:
+      - "${POSTGRES_EXPORTER_PORT:-9187}:9187"
+
+  # Redis Exporter - Core Cache Metrics
+  redis-exporter:
+    image: ${REDIS_EXPORTER_IMAGE:-oliver006/redis_exporter:latest}
+    container_name: ${COMPOSE_PROJECT_NAME}_redis_exporter
+    restart: unless-stopped
+    environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
+      REDIS_ADDR: redis://core-redis:6379
+      REDIS_PASSWORD: ${REDIS_EXPORTER_PASSWORD}
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9121/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - kompose_network
+    ports:
+      - "${REDIS_EXPORTER_PORT:-9121}:9121"
+
+  # MQTT Exporter - Core MQTT Broker Metrics
+  mqtt-exporter:
+    image: ${MQTT_EXPORTER_IMAGE:-kpetrem/mqtt-exporter:latest}
+    container_name: ${COMPOSE_PROJECT_NAME}_mqtt_exporter
+    restart: unless-stopped
+    environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
+      MQTT_ADDRESS: core-mqtt
+      MQTT_PORT: 1883
+      MQTT_TOPIC: ${MQTT_EXPORTER_TOPIC:-#}
+      MQTT_V5_PROTOCOL: ${MQTT_V5_PROTOCOL:-False}
+      PROMETHEUS_PORT: 9000
+      PROMETHEUS_PREFIX: mqtt_
+      TOPIC_LABEL: topic
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9000/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - kompose_network
+    ports:
+      - "${MQTT_EXPORTER_PORT:-9000}:9000"
+
+  # cAdvisor - Container Metrics
+  cadvisor:
+    image: ${CADVISOR_IMAGE:-gcr.io/cadvisor/cadvisor:latest}
+    container_name: ${COMPOSE_PROJECT_NAME}_cadvisor
+    restart: unless-stopped
+    privileged: true
+    environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    devices:
+      - /dev/kmsg
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8080/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - kompose_network
+    ports:
+      - "${CADVISOR_PORT:-8082}:8080"
+
+  # Node Exporter - Host System Metrics
+  node-exporter:
+    image: ${NODE_EXPORTER_IMAGE:-prom/node-exporter:latest}
+    container_name: ${COMPOSE_PROJECT_NAME}_node_exporter
+    restart: unless-stopped
+    environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9100/metrics"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    network_mode: host
+
+  # Blackbox Exporter - Endpoint Monitoring
+  blackbox-exporter:
+    image: ${BLACKBOX_EXPORTER_IMAGE:-prom/blackbox-exporter:latest}
+    container_name: ${COMPOSE_PROJECT_NAME}_blackbox_exporter
+    restart: unless-stopped
+    environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
+    command:
+      - '--config.file=/config/blackbox.yml'
+    volumes:
+      - ./blackbox-exporter/blackbox.yml:/config/blackbox.yml:ro
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9115/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - kompose_network
+    ports:
+      - "${BLACKBOX_EXPORTER_PORT:-9115}:9115"
+
+  # Alertmanager - Alert Management
+  alertmanager:
+    image: ${ALERTMANAGER_IMAGE:-prom/alertmanager:latest}
+    container_name: ${COMPOSE_PROJECT_NAME}_alertmanager
+    restart: unless-stopped
+    environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+    volumes:
+      - ./alertmanager:/etc/alertmanager
+      - alertmanager_data:/alertmanager
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:9093/-/healthy"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - kompose_network
+    ports:
+      - "${ALERTMANAGER_PORT:-9093}:9093"
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_alertmanager-redirect-web-secure.redirectscheme.scheme=https'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_alertmanager-web.middlewares=${COMPOSE_PROJECT_NAME}_alertmanager-redirect-web-secure'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_alertmanager-web.rule=Host(`${TRAEFIK_HOST_ALERTMANAGER}`)'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_alertmanager-web.entrypoints=web'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_alertmanager-web-secure.rule=Host(`${TRAEFIK_HOST_ALERTMANAGER}`)'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_alertmanager-web-secure.tls.certresolver=resolver'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_alertmanager-web-secure.entrypoints=web-secure'
+      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_alertmanager-web-secure-compress.compress=true'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_alertmanager-web-secure.middlewares=${COMPOSE_PROJECT_NAME}_alertmanager-web-secure-compress,${COMPOSE_PROJECT_NAME}_alertmanager-auth'
+      - 'traefik.http.services.${COMPOSE_PROJECT_NAME}_alertmanager-web-secure.loadbalancer.server.port=9093'
+      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_alertmanager-auth.basicauth.users=${ALERTMANAGER_AUTH}'
+      - 'traefik.docker.network=${NETWORK_NAME:-kompose}'
+
+volumes:
+  prometheus_data:
+    name: ${COMPOSE_PROJECT_NAME}_prometheus_data
+  grafana_data:
+    name: ${COMPOSE_PROJECT_NAME}_grafana_data
+  alertmanager_data:
+    name: ${COMPOSE_PROJECT_NAME}_alertmanager_data
+
+networks:
+  kompose_network:
+    name: ${NETWORK_NAME:-kompose}
+    external: true

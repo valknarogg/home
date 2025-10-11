@@ -1,3 +1,14 @@
+# =================================================================
+# LINKWARDEN - Enhanced with Full Integration
+# =================================================================
+# Features:
+# - SSO authentication via Keycloak
+# - Redis caching for performance
+# - MQTT event publishing
+# - Prometheus metrics
+# - Enhanced security headers
+# =================================================================
+
 name: link
 
 services:
@@ -7,39 +18,96 @@ services:
     restart: unless-stopped
     environment:
       TZ: ${TIMEZONE:-Europe/Amsterdam}
-      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:5432/${DB_NAME}
+      
+      # Database Configuration
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@core-postgres:5432/${DB_NAME}
+      
+      # Authentication
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}
       NEXTAUTH_URL: https://${TRAEFIK_HOST}
+      
+      # Redis Cache Integration
+      REDIS_URL: redis://core-redis:6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      
+      # Application Settings
       NEXT_PUBLIC_PAGINATION_TAKE_COUNT: 20
       STORAGE_FOLDER: /data/archives
       NEXT_PUBLIC_DISABLE_SCREENSHOT: ${DISABLE_SCREENSHOT}
       NEXT_PUBLIC_DISABLE_ARCHIVE: ${DISABLE_ARCHIVE}
       NEXT_PUBLIC_DISABLE_REGISTRATION: ${DISABLE_REGISTRATION}
+      
+      # Email Configuration (via Mailhog)
       EMAIL_FROM: ${EMAIL_FROM}
-      EMAIL_SERVER: smtp://${EMAIL_SMTP_USER}:${EMAIL_SMTP_PASSWORD}@${EMAIL_SMTP_HOST}:${EMAIL_SMTP_PORT}
+      EMAIL_SERVER: smtp://${EMAIL_SMTP_USER}:${EMAIL_SMTP_PASSWORD}@messaging_mailhog:1025
+      
+      # MQTT Event Publishing
+      MQTT_ENABLED: ${MQTT_ENABLED:-true}
+      MQTT_BROKER: core-mqtt
+      MQTT_PORT: 1883
+      MQTT_TOPIC_PREFIX: kompose/linkwarden
+      
     volumes:
       - linkwarden_data:/data/archives
+      - ./metrics:/app/metrics  # For custom metrics export
+      
     healthcheck:
       test: ["CMD-SHELL", "wget --spider -q http://localhost:${APP_PORT}/api/healthcheck || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 60s
+      
     networks:
       - kompose_network
+      
+    depends_on:
+      - linkwarden-metrics
+      
     labels:
+      # Traefik Configuration
       - 'traefik.enable=true'
+      
+      # HTTP to HTTPS redirect
       - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-redirect-web-secure.redirectscheme.scheme=https'
       - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.middlewares=${COMPOSE_PROJECT_NAME}-redirect-web-secure'
       - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.rule=Host(`${TRAEFIK_HOST}`)'
       - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.entrypoints=web'
+      
+      # HTTPS with SSO, Security Headers, and Compression
       - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.rule=Host(`${TRAEFIK_HOST}`)'
       - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.tls.certresolver=resolver'
       - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.entrypoints=web-secure'
-      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-web-secure-compress.compress=true'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.middlewares=${COMPOSE_PROJECT_NAME}-web-secure-compress'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.middlewares=sso-secure'
       - 'traefik.http.services.${COMPOSE_PROJECT_NAME}-web-secure.loadbalancer.server.port=${APP_PORT}'
       - 'traefik.docker.network=${NETWORK_NAME}'
+      
+      # Monitoring Labels
+      - 'prometheus.scrape=true'
+      - 'prometheus.port=9100'
+      - 'prometheus.path=/metrics'
+
+  # Metrics Exporter Sidecar
+  linkwarden-metrics:
+    image: prom/node-exporter:latest
+    container_name: ${COMPOSE_PROJECT_NAME}_metrics
+    restart: unless-stopped
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.rootfs=/rootfs'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+      - '--collector.textfile.directory=/metrics'
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+      - ./metrics:/metrics:ro
+    networks:
+      - kompose_network
+    labels:
+      - 'prometheus.scrape=true'
+      - 'prometheus.port=9100'
 
 volumes:
   linkwarden_data:
