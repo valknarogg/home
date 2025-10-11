@@ -452,6 +452,22 @@ execute_stack_command() {
         return 1
     fi
     
+    # Extract the main command (e.g., "up" from "up -d")
+    local main_command="${cmd[0]}"
+    local hook_name=""
+    
+    # Map docker compose commands to hook names
+    case "${main_command}" in
+        up|down|start|stop|restart|pull|build|ps|logs|exec|run|create|kill|pause|unpause|port|top)
+            hook_name="${main_command}"
+            ;;
+    esac
+    
+    # Execute pre-command hook if hook name is determined
+    if [[ -n "${hook_name}" ]]; then
+        execute_hook "${stack}" "pre_${hook_name}" "${cmd[@]}" || return 1
+    fi
+    
     log_stack "${stack}" "Executing: docker compose ${cmd[*]}"
     
     # Build environment args
@@ -464,10 +480,17 @@ execute_stack_command() {
         fi
         log_dry_run "cd ${stack_dir} && docker compose${env_str} -f ${compose_file} ${cmd[*]}"
         log_stack "${stack}" "${CYAN}[DRY-RUN]${RESET} Command would be executed"
+        
+        # Execute post-command hook in dry-run mode
+        if [[ -n "${hook_name}" ]]; then
+            execute_hook "${stack}" "post_${hook_name}" "${cmd[@]}" || return 1
+        fi
+        
         return 0
     fi
     
     # Change to stack directory and execute command
+    local exit_code=0
     (
         cd "${stack_dir}"
         if [[ ${#env_args[@]} -gt 0 ]]; then
@@ -475,17 +498,25 @@ execute_stack_command() {
                 log_stack "${stack}" "${GREEN}✓${RESET} Command completed successfully"
             else
                 log_stack "${stack}" "${RED}✗${RESET} Command failed"
-                return 1
+                exit 1
             fi
         else
             if docker compose -f "${compose_file}" "${cmd[@]}"; then
                 log_stack "${stack}" "${GREEN}✓${RESET} Command completed successfully"
             else
                 log_stack "${stack}" "${RED}✗${RESET} Command failed"
-                return 1
+                exit 1
             fi
         fi
     )
+    exit_code=$?
+    
+    # Execute post-command hook if command succeeded and hook name is determined
+    if [[ ${exit_code} -eq 0 ]] && [[ -n "${hook_name}" ]]; then
+        execute_hook "${stack}" "post_${hook_name}" "${cmd[@]}" || return 1
+    fi
+    
+    return ${exit_code}
 }
 
 # Display help message
@@ -542,11 +573,36 @@ DATABASE OPERATIONS:
     Exports are saved as: <stack-dir>/<db-name>_<timestamp>.sql
 
 HOOKS:
-    Stacks can define custom hooks in hooks.sh:
+    Stacks can define custom hooks in hooks.sh for lifecycle management.
+    
+    Database Hooks:
     - hook_pre_db_export    - Before database export
     - hook_post_db_export   - After database export (receives dump file path)
     - hook_pre_db_import    - Before database import (receives dump file path)
     - hook_post_db_import   - After database import (receives dump file path)
+    
+    Docker Compose Command Hooks:
+    - hook_pre_up           - Before 'docker compose up' (receives command args)
+    - hook_post_up          - After 'docker compose up' (receives command args)
+    - hook_pre_down         - Before 'docker compose down'
+    - hook_post_down        - After 'docker compose down'
+    - hook_pre_start        - Before 'docker compose start'
+    - hook_post_start       - After 'docker compose start'
+    - hook_pre_stop         - Before 'docker compose stop'
+    - hook_post_stop        - After 'docker compose stop'
+    - hook_pre_restart      - Before 'docker compose restart'
+    - hook_post_restart     - After 'docker compose restart'
+    - hook_pre_logs         - Before 'docker compose logs'
+    - hook_post_logs        - After 'docker compose logs'
+    - hook_pre_build        - Before 'docker compose build'
+    - hook_post_build       - After 'docker compose build'
+    - hook_pre_pull         - Before 'docker compose pull'
+    - hook_post_pull        - After 'docker compose pull'
+    
+    And also: ps, exec, run, create, kill, pause, unpause, port, top
+    
+    Hook functions receive the full command arguments as parameters.
+    Post-command hooks only execute if the command succeeds.
     
     Example: sexy stack uses hooks for Directus schema snapshots
 

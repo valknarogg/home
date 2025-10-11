@@ -1,0 +1,340 @@
+#!/usr/bin/env bash
+
+# Template hooks file for Kompose stacks
+# Copy this file to your stack directory and uncomment/modify the hooks you need
+#
+# Available hooks:
+# - Database: pre_db_export, post_db_export, pre_db_import, post_db_import
+# - Docker Compose: pre_<command>, post_<command> for any docker compose command
+#
+# Hooks receive command arguments as parameters: $1, $2, etc., or $@ for all args
+# Return 0 for success, 1 for failure
+# Post-command hooks only execute if the command succeeds
+
+# ================================================================================
+# DATABASE HOOKS
+# ================================================================================
+
+# Execute before database export
+# Use case: Export schemas, prepare data, stop write operations
+#hook_pre_db_export() {
+#    echo "  Running pre-export tasks..."
+#    # Example: Export application schema
+#    # docker exec ${COMPOSE_PROJECT_NAME}_app npm run schema:export
+#    return 0
+#}
+
+# Execute after database export
+# Arguments: $1 = path to the dump file
+# Use case: Compress dumps, upload to S3, send notifications
+#hook_post_db_export() {
+#    local dump_file="$1"
+#    echo "  Running post-export tasks..."
+#    echo "  Dump file: $dump_file"
+#    # Example: Compress dump
+#    # gzip "$dump_file"
+#    return 0
+#}
+
+# Execute before database import
+# Arguments: $1 = path to the dump file
+# Use case: Prepare environment, load schemas, clear caches
+#hook_pre_db_import() {
+#    local dump_file="$1"
+#    echo "  Running pre-import tasks..."
+#    echo "  Importing from: $dump_file"
+#    # Example: Apply schema migrations
+#    # docker exec ${COMPOSE_PROJECT_NAME}_app npm run schema:apply
+#    return 0
+#}
+
+# Execute after database import
+# Arguments: $1 = path to the dump file
+# Use case: Restart services, rebuild indexes, warm caches
+#hook_post_db_import() {
+#    local dump_file="$1"
+#    echo "  Running post-import tasks..."
+#    # Example: Restart application
+#    # docker restart ${COMPOSE_PROJECT_NAME}_app
+#    return 0
+#}
+
+# ================================================================================
+# DOCKER COMPOSE COMMAND HOOKS
+# ================================================================================
+
+# Execute before 'docker compose up'
+# Arguments: $@ = command arguments (e.g., "up", "-d", "--build")
+# Use case: Pre-flight checks, create directories, pull secrets
+#hook_pre_up() {
+#    local -a args=("$@")
+#    echo "  Running pre-up checks..."
+#    
+#    # Example: Create required directories
+#    if [[ ! -d "./uploads" ]]; then
+#        echo "  Creating uploads directory..."
+#        mkdir -p ./uploads
+#    fi
+#    
+#    # Example: Check for required environment variables
+#    if [[ -z "${API_KEY}" ]]; then
+#        echo "  ERROR: API_KEY not set"
+#        return 1
+#    fi
+#    
+#    return 0
+#}
+
+# Execute after 'docker compose up'
+# Arguments: $@ = command arguments
+# Use case: Health checks, initialization, warm caches
+#hook_post_up() {
+#    local -a args=("$@")
+#    echo "  Running post-up tasks..."
+#    
+#    # Example: Wait for services to be healthy
+#    echo "  Waiting for services to be healthy..."
+#    sleep 5
+#    
+#    # Example: Initialize application
+#    # docker exec ${COMPOSE_PROJECT_NAME}_app npm run init
+#    
+#    return 0
+#}
+
+# Execute before 'docker compose down'
+# Arguments: $@ = command arguments
+# Use case: Graceful shutdown, backups, save state
+#hook_pre_down() {
+#    local -a args=("$@")
+#    echo "  Running pre-down tasks..."
+#    
+#    # Example: Create backup before shutdown
+#    # ./backup.sh
+#    
+#    # Example: Check for --volumes flag
+#    if [[ " ${args[*]} " =~ " --volumes " ]] || [[ " ${args[*]} " =~ " -v " ]]; then
+#        echo "  WARNING: Volumes will be removed!"
+#        # You could add a confirmation prompt here
+#    fi
+#    
+#    return 0
+#}
+
+# Execute after 'docker compose down'
+# Arguments: $@ = command arguments
+# Use case: Cleanup, notifications
+#hook_post_down() {
+#    local -a args=("$@")
+#    echo "  Running post-down tasks..."
+#    
+#    # Example: Send notification
+#    # curl -X POST https://hooks.slack.com/... -d '{"text":"Stack stopped"}'
+#    
+#    return 0
+#}
+
+# Execute before 'docker compose start'
+# Arguments: $@ = command arguments
+#hook_pre_start() {
+#    local -a args=("$@")
+#    echo "  Running pre-start tasks..."
+#    return 0
+#}
+
+# Execute after 'docker compose start'
+# Arguments: $@ = command arguments
+#hook_post_start() {
+#    local -a args=("$@")
+#    echo "  Running post-start tasks..."
+#    
+#    # Example: Verify services are running
+#    # docker compose ps
+#    
+#    return 0
+#}
+
+# Execute before 'docker compose stop'
+# Arguments: $@ = command arguments
+#hook_pre_stop() {
+#    local -a args=("$@")
+#    echo "  Running pre-stop tasks..."
+#    
+#    # Example: Flush pending writes
+#    # docker exec ${COMPOSE_PROJECT_NAME}_app npm run flush
+#    
+#    return 0
+#}
+
+# Execute after 'docker compose stop'
+# Arguments: $@ = command arguments
+#hook_post_stop() {
+#    local -a args=("$@")
+#    echo "  Running post-stop tasks..."
+#    return 0
+#}
+
+# Execute before 'docker compose restart'
+# Arguments: $@ = command arguments
+#hook_pre_restart() {
+#    local -a args=("$@")
+#    echo "  Running pre-restart tasks..."
+#    
+#    # Example: Clear caches before restart
+#    # docker exec ${COMPOSE_PROJECT_NAME}_redis redis-cli FLUSHALL
+#    
+#    return 0
+#}
+
+# Execute after 'docker compose restart'
+# Arguments: $@ = command arguments
+#hook_post_restart() {
+#    local -a args=("$@")
+#    echo "  Running post-restart tasks..."
+#    
+#    # Example: Verify services are healthy
+#    # ./health-check.sh
+#    
+#    return 0
+#}
+
+# Execute before 'docker compose build'
+# Arguments: $@ = command arguments
+#hook_pre_build() {
+#    local -a args=("$@")
+#    echo "  Running pre-build tasks..."
+#    
+#    # Example: Run code generation
+#    # npm run generate
+#    
+#    # Example: Backup current image
+#    # docker tag ${COMPOSE_PROJECT_NAME}_app:latest ${COMPOSE_PROJECT_NAME}_app:backup
+#    
+#    return 0
+#}
+
+# Execute after 'docker compose build'
+# Arguments: $@ = command arguments
+#hook_post_build() {
+#    local -a args=("$@")
+#    echo "  Running post-build tasks..."
+#    
+#    # Example: Tag and push image
+#    # local tag="$(date +%Y%m%d-%H%M%S)"
+#    # docker tag ${COMPOSE_PROJECT_NAME}_app:latest registry.example.com/app:$tag
+#    # docker push registry.example.com/app:$tag
+#    
+#    return 0
+#}
+
+# Execute before 'docker compose pull'
+# Arguments: $@ = command arguments
+#hook_pre_pull() {
+#    local -a args=("$@")
+#    echo "  Running pre-pull tasks..."
+#    
+#    # Example: Check registry availability
+#    # curl -f https://registry.example.com/v2/ > /dev/null
+#    
+#    return 0
+#}
+
+# Execute after 'docker compose pull'
+# Arguments: $@ = command arguments
+#hook_post_pull() {
+#    local -a args=("$@")
+#    echo "  Running post-pull tasks..."
+#    
+#    # Example: Verify pulled images
+#    # docker images | grep ${COMPOSE_PROJECT_NAME}
+#    
+#    return 0
+#}
+
+# Execute before 'docker compose logs'
+# Arguments: $@ = command arguments
+#hook_pre_logs() {
+#    local -a args=("$@")
+#    # Usually not needed, but available if you need it
+#    return 0
+#}
+
+# Execute after 'docker compose logs'
+# Arguments: $@ = command arguments
+#hook_post_logs() {
+#    local -a args=("$@")
+#    # Usually not needed, but available if you need it
+#    return 0
+#}
+
+# ================================================================================
+# OTHER DOCKER COMPOSE COMMANDS
+# ================================================================================
+# The following commands also support pre/post hooks:
+# - ps, exec, run, create, kill, pause, unpause, port, top
+#
+# Example:
+#hook_pre_ps() {
+#    echo "  Listing containers..."
+#    return 0
+#}
+
+# ================================================================================
+# UTILITY FUNCTIONS (Optional)
+# ================================================================================
+
+# Helper function to check if a container is running
+#is_container_running() {
+#    local container_name="$1"
+#    docker ps --format '{{.Names}}' | grep -q "^${container_name}$"
+#}
+
+# Helper function to wait for a container to be healthy
+#wait_for_healthy() {
+#    local container_name="$1"
+#    local max_attempts="${2:-30}"
+#    local attempt=0
+#    
+#    while [[ $attempt -lt $max_attempts ]]; do
+#        if docker inspect --format='{{.State.Health.Status}}' "$container_name" 2>/dev/null | grep -q "healthy"; then
+#            return 0
+#        fi
+#        sleep 1
+#        ((attempt++))
+#    done
+#    
+#    return 1
+#}
+
+# Helper function to send notifications
+#send_notification() {
+#    local message="$1"
+#    # Implement your notification logic here (Slack, Discord, email, etc.)
+#    # curl -X POST https://hooks.slack.com/... -d "{\"text\":\"$message\"}"
+#    return 0
+#}
+
+# ================================================================================
+# NOTES
+# ================================================================================
+# 
+# Environment Variables Available:
+# - $SCRIPT_DIR: Root kompose directory
+# - $stack: Current stack name
+# - All variables from root .env and stack .env files
+# - CLI overrides from -e flags
+#
+# Best Practices:
+# - Return 0 for success, 1 for failure
+# - Use indented output: echo "  Message"
+# - Make non-critical operations return 0
+# - Check container status before docker exec
+# - Test with --dry-run first
+# - Add timeouts for long operations
+# - Document your hooks with comments
+#
+# Testing:
+# - Dry run: ./kompose.sh stack command --dry-run
+# - Check syntax: bash -n hooks.sh
+# - Debug: Add 'set -x' at the top of your hook function
+#
