@@ -7,6 +7,7 @@ ABSOLUTE_HOME="${RELATIVE_HOME}/home"
 
 cp -rf $ABSOLUTE_HOME/Projects/kompose/* $CURRENT_PROJECT
 rm -rf $CURRENT_PROJECT/.env $CURRENT_PROJECT/**/uploads/ $CURRENT_PROJECT/**/*.sql $CURRENT_PROJECT/**/*.pem
+git add -A
 
 if [[ `git add -A && git diff --quiet && git diff --cached --quiet` ]]; then
   # Changes
