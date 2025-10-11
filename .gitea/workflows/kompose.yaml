@@ -23,7 +23,7 @@ jobs:
       shell: bash
       env:
         CI_COMMIT_MESSAGE: "${{ github.event.head_commit.message }}"
-        CI_COMMIT_AUTHOR: technitz[bot]@valknar/kompose
+        CI_COMMIT_AUTHOR: technitz@kompose
         CI_COMMIT_EMAIL: admin@pivoine.art
       run: |
         cd kompose
