@@ -8,11 +8,27 @@ on:
     paths:
     - 'Projects/kompose/**'
 env:
-  BOT_MESSAGE: ${{ contains(gitea.event.head_commit.message, '#bot-message: ') }}
+  BOT_MESSAGE: true
 jobs:
+  check:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Get commits
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          if [[ "${COMMIT_MESSAGE}" == "#bot-message: *" ]]; then
+            echo "BOT_MESSAGE=${BOT_MESSAGE}" >> "${GITHUB_ENV}"
+          else
+            echo 'BOT_MESSAGE=' >> "${GITHUB_ENV}"
+          fi
   build:
     runs-on: ubuntu-latest
-    if: ${{ vars.BOT_MESSAGE == 'true' }}
+    if: ${{ vars.BOT_MESSAGE == true }}
     steps:
     - uses: actions/checkout@v4
       with:
@@ -25,7 +41,7 @@ jobs:
     - name: Commit and push changes (if any)
       shell: bash
       env:
-        CI_COMMIT_MESSAGE: "${{ replace(github.event.head_commit.message, '#bot-message: ') }}"
+        CI_COMMIT_MESSAGE: "${{ github.event.head_commit.message }}"
         CI_COMMIT_AUTHOR: technitz[bot]@valknar/kompose
         CI_COMMIT_EMAIL: admin@pivoine.art
       run: |
@@ -33,4 +49,6 @@ jobs:
         git config --global user.name "${{ env.CI_COMMIT_AUTHOR }}"
         git config --global user.email "${{ env.CI_COMMIT_EMAIL }}"
 
-        ${{ github.workspace }}/home/.init/bin/mirror_project.sh '${{ github.event.head_commit.message }}' ../home  
+        export CI_COMMIT_MESSAGE="${{ env.CI_COMMIT_MESSAGE }}"
+
+        ${{ github.workspace }}/home/.init/bin/mirror_project.sh "${CI_COMMIT_MESSAGE/#bot-message: /""}" ../home  
