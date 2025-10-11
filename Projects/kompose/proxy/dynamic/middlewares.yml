@@ -1,0 +1,129 @@
+http:
+  middlewares:
+    # ================================================================
+    # IP Whitelist Middleware - Internal Services Only
+    # ================================================================
+    internal-only:
+      ipWhiteList:
+        sourceRange:
+          # Standard private network ranges
+          - "192.168.0.0/16"      # Private Class C
+          - "172.16.0.0/12"       # Private Class B  
+          - "10.0.0.0/8"          # Private Class A
+          - "127.0.0.1/32"        # Localhost
+          
+          # Add your specific network ranges below:
+          # - "192.168.1.0/24"    # Example: Your home network
+          # - "10.8.0.0/24"       # Example: Your VPN network
+          # - "YOUR_PUBLIC_IP/32" # Example: Your fixed public IP
+
+    # ================================================================
+    # HTTPS Redirect Middleware
+    # ================================================================
+    redirect-to-https:
+      redirectScheme:
+        scheme: https
+        permanent: true
+
+    # ================================================================
+    # Security Headers Middleware
+    # ================================================================
+    security-headers:
+      headers:
+        # Prevent clickjacking
+        frameDeny: true
+        customFrameOptionsValue: "SAMEORIGIN"
+        
+        # XSS Protection
+        browserXssFilter: true
+        
+        # Prevent MIME type sniffing
+        contentTypeNosniff: true
+        
+        # HSTS (HTTP Strict Transport Security)
+        forceSTSHeader: true
+        stsIncludeSubdomains: true
+        stsPreload: true
+        stsSeconds: 31536000
+        
+        # Content Security Policy (basic)
+        # Customize per service if needed
+        contentSecurityPolicy: "default-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: blob:"
+        
+        # Referrer Policy
+        referrerPolicy: "strict-origin-when-cross-origin"
+        
+        # Permissions Policy
+        permissionsPolicy: "geolocation=(), microphone=(), camera=()"
+
+    # ================================================================
+    # Compression Middleware
+    # ================================================================
+    compression:
+      compress: {}
+
+    # ================================================================
+    # Rate Limiting Middleware (for public services)
+    # ================================================================
+    rate-limit-standard:
+      rateLimit:
+        average: 100
+        burst: 50
+        period: 1m
+
+    rate-limit-strict:
+      rateLimit:
+        average: 30
+        burst: 10
+        period: 1m
+
+    # ================================================================
+    # Combined Middleware Chains
+    # ================================================================
+    
+    # For internal services (intranet only)
+    internal-secure:
+      chain:
+        middlewares:
+          - internal-only
+          - security-headers
+          - compression
+
+    # For public services (internet accessible)
+    public-secure:
+      chain:
+        middlewares:
+          - security-headers
+          - compression
+
+    # For public services with rate limiting
+    public-secure-limited:
+      chain:
+        middlewares:
+          - rate-limit-standard
+          - security-headers
+          - compression
+
+    # For public APIs with strict rate limiting
+    public-api-limited:
+      chain:
+        middlewares:
+          - rate-limit-strict
+          - security-headers
+          - compression
+
+# ================================================================
+# TCP Middleware (for non-HTTP services like SSH, MQTT)
+# ================================================================
+tcp:
+  middlewares: {}
+
+# ================================================================
+# Notes:
+# ================================================================
+# 1. Update the sourceRange in internal-only to match your network
+# 2. Adjust rate limiting values based on your needs
+# 3. Customize CSP (Content Security Policy) per service if needed
+# 4. Use internal-secure for: Semaphore, Redis UI, admin panels
+# 5. Use public-secure for: n8n, Gitea, Vaultwarden, public apps
+# 6. Use public-secure-limited for: public APIs with rate limiting

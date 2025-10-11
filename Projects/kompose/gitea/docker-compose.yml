@@ -1,5 +1,0 @@
-# This stack has been moved to chain/docker-compose.yml
-# Gitea is now part of the chain stack (workflow automation)
-# Use: ./kompose.sh up chain
-
-# See chain/docker-compose.yml for the Gitea configuration

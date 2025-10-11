@@ -1,9 +1,0 @@
-container:
-  # Specifies the network to which the container will connect.
-  # Could be host, bridge or the name of a custom network.
-  # If it's empty, act_runner will create a network automatically.
-  network: "kompose"
-  privileged: true
-  valid_volumes:
-  - '**'
-  options: '--add-host=host.docker.internal:host-gateway'
