@@ -8,7 +8,7 @@ cp -rf $ABSOLUTE_HOME/* $CURRENT_PROJECT
 rm -rf $CURRENT_PROJECT/.env $CURRENT_PROJECT/**/uploads/ $CURRENT_PROJECT/**/*.sql $CURRENT_PROJECT/**/*.pem
 git add -A
 
-if [[ `git diff --quiet` ]]; then
+if [ `git diff --quiet` = ""]; then
   # Changes
   echo "CHANGES in ${CURRENT_PROJECT} - Mirroring..."
   git commit -m "$1"
