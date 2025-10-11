@@ -34,6 +34,7 @@ The **Watch Stack** provides complete monitoring and observability for all Kompo
 ✓ Home Assistant        (Sensors, States, Events)
 ✓ Umami Analytics       (Availability, Response time)
 ✓ Service Endpoints     (HTTP/HTTPS health checks)
+✓ Centralized Logs      (All container logs via Loki)
 ```
 
 ## Quick Start
@@ -72,6 +73,7 @@ chmod +x setup-homeassistant.sh
 | **Prometheus** | http://localhost:9090 | Basic Auth (see .env) |
 | **Grafana** | http://localhost:3001 | admin / (see .env) |
 | **Alertmanager** | http://localhost:9093 | Basic Auth (see .env) |
+| **Loki** | http://localhost:3100 | Basic Auth (see .env) |
 
 ## Integration Status
 
@@ -121,6 +123,17 @@ chmod +x setup-homeassistant.sh
    - Next steps
    - Useful queries
 
+5. **[LOGGING_GUIDE.md](./LOGGING_GUIDE.md)**
+   - Unified logging with Loki
+   - LogQL query examples
+   - Log collection architecture
+   - Troubleshooting logs
+
+6. **[LOKI_SETUP_COMPLETE.md](./LOKI_SETUP_COMPLETE.md)**
+   - Loki integration summary
+   - Quick start guide
+   - Configuration details
+
 ### Scripts
 
 1. **`verify-integration.sh`** - Automated verification of all integrations
@@ -161,6 +174,8 @@ See [ARCHITECTURE.md](./ARCHITECTURE.md) for detailed diagrams.
 
 | Service | Port | Purpose |
 |---------|------|---------|
+| **Loki** | 3100 | Log aggregation and storage |
+| **Promtail** | 9080 | Log collection agent |
 | **Prometheus** | 9090 | Metrics collection and storage |
 | **Grafana** | 3001 | Metrics visualization |
 | **OTEL Collector** | 4317/4318 | Telemetry pipeline (traces, metrics, logs) |
