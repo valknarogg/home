@@ -16,7 +16,7 @@ NC='\033[0m'
 
 # Configuration
 STACKS_ROOT="${STACKS_ROOT:-$(pwd)}"
-COMPOSE_FILE="${COMPOSE_FILE:-docker-compose.yml}"
+COMPOSE_FILE="${COMPOSE_FILE:-compose.yaml}"
 REPO_URL="${REPO_URL:-$(git config --get remote.origin.url 2>/dev/null || echo '')}"
 GITEA_URL="${GITEA_URL:-http://localhost:3001}"
 N8N_WEBHOOK_BASE="${N8N_WEBHOOK_BASE:-http://localhost:5678/webhook}"
@@ -24,8 +24,10 @@ N8N_WEBHOOK_BASE="${N8N_WEBHOOK_BASE:-http://localhost:5678/webhook}"
 # Available stacks
 declare -A STACKS=(
     ["core"]="Core services - MQTT, Redis, Postgres"
+    ["vpn"]="VPN - WireGuard remote access (wg-easy)"
     ["chat"]="Communication - Gotify notifications"
     ["chain"]="Automation Platform - n8n workflows, Semaphore/Ansible tasks"
+    ["vault"]="Password Manager - Vaultwarden"
     ["registry"]="Container registry"
     ["monitoring"]="Metrics - Prometheus, Grafana"
     ["frontend"]="Frontend application"
