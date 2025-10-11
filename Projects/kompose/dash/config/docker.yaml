@@ -1,9 +1,0 @@
----
-# Docker socket integration
-# This allows Homepage to show Docker container stats
-# Make sure the docker.sock volume is mounted in compose.yaml
-
-# You can configure which containers to show or hide
-# my-container-name:
-#   show: true
-#   showStats: true
