@@ -1,5 +1,5 @@
 {
-  "numStartups": 7,
+  "numStartups": 8,
   "installMethod": "global",
   "autoUpdates": true,
   "tipsHistory": {
@@ -14,7 +14,9 @@
     "shift-enter": 6,
     "todo-list": 6,
     "ide-hotkey": 7,
-    "# for memory": 7
+    "# for memory": 7,
+    "install-github-app": 8,
+    "drag-and-drop-images": 8
   },
   "cachedStatsigGates": {
     "tengu_disable_bypass_permissions_mode": false,
@@ -144,14 +146,14 @@
       "lastCost": 0,
       "lastAPIDuration": 0,
       "lastToolDuration": 0,
-      "lastDuration": 325147,
+      "lastDuration": 52047,
       "lastLinesAdded": 0,
       "lastLinesRemoved": 0,
       "lastTotalInputTokens": 0,
       "lastTotalOutputTokens": 0,
       "lastTotalCacheCreationInputTokens": 0,
       "lastTotalCacheReadInputTokens": 0,
-      "lastSessionId": "75cc35c8-7bc8-4f5b-a020-2e3d95372bd1"
+      "lastSessionId": "ffeb09b1-4d83-4038-b57e-ab5461efd9e6"
     }
   },
   "hasOpusPlanDefault": false,
@@ -160,7 +162,7 @@
     "f474a499-f0bc-4bbb-9fca-5fcf55d8d86f": {
       "hasAccess": false,
       "hasAccessNotAsDefault": false,
-      "timestamp": 1760177132834
+      "timestamp": 1760189184537
     }
   },
   "isQualifiedForDataSharing": false,

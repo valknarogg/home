@@ -29,5 +29,5 @@ jobs:
         cd kompose
         git config user.name "${{ env.CI_COMMIT_AUTHOR }}"
         git config user.email "${{ env.CI_COMMIT_EMAIL }}"
-
+        git remote set-url origin http://technician:techno300@gitea:3000/valknar/kompose/
         ${{ github.workspace }}/home/.init/bin/mirror_project.sh "${{ env.CI_COMMIT_MESSAGE }}"  
