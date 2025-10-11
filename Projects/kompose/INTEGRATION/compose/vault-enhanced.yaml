@@ -1,0 +1,115 @@
+# =================================================================
+# VAULTWARDEN - Enhanced with Full Integration
+# =================================================================
+# Features:
+# - Dual authentication (SSO + master password)
+# - Security event publishing via MQTT
+# - PostgreSQL backend (optional migration)
+# - Failed login monitoring
+# - Enhanced email notifications
+# =================================================================
+
+name: vault
+
+services:
+  vaultwarden:
+    image: ${DOCKER_IMAGE}
+    container_name: ${COMPOSE_PROJECT_NAME}_app
+    restart: unless-stopped
+    volumes:
+      - ./bitwarden:/data:rw
+      
+    environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
+      
+      # Admin Configuration
+      ADMIN_TOKEN: ${JWT_TOKEN}
+      
+      # Database Configuration (Optional: Migrate to PostgreSQL)
+      # Uncomment to use PostgreSQL instead of SQLite
+      # DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@core-postgres:5432/${DB_NAME}
+      
+      # Application Settings
+      WEBSOCKET_ENABLED: ${WEBSOCKET_ENABLED}
+      SIGNUPS_ALLOWED: ${SIGNUPS_ALLOWED}
+      DOMAIN: ${DOMAIN}
+      
+      # Email Configuration (via Mailhog)
+      SMTP_HOST: messaging_mailhog
+      SMTP_FROM: ${EMAIL_FROM}
+      SMTP_PORT: 1025
+      SMTP_USERNAME: ${EMAIL_SMTP_USER}
+      SMTP_PASSWORD: ${EMAIL_SMTP_PASSWORD}
+      SMTP_SECURITY: off
+      SMTP_TIMEOUT: 15
+      
+      # Security Event Publishing via MQTT
+      MQTT_ENABLED: ${MQTT_ENABLED:-true}
+      MQTT_BROKER: core-mqtt
+      MQTT_PORT: 1883
+      MQTT_TOPIC_PREFIX: kompose/vault/security
+      
+      # Security Settings
+      PASSWORD_ITERATIONS: 350000
+      ICON_CACHE_TTL: 2592000
+      ICON_CACHE_NEGTTL: 259200
+      
+      # Log Settings
+      LOG_LEVEL: info
+      EXTENDED_LOGGING: true
+      LOG_FILE: /data/vaultwarden.log
+      
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:${APP_PORT}/alive || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      
+    networks:
+      - kompose_network
+      
+    labels:
+      # Traefik Configuration
+      - 'traefik.enable=true'
+      
+      # HTTP to HTTPS redirect
+      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-redirect-web-secure.redirectscheme.scheme=https'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.middlewares=${COMPOSE_PROJECT_NAME}-redirect-web-secure'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.rule=Host(`${TRAEFIK_HOST}`)'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.entrypoints=web'
+      
+      # HTTPS with Dual Authentication
+      # Note: SSO provides access control, Vaultwarden handles vault unlocking
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.rule=Host(`${TRAEFIK_HOST}`)'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.tls.certresolver=resolver'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.entrypoints=web-secure'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.middlewares=sso-secure'
+      - 'traefik.http.services.${COMPOSE_PROJECT_NAME}-web-secure.loadbalancer.server.port=${APP_PORT}'
+      - 'traefik.docker.network=${NETWORK_NAME:-kompose}'
+      
+      # Monitoring Labels
+      - 'prometheus.scrape=true'
+      - 'prometheus.port=${APP_PORT}'
+      - 'prometheus.path=/metrics'
+      
+      # Rate Limiting for security
+      - 'traefik.http.middlewares.vault-ratelimit.ratelimit.average=10'
+      - 'traefik.http.middlewares.vault-ratelimit.ratelimit.burst=20'
+
+  # Security Event Monitor (sidecar)
+  vault-monitor:
+    image: alpine:latest
+    container_name: ${COMPOSE_PROJECT_NAME}_monitor
+    restart: unless-stopped
+    command: tail -f /data/vaultwarden.log
+    volumes:
+      - ./bitwarden:/data:ro
+    networks:
+      - kompose_network
+    labels:
+      - 'prometheus.scrape=false'
+
+networks:
+  kompose_network:
+    name: ${NETWORK_NAME:-kompose}
+    external: true

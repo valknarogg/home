@@ -1,0 +1,289 @@
+# =================================================================
+# Prometheus Alert Rules - Kompose Stack
+# =================================================================
+
+groups:
+  # =================================================================
+  # Service Availability Alerts
+  # =================================================================
+  - name: service_availability
+    interval: 30s
+    rules:
+      - alert: ServiceDown
+        expr: up == 0
+        for: 2m
+        labels:
+          severity: critical
+          category: availability
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "{{ $labels.job }} on {{ $labels.instance }} has been down for more than 2 minutes."
+
+      - alert: ServiceDegraded
+        expr: probe_success == 0
+        for: 5m
+        labels:
+          severity: warning
+          category: availability
+        annotations:
+          summary: "Endpoint {{ $labels.instance }} is unreachable"
+          description: "HTTP probe to {{ $labels.instance }} has been failing for 5 minutes."
+
+  # =================================================================
+  # Core Services Alerts
+  # =================================================================
+  - name: core_services
+    interval: 30s
+    rules:
+      # PostgreSQL Alerts
+      - alert: PostgreSQLDown
+        expr: pg_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: database
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL database is unreachable."
+
+      - alert: PostgreSQLHighConnections
+        expr: (pg_stat_database_numbackends / pg_settings_max_connections) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "PostgreSQL connection pool is 80% full"
+          description: "Database {{ $labels.datname }} has {{ $value }}% connections used."
+
+      - alert: PostgreSQLSlowQueries
+        expr: rate(pg_stat_statements_mean_exec_time[5m]) > 1000
+        for: 10m
+        labels:
+          severity: warning
+          category: database
+        annotations:
+          summary: "PostgreSQL has slow queries"
+          description: "Average query execution time is {{ $value }}ms."
+
+      # Redis Alerts
+      - alert: RedisDown
+        expr: redis_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: cache
+        annotations:
+          summary: "Redis is down"
+          description: "Redis cache server is unreachable."
+
+      - alert: RedisHighMemory
+        expr: (redis_memory_used_bytes / redis_memory_max_bytes) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          category: cache
+        annotations:
+          summary: "Redis memory usage is high"
+          description: "Redis is using {{ $value | humanizePercentage }} of allocated memory."
+
+      - alert: RedisHighEvictionRate
+        expr: rate(redis_evicted_keys_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          category: cache
+        annotations:
+          summary: "Redis eviction rate is high"
+          description: "Redis is evicting {{ $value }} keys per second."
+
+      # MQTT Alerts
+      - alert: MQTTBrokerDown
+        expr: mqtt_up == 0
+        for: 2m
+        labels:
+          severity: critical
+          category: messaging
+        annotations:
+          summary: "MQTT broker is down"
+          description: "Mosquitto MQTT broker is unreachable."
+
+      - alert: MQTTHighMessageQueue
+        expr: mqtt_messages_queued > 10000
+        for: 10m
+        labels:
+          severity: warning
+          category: messaging
+        annotations:
+          summary: "MQTT message queue is backing up"
+          description: "{{ $value }} messages are queued in the MQTT broker."
+
+  # =================================================================
+  # Utility Services Alerts
+  # =================================================================
+  - name: utility_services
+    interval: 30s
+    rules:
+      - alert: LinkwardenDown
+        expr: up{job="linkwarden"} == 0
+        for: 3m
+        labels:
+          severity: warning
+          category: utility
+        annotations:
+          summary: "Linkwarden is down"
+          description: "Linkwarden bookmark service is unavailable."
+
+      - alert: LetterpressDown
+        expr: up{job="letterpress"} == 0
+        for: 3m
+        labels:
+          severity: warning
+          category: utility
+        annotations:
+          summary: "Letterpress is down"
+          description: "Letterpress news service is unavailable."
+
+      - alert: UmamiDown
+        expr: up{job="umami"} == 0
+        for: 3m
+        labels:
+          severity: warning
+          category: utility
+        annotations:
+          summary: "Umami Analytics is down"
+          description: "Umami analytics service is unavailable."
+
+      - alert: VaultwardenDown
+        expr: up{job="vaultwarden"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          category: security
+        annotations:
+          summary: "Vaultwarden is down"
+          description: "Vaultwarden password manager is unavailable - CRITICAL."
+
+  # =================================================================
+  # System Resources Alerts
+  # =================================================================
+  - name: system_resources
+    interval: 30s
+    rules:
+      - alert: HighCPUUsage
+        expr: (100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) > 80
+        for: 10m
+        labels:
+          severity: warning
+          category: system
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is {{ $value }}% on {{ $labels.instance }}."
+
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          category: system
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is {{ $value | humanizePercentage }} on {{ $labels.instance }}."
+
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) < 0.1
+        for: 10m
+        labels:
+          severity: warning
+          category: system
+        annotations:
+          summary: "Disk space is low"
+          description: "Only {{ $value | humanizePercentage }} disk space remaining on {{ $labels.mountpoint }}."
+
+      - alert: DiskSpaceCritical
+        expr: (node_filesystem_avail_bytes / node_filesystem_size_bytes) < 0.05
+        for: 5m
+        labels:
+          severity: critical
+          category: system
+        annotations:
+          summary: "Disk space is critically low"
+          description: "Only {{ $value | humanizePercentage }} disk space remaining on {{ $labels.mountpoint }} - CRITICAL."
+
+  # =================================================================
+  # Container Alerts
+  # =================================================================
+  - name: container_alerts
+    interval: 30s
+    rules:
+      - alert: ContainerHighMemory
+        expr: (container_memory_usage_bytes / container_spec_memory_limit_bytes) > 0.9
+        for: 5m
+        labels:
+          severity: warning
+          category: container
+        annotations:
+          summary: "Container {{ $labels.name }} is using high memory"
+          description: "Container memory usage is {{ $value | humanizePercentage }}."
+
+      - alert: ContainerRestarting
+        expr: rate(container_start_time_seconds[5m]) > 0
+        for: 5m
+        labels:
+          severity: warning
+          category: container
+        annotations:
+          summary: "Container {{ $labels.name }} is restarting"
+          description: "Container has restarted {{ $value }} times in the last 5 minutes."
+
+  # =================================================================
+  # SSL Certificate Alerts
+  # =================================================================
+  - name: ssl_certificates
+    interval: 1h
+    rules:
+      - alert: SSLCertificateExpiringSoon
+        expr: (probe_ssl_earliest_cert_expiry - time()) / 86400 < 30
+        for: 1h
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "SSL certificate expiring soon"
+          description: "SSL certificate for {{ $labels.instance }} expires in {{ $value }} days."
+
+      - alert: SSLCertificateExpiredOrInvalid
+        expr: probe_ssl_earliest_cert_expiry - time() < 0
+        for: 1h
+        labels:
+          severity: critical
+          category: security
+        annotations:
+          summary: "SSL certificate expired or invalid"
+          description: "SSL certificate for {{ $labels.instance }} has expired or is invalid."
+
+  # =================================================================
+  # Security Alerts
+  # =================================================================
+  - name: security_alerts
+    interval: 1m
+    rules:
+      - alert: HighFailedLoginAttempts
+        expr: rate(vaultwarden_failed_login_attempts_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "High number of failed login attempts"
+          description: "{{ $value }} failed login attempts per minute detected on Vaultwarden."
+
+      - alert: UnauthorizedAccessAttempt
+        expr: rate(traefik_service_requests_total{code=~"401|403"}[5m]) > 50
+        for: 5m
+        labels:
+          severity: warning
+          category: security
+        annotations:
+          summary: "High number of unauthorized access attempts"
+          description: "{{ $value }} unauthorized access attempts per minute detected."

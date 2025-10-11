@@ -1,0 +1,213 @@
+# =================================================================
+# Prometheus Configuration - Kompose Full Stack Monitoring
+# =================================================================
+# Scrapes metrics from all core and utility services
+# =================================================================
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'kompose'
+    environment: 'production'
+
+# Alertmanager Configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - watch_alertmanager:9093
+
+# Alert Rules
+rule_files:
+  - 'alerts/*.yml'
+
+scrape_configs:
+  # =================================================================
+  # Core Services Monitoring
+  # =================================================================
+  
+  # Prometheus Self-Monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          service: 'prometheus'
+          layer: 'monitoring'
+
+  # PostgreSQL Database
+  - job_name: 'postgresql'
+    static_configs:
+      - targets: ['watch_postgres_exporter:9187']
+        labels:
+          service: 'postgresql'
+          layer: 'core'
+          database: 'postgres'
+
+  # Redis Cache
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['watch_redis_exporter:9121']
+        labels:
+          service: 'redis'
+          layer: 'core'
+          cache: 'redis'
+
+  # MQTT Broker
+  - job_name: 'mqtt'
+    static_configs:
+      - targets: ['watch_mqtt_exporter:9000']
+        labels:
+          service: 'mosquitto'
+          layer: 'core'
+          broker: 'mqtt'
+
+  # Container Metrics (cAdvisor)
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['watch_cadvisor:8080']
+        labels:
+          service: 'cadvisor'
+          layer: 'monitoring'
+
+  # Host System Metrics (Node Exporter)
+  - job_name: 'node'
+    static_configs:
+      - targets: ['localhost:9100']
+        labels:
+          service: 'node-exporter'
+          layer: 'system'
+
+  # =================================================================
+  # Utility Services Monitoring
+  # =================================================================
+  
+  # Linkwarden
+  - job_name: 'linkwarden'
+    static_configs:
+      - targets: ['link_metrics:9100']
+        labels:
+          service: 'linkwarden'
+          layer: 'utility'
+          category: 'bookmarks'
+
+  # Letterpress/News
+  - job_name: 'letterpress'
+    static_configs:
+      - targets: ['news_backend:9090']
+        labels:
+          service: 'letterpress'
+          layer: 'utility'
+          category: 'content'
+    metrics_path: /metrics
+
+  # Umami Analytics
+  - job_name: 'umami'
+    static_configs:
+      - targets: ['track_app:3000']
+        labels:
+          service: 'umami'
+          layer: 'utility'
+          category: 'analytics'
+    metrics_path: /api/metrics
+
+  # Vaultwarden
+  - job_name: 'vaultwarden'
+    static_configs:
+      - targets: ['vault_app:80']
+        labels:
+          service: 'vaultwarden'
+          layer: 'utility'
+          category: 'security'
+    metrics_path: /metrics
+
+  # =================================================================
+  # Blackbox Monitoring (Endpoint Health Checks)
+  # =================================================================
+  
+  - job_name: 'blackbox-http'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+        # Utility Services
+        - https://${TRAEFIK_HOST_LINK}
+        - https://${TRAEFIK_HOST_NEWS}
+        - https://${TRAEFIK_HOST_TRACK}
+        - https://${TRAEFIK_HOST_VAULT}
+        # Auth Services
+        - https://${TRAEFIK_HOST_AUTH}
+        - https://${OAUTH2_PROXY_HOST}
+        # Management
+        - https://${TRAEFIK_HOST_KMPS}
+        labels:
+          probe: 'https'
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: watch_blackbox_exporter:9115
+
+  # =================================================================
+  # OpenTelemetry Collector
+  # =================================================================
+  
+  - job_name: 'otel-collector'
+    static_configs:
+      - targets: ['watch_otel:8888']
+        labels:
+          service: 'otel-collector'
+          layer: 'monitoring'
+
+  # =================================================================
+  # Grafana Monitoring
+  # =================================================================
+  
+  - job_name: 'grafana'
+    static_configs:
+      - targets: ['watch_grafana:3000']
+        labels:
+          service: 'grafana'
+          layer: 'monitoring'
+    metrics_path: /metrics
+
+  # =================================================================
+  # Docker Service Discovery (for additional services)
+  # =================================================================
+  
+  - job_name: 'docker-services'
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+    relabel_configs:
+      # Only scrape containers with prometheus.scrape=true label
+      - source_labels: [__meta_docker_container_label_prometheus_scrape]
+        action: keep
+        regex: true
+      
+      # Use custom port if specified
+      - source_labels: [__meta_docker_container_label_prometheus_port]
+        action: replace
+        target_label: __address__
+        regex: (.+)
+        replacement: ${__meta_docker_container_network_ip}:$1
+      
+      # Use custom path if specified
+      - source_labels: [__meta_docker_container_label_prometheus_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      
+      # Add container name as label
+      - source_labels: [__meta_docker_container_name]
+        target_label: container
+      
+      # Add compose project name
+      - source_labels: [__meta_docker_container_label_com_docker_compose_project]
+        target_label: compose_project
+      
+      # Add service name
+      - source_labels: [__meta_docker_container_label_com_docker_compose_service]
+        target_label: compose_service
