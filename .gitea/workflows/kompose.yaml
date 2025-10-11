@@ -21,14 +21,17 @@ jobs:
         env:
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
-          if [[ "${COMMIT_MESSAGE}" == "#bot-message: *" ]]; then
+          echo "CHECK: '${{ env.COMMIT_MESSAGE }}'"
+          if [[ "${{ env.COMMIT_MESSAGE }}" == "#bot-message: *" ]]; then
+            echo "FOUND: '#bot-message: '"
             echo "BOT_MESSAGE=${BOT_MESSAGE}" >> "${GITHUB_ENV}"
           else
+            echo "NOT FOUND: '#bot-message: '"
             echo 'BOT_MESSAGE=' >> "${GITHUB_ENV}"
           fi
   build:
     runs-on: ubuntu-latest
-    if: ${{ vars.BOT_MESSAGE == true }}
+    if: ${{ vars.BOT_MESSAGE == 'true' }}
     steps:
     - uses: actions/checkout@v4
       with:
