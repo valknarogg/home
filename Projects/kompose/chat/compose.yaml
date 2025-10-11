@@ -1,9 +1,9 @@
-name: chat
+name: messaging
 
 services:
   gotify:
-    image: ${DOCKER_IMAGE}
-    container_name: ${COMPOSE_PROJECT_NAME}_app
+    image: ${GOTIFY_IMAGE}
+    container_name: ${COMPOSE_PROJECT_NAME}_gotify
     restart: unless-stopped
     volumes:
       - gotify_data:/app/data
@@ -11,27 +11,57 @@ services:
       TZ: ${TIMEZONE:-Europe/Amsterdam}
       GOTIFY_DEFAULTUSER_NAME: ${GOTIFY_DEFAULTUSER_NAME}
       GOTIFY_DEFAULTUSER_PASS: ${GOTIFY_DEFAULTUSER_PASS}
-    # Gotify is a Go binary - no wget/curl, but has built-in health endpoint
-    # healthcheck:
-    #   test: ["CMD-SHELL", "nc -z localhost $APP_PORT || exit 1"]
-    #   interval: 30s
-    #   timeout: 10s
-    #   retries: 3
-    #   start_period: 30s
+      # Connect Gotify to Mailhog for outgoing notifications
+      GOTIFY_SERVER_SMTP_HOST: mailhog
+      GOTIFY_SERVER_SMTP_PORT: 1025
+      GOTIFY_SERVER_SMTP_FROM: ${EMAIL_FROM}
+    depends_on:
+      - mailhog
     networks:
       - kompose_network
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.middlewares.$COMPOSE_PROJECT_NAME-redirect-web-secure.redirectscheme.scheme=https'
-      - 'traefik.http.routers.$COMPOSE_PROJECT_NAME-web.middlewares=$COMPOSE_PROJECT_NAME-redirect-web-secure'
-      - 'traefik.http.routers.$COMPOSE_PROJECT_NAME-web.rule=Host(`$TRAEFIK_HOST`)'
-      - 'traefik.http.routers.$COMPOSE_PROJECT_NAME-web.entrypoints=web'
-      - 'traefik.http.routers.$COMPOSE_PROJECT_NAME-web-secure.rule=Host(`$TRAEFIK_HOST`)'
-      - 'traefik.http.routers.$COMPOSE_PROJECT_NAME-web-secure.tls.certresolver=resolver'
-      - 'traefik.http.routers.$COMPOSE_PROJECT_NAME-web-secure.entrypoints=web-secure'
-      - 'traefik.http.middlewares.$COMPOSE_PROJECT_NAME-web-secure-compress.compress=true'
-      - 'traefik.http.routers.$COMPOSE_PROJECT_NAME-web-secure.middlewares=$COMPOSE_PROJECT_NAME-web-secure-compress'
-      - 'traefik.http.services.$COMPOSE_PROJECT_NAME-web-secure.loadbalancer.server.port=$APP_PORT'
+      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_gotify-redirect-web-secure.redirectscheme.scheme=https'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_gotify-web.middlewares=${COMPOSE_PROJECT_NAME}_gotify-redirect-web-secure'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_gotify-web.rule=Host(`${TRAEFIK_HOST_CHAT}`)'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_gotify-web.entrypoints=web'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_gotify-web-secure.rule=Host(`${TRAEFIK_HOST_CHAT}`)'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_gotify-web-secure.tls.certresolver=resolver'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_gotify-web-secure.entrypoints=web-secure'
+      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_gotify-web-secure-compress.compress=true'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_gotify-web-secure.middlewares=${COMPOSE_PROJECT_NAME}_gotify-web-secure-compress'
+      - 'traefik.http.services.${COMPOSE_PROJECT_NAME}_gotify-web-secure.loadbalancer.server.port=${GOTIFY_PORT}'
+      - 'traefik.docker.network=${NETWORK_NAME:-kompose}'
+
+  mailhog:
+    image: ${MAILHOG_IMAGE}
+    container_name: ${COMPOSE_PROJECT_NAME}_mailhog
+    restart: unless-stopped
+    environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
+      # Mailhog outgoing SMTP configuration (for sending external emails)
+      MH_SMTP_BIND_ADDR: 0.0.0.0:1025
+      MH_UI_BIND_ADDR: 0.0.0.0:8025
+      MH_API_BIND_ADDR: 0.0.0.0:8025
+      MH_OUTGOING_SMTP: ${MAILHOG_OUTGOING_SMTP_ENABLED:-false}
+      MH_SMTP_SERVER: ${EMAIL_SMTP_HOST}
+      MH_SMTP_PORT: ${EMAIL_SMTP_PORT}
+      MH_SMTP_USER: ${EMAIL_SMTP_USER}
+      MH_SMTP_PASS: ${EMAIL_SMTP_PASSWORD}
+    networks:
+      - kompose_network
+    labels:
+      - 'traefik.enable=true'
+      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_mailhog-redirect-web-secure.redirectscheme.scheme=https'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_mailhog-web.middlewares=${COMPOSE_PROJECT_NAME}_mailhog-redirect-web-secure'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_mailhog-web.rule=Host(`${TRAEFIK_HOST_MAIL}`)'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_mailhog-web.entrypoints=web'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_mailhog-web-secure.rule=Host(`${TRAEFIK_HOST_MAIL}`)'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_mailhog-web-secure.tls.certresolver=resolver'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_mailhog-web-secure.entrypoints=web-secure'
+      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_mailhog-web-secure-compress.compress=true'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_mailhog-web-secure.middlewares=${COMPOSE_PROJECT_NAME}_mailhog-web-secure-compress'
+      - 'traefik.http.services.${COMPOSE_PROJECT_NAME}_mailhog-web-secure.loadbalancer.server.port=${MAILHOG_PORT}'
       - 'traefik.docker.network=${NETWORK_NAME:-kompose}'
 
 volumes:
