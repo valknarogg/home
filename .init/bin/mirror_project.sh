@@ -18,6 +18,6 @@ else
   # No changes
   echo "NO CHANGES in ${CURRENT_PROJECT} - Aborting..."
   git reset
-  echo "no changes to latest posts"
+  echo "EXIT"
   exit 0
 fi
