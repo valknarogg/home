@@ -11,9 +11,8 @@ is_ssh() {
 }
 
 _home_push() {
-  export msg="$1"
   git add -A
-  git commit -m "${msg:-'$CHORE_CHORE'}"
+  git commit -m "${1:-$CHORE_CHORE}"
   git push $2 $3
 }
 
