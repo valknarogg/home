@@ -7,21 +7,22 @@ on:
     - main # Or your default branch
     paths:
     - 'Projects/kompose/**'
-
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: ${{ contains(github.event.head_commit.message, `#bot-message: `) }}
     steps:
     - uses: actions/checkout@v4
+      if: ${{ contains(github.event.head_commit.message, '#bot-message: ') }}
       with:
         path: home
     - uses: actions/checkout@v4
+      if: ${{ contains(github.event.head_commit.message, '#bot-message: ') }}
       with:
         repository: valknar/kompose
         ref: main
         path: kompose
     - name: Commit and push changes (if any)
+      if: ${{ contains(github.event.head_commit.message, '#bot-message: ') }}
       shell: bash
       env:
         CI_COMMIT_MESSAGE: "${{ replace(github.event.head_commit.message, '#bot-message: ') }}"
