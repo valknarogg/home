@@ -10,10 +10,12 @@ rm -rf $CURRENT_PROJECT/.env $CURRENT_PROJECT/**/uploads/ $CURRENT_PROJECT/**/*.
 
 if [[ `git add -A && git diff --quiet && git diff --cached --quiet` ]]; then
   # Changes
+  echo "CHANGES in ${CURRENT_PROJECT} - Mirroring..."
   git commit -m "$1"
   git push
 else
   # No changes
+  echo "NO CHANGES in ${CURRENT_PROJECT} - Aborting..."
   git reset
   echo "no changes to latest posts"
   exit 0

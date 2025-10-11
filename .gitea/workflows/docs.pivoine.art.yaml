@@ -46,13 +46,3 @@ jobs:
           target: /var/www/docs.pivoine.art # Set to your deployment directory (for example /public_html)
           strip_components: 1 # This ensures that a subdirectory is not created
           rm: 1
-      - name: Docker compose restart
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          password: ${{ secrets.PASSWORD }}
-          port: ${{ secrets.PORT }}
-          script: |
-            cd Projects/kompose/docs
-            docker compose restart
