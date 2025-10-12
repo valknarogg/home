@@ -1,0 +1,5 @@
+# Test temp files
+temp/
+
+# Test output logs
+*.log

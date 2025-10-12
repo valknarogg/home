@@ -1,0 +1,59 @@
+KOMPOSE - Docker Compose Stack Manager
+Modular Edition 2.0
+
+STACK MANAGEMENT COMMANDS:
+    up [STACK]           Start a stack (or all if no stack specified)
+    down [STACK]         Stop a stack (or all if no stack specified)
+    restart [STACK]      Restart a stack
+    status [STACK]       Show status of stack(s)
+    logs [STACK]         Show logs for a stack
+    pull [STACK]         Pull latest images for a stack
+    build [STACK]        Build images for a stack
+    deploy [STACK] [VER] Deploy specific version (pull + up)
+    list                 List all available stacks
+    validate [STACK]     Validate compose file(s)
+    exec [STACK] [CMD]   Execute command in stack container
+    ps                   Show all running containers
+
+REST API SERVER COMMANDS:
+    api start [PORT]     Start REST API server (default: http://127.0.0.1:8080)
+    api stop             Stop REST API server
+    api status           Check API server status
+    api logs             View API server logs
+
+GIT TAG DEPLOYMENT COMMANDS:
+    tag create           Create and push a new deployment tag
+    tag move             Move an existing tag to a new commit
+    tag delete           Delete a tag (local and remote)
+    tag list             List all deployment tags
+    tag deploy           Create tag and trigger deployment
+    tag rollback         Rollback to a previous tag
+    tag status           Show deployment status
+
+DATABASE COMMANDS:
+    db backup            Create database backup
+    db restore           Restore database from backup
+    db list              List available backups
+    db status            Show database status
+    db exec              Execute SQL command
+    db shell             Open database shell
+    db migrate           Run database migrations
+    db reset             Reset database (WARNING: deletes all data)
+
+UTILITY COMMANDS:
+    init                 Initialize kompose environment
+    cleanup              Clean up backup and temporary files
+    validate             Validate entire configuration
+    version              Show version information
+    help                 Show this help message
+
+AVAILABLE STACKS:
+    auth            - Authentication - Keycloak SSO, OAuth2 Proxy
+    chain           - Automation Platform - n8n workflows, Semaphore/Ansible tasks
+    code            - Git Repository & CI/CD - Gitea with Actions runner
+    core            - Core services - MQTT, Redis, Postgres
+    home            - Smart Home - Home Assistant, Matter, Zigbee, ESPHome
+    kmps            - Management Portal - User & SSO Administration
+    messaging       - Communication - Gotify notifications
+    proxy           - Reverse Proxy - Traefik with SSL
+    vpn             - VPN - WireGuard remote access (wg-easy)
