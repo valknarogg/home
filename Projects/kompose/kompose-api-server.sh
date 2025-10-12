@@ -165,6 +165,11 @@ handle_request() {
             handle_tag_action "$tag_path" "$method" "$query_string"
             log_request "$method" "$path" "200"
             ;;
+        /api/env/*)
+            local env_path="${clean_path#/api/env/}"
+            handle_env_action "$env_path" "$method" "$body"
+            log_request "$method" "$path" "200"
+            ;;
         *)
             local error_body=$(json_error "Endpoint not found: $clean_path" 404)
             http_response 404 "Not Found" "application/json" "$error_body"
@@ -401,6 +406,121 @@ EOF
             
         *)
             local error_body=$(json_error "Unknown database action: $action. Valid actions: status, list" 400)
+            http_response 400 "Bad Request" "application/json" "$error_body"
+            ;;
+    esac
+}
+
+# Handle environment variable actions
+handle_env_action() {
+    local action="$1"
+    local method="$2"
+    local body="$3"
+    
+    case "$action" in
+        list)
+            # List all environment files
+            local env_files='['
+            local first=true
+            
+            if [ -f "$STACKS_ROOT/.env" ]; then
+                env_files+='{"name":".env","type":"root","path":".env"}'
+                first=false
+            fi
+            
+            if [ -f "$STACKS_ROOT/secrets.env" ]; then
+                [ "$first" = false ] && env_files+=','
+                env_files+='{"name":"secrets.env","type":"secrets","path":"secrets.env"}'
+                first=false
+            fi
+            
+            if [ -f "$STACKS_ROOT/domain.env" ]; then
+                [ "$first" = false ] && env_files+=','
+                env_files+='{"name":"domain.env","type":"domain","path":"domain.env"}'
+            fi
+            
+            env_files+=']'
+            
+            local body=$(json_success "Environment files listed" "$env_files")
+            http_response 200 "OK" "application/json" "$body"
+            ;;
+            
+        stacks)
+            # List stack-specific environment variables
+            local stacks_env='['
+            local first=true
+            
+            for stack in $(cd "$STACKS_ROOT" && ls -d */ 2>/dev/null | sed 's#/##' | grep -v "^_"); do
+                local stack_upper=$(echo "$stack" | tr '[:lower:]' '[:upper:]')
+                local var_count=$(compgen -A variable 2>/dev/null | grep -c "^${stack_upper}_" || echo "0")
+                
+                if [ "$var_count" -gt 0 ]; then
+                    [ "$first" = false ] && stacks_env+=','
+                    stacks_env+=$(cat <<EOF
+{"stack":"$stack","prefix":"${stack_upper}_","count":$var_count}
+EOF
+)
+                    first=false
+                fi
+            done
+            
+            stacks_env+=']'
+            
+            local body=$(json_success "Stack environments listed" "$stacks_env")
+            http_response 200 "OK" "application/json" "$body"
+            ;;
+            
+        show/*)
+            local stack=$(echo "$action" | cut -d'/' -f2)
+            local output=$("$KOMPOSE_SCRIPT" env show "$stack" 2>&1 || echo "ERROR")
+            
+            local result_data=$(cat <<EOF
+{
+  "stack": "$stack",
+  "variables": "$(json_escape "$output")",
+  "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+}
+EOF
+)
+            
+            local body=$(json_success "Environment variables for $stack" "$result_data")
+            http_response 200 "OK" "application/json" "$body"
+            ;;
+            
+        validate/*)
+            local stack=$(echo "$action" | cut -d'/' -f2)
+            local output=$("$KOMPOSE_SCRIPT" env validate "$stack" 2>&1)
+            local exit_code=$?
+            
+            if [ $exit_code -eq 0 ]; then
+                local result_data=$(cat <<EOF
+{
+  "stack": "$stack",
+  "valid": true,
+  "message": "Environment validation passed",
+  "output": "$(json_escape "$output")"
+}
+EOF
+)
+                local body=$(json_success "Environment is valid" "$result_data")
+                http_response 200 "OK" "application/json" "$body"
+            else
+                local result_data=$(cat <<EOF
+{
+  "stack": "$stack",
+  "valid": false,
+  "message": "Environment validation failed",
+  "output": "$(json_escape "$output")"
+}
+EOF
+)
+                local body=$(json_success "Environment validation result" "$result_data")
+                http_response 200 "OK" "application/json" "$body"
+            fi
+            ;;
+            
+        *)
+            local error_body=$(json_error "Unknown env action: $action. Valid actions: list, stacks, show/{stack}, validate/{stack}" 400)
             http_response 400 "Bad Request" "application/json" "$error_body"
             ;;
     esac
