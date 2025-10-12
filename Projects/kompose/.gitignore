@@ -1,8 +1,139 @@
-/.env
+# ===================================================================
+# Kompose .gitignore
+# ===================================================================
+
+# ===================================================================
+# Environment & Secrets
+# ===================================================================
+
+# IMPORTANT: Never commit secrets!
+secrets.env
+
+# Auto-generated stack environment files (created by kompose-env.sh)
+**/.env.generated
+
+# Environment backups (created during migration)
+*.env.bak
+
+# ===================================================================
+# System Files
+# ===================================================================
 
 .DS_Store
-*.log*
+*.log
+*.log.*
 
 # Timezone configuration backups
 *.bak
 
+# ===================================================================
+# Backups
+# ===================================================================
+
+# Migration backups
+backups/env-migration-*/
+
+# Database backups (keep structure, ignore actual backups)
+backups/database/*.sql
+backups/database/*.sql.gz
+!backups/database/.gitkeep
+
+# ===================================================================
+# Docker & Compose
+# ===================================================================
+
+# Override files (if used)
+docker-compose.override.yml
+**/docker-compose.override.yml
+
+# Volume data (if mounted locally)
+**/data/
+**/volumes/
+
+# ===================================================================
+# Stack-specific
+# ===================================================================
+
+# Home Assistant
+home/homeassistant/
+
+# Gitea
+code/gitea/
+
+# n8n
+chain/n8n/
+
+# Keycloak themes (if custom)
+auth/keycloak/themes/
+
+# ===================================================================
+# Development
+# ===================================================================
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.pytest_cache/
+venv/
+env/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ===================================================================
+# Temporary Files
+# ===================================================================
+
+# Temp files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Archives
+*.tar
+*.tar.gz
+*.zip
+
+# ===================================================================
+# Documentation Build
+# ===================================================================
+
+# Nuxt/Docus build output
+_docs/.nuxt/
+_docs/.output/
+_docs/dist/
+_docs/node_modules/
+_docs/.env
+
+# ===================================================================
+# Notes
+# ===================================================================
+# 
+# What's safe to commit:
+# ✅ .env (non-sensitive configuration)
+# ✅ domain.env (domain settings)
+# ✅ secrets.env.template (template only!)
+# ✅ All scripts (*.sh)
+# ✅ Documentation (*.md, _docs/)
+# ✅ Compose files (compose.yaml)
+#
+# What should NEVER be committed:
+# ❌ secrets.env (contains passwords!)
+# ❌ *.env.generated (auto-generated)
+# ❌ backups/env-migration-*/ (local backups)
+# ❌ Database backups (*.sql, *.sql.gz)
+#
+# ===================================================================

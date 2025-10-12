@@ -38,18 +38,36 @@ get_all_stacks() {
     echo "${stacks[@]}"
 }
 
+# Helper function to run docker-compose with proper environment
+run_compose() {
+    local stack=$1
+    shift
+    
+    # Export environment for this stack
+    export_stack_env "$stack"
+    
+    # Change to stack directory
+    cd "${STACKS_ROOT}/${stack}"
+    
+    # Run docker-compose with the generated env file
+    if [ -f ".env.generated" ]; then
+        docker-compose --env-file .env.generated "$@"
+    else
+        log_error "Failed to generate environment file for stack: $stack"
+        return 1
+    fi
+}
+
 stack_up() {
     local stack=$1
     local detach=${2:-true}
     
     log_stack "$stack" "Starting..."
     
-    cd "${STACKS_ROOT}/${stack}"
-    
     if [ "$detach" = true ]; then
-        docker-compose up -d
+        run_compose "$stack" up -d
     else
-        docker-compose up
+        run_compose "$stack" up
     fi
     
     log_success "Stack '$stack' started"
@@ -61,13 +79,11 @@ stack_down() {
     
     log_stack "$stack" "Stopping..."
     
-    cd "${STACKS_ROOT}/${stack}"
-    
     if [ "$remove_volumes" = true ]; then
-        docker-compose down -v
+        run_compose "$stack" down -v
         log_warning "Stack '$stack' stopped and volumes removed"
     else
-        docker-compose down
+        run_compose "$stack" down
         log_success "Stack '$stack' stopped"
     fi
 }
@@ -77,8 +93,7 @@ stack_restart() {
     
     log_stack "$stack" "Restarting..."
     
-    cd "${STACKS_ROOT}/${stack}"
-    docker-compose restart
+    run_compose "$stack" restart
     
     log_success "Stack '$stack' restarted"
 }
@@ -86,11 +101,9 @@ stack_restart() {
 stack_status() {
     local stack=$1
     
-    cd "${STACKS_ROOT}/${stack}"
-    
     echo ""
     log_stack "$stack" "Status:"
-    docker-compose ps
+    run_compose "$stack" ps
     echo ""
 }
 
@@ -100,8 +113,7 @@ stack_logs() {
     
     log_stack "$stack" "Logs:"
     
-    cd "${STACKS_ROOT}/${stack}"
-    docker-compose logs "$@"
+    run_compose "$stack" logs "$@"
 }
 
 stack_pull() {
@@ -109,8 +121,7 @@ stack_pull() {
     
     log_stack "$stack" "Pulling latest images..."
     
-    cd "${STACKS_ROOT}/${stack}"
-    docker-compose pull
+    run_compose "$stack" pull
     
     log_success "Images pulled for stack '$stack'"
 }
@@ -121,12 +132,10 @@ stack_build() {
     
     log_stack "$stack" "Building images..."
     
-    cd "${STACKS_ROOT}/${stack}"
-    
     if [ "$no_cache" = true ]; then
-        docker-compose build --no-cache
+        run_compose "$stack" build --no-cache
     else
-        docker-compose build
+        run_compose "$stack" build
     fi
     
     log_success "Images built for stack '$stack'"
@@ -138,13 +147,11 @@ stack_deploy() {
     
     log_stack "$stack" "Deploying version $version..."
     
-    cd "${STACKS_ROOT}/${stack}"
-    
     export VERSION=$version
     export IMAGE_TAG=$version
     
-    docker-compose pull
-    docker-compose up -d
+    run_compose "$stack" pull
+    run_compose "$stack" up -d
     
     log_success "Stack '$stack' deployed with version $version"
 }
@@ -152,15 +159,17 @@ stack_deploy() {
 stack_validate() {
     local stack=$1
     
-    log_stack "$stack" "Validating compose file..."
+    log_stack "$stack" "Validating configuration..."
     
-    cd "${STACKS_ROOT}/${stack}"
+    # Validate environment
+    validate_stack_env "$stack"
     
-    if docker-compose config > /dev/null 2>&1; then
-        log_success "Compose file for stack '$stack' is valid"
+    # Validate compose file
+    if run_compose "$stack" config > /dev/null 2>&1; then
+        log_success "Configuration for stack '$stack' is valid"
     else
-        log_error "Compose file for stack '$stack' is invalid"
-        docker-compose config
+        log_error "Configuration for stack '$stack' is invalid"
+        run_compose "$stack" config
         return 1
     fi
 }
@@ -169,8 +178,7 @@ stack_exec() {
     local stack=$1
     shift
     
-    cd "${STACKS_ROOT}/${stack}"
-    docker-compose exec "$@"
+    run_compose "$stack" exec "$@"
 }
 
 list_stacks() {
@@ -186,9 +194,10 @@ list_stacks() {
         fi
         
         if stack_exists "$stack" 2>/dev/null; then
+            export_stack_env "$stack" > /dev/null 2>&1
             cd "${STACKS_ROOT}/${stack}"
-            local running=$(docker-compose ps -q 2>/dev/null | wc -l)
-            local total=$(docker-compose config --services 2>/dev/null | wc -l)
+            local running=$(docker-compose --env-file .env.generated ps -q 2>/dev/null | wc -l)
+            local total=$(docker-compose --env-file .env.generated config --services 2>/dev/null | wc -l)
             echo -e "    Status: ${running}/${total} containers running"
         fi
         echo ""
@@ -233,4 +242,28 @@ process_all_stacks() {
             esac
         fi
     done
+}
+
+# Show environment configuration for a stack
+stack_env() {
+    local stack=$1
+    
+    if ! stack_exists "$stack"; then
+        return 1
+    fi
+    
+    show_stack_env "$stack"
+}
+
+# Generate .env file for a stack (for debugging/inspection)
+stack_generate_env() {
+    local stack=$1
+    
+    if ! stack_exists "$stack"; then
+        return 1
+    fi
+    
+    generate_stack_env_file "$stack"
+    log_success "Generated .env file for stack '$stack'"
+    log_info "Location: ${STACKS_ROOT}/${stack}/.env.generated"
 }

@@ -12,6 +12,70 @@ The core stack is the foundation of Kompose, providing:
 
 All other Kompose services depend on the core stack.
 
+## Configuration
+
+> **New in v2.0**: Core stack configuration is now centralized in the root `.env` file with `CORE_` prefix.
+
+### Environment Variables
+
+All core stack variables are defined in `/home/valknar/Projects/kompose/.env`:
+
+```bash
+# ===================================================================
+# CORE STACK CONFIGURATION
+# ===================================================================
+CORE_COMPOSE_PROJECT_NAME=core
+
+# PostgreSQL Configuration
+CORE_POSTGRES_IMAGE=postgres:16-alpine
+CORE_DB_USER=valknar
+CORE_DB_NAME=kompose
+CORE_DB_PORT=5432
+CORE_DB_HOST=core-postgres
+CORE_POSTGRES_MAX_CONNECTIONS=100
+CORE_POSTGRES_SHARED_BUFFERS=256MB
+
+# Redis Configuration
+CORE_REDIS_IMAGE=redis:7-alpine
+
+# Mosquitto MQTT Configuration
+CORE_MOSQUITTO_IMAGE=eclipse-mosquitto:2
+CORE_MQTT_PORT=1883
+CORE_MQTT_WS_PORT=9001
+
+# Redis Commander (Web UI)
+CORE_REDIS_COMMANDER_IMAGE=rediscommander/redis-commander:latest
+CORE_REDIS_API_USER=admin
+CORE_REDIS_API_PORT=8081
+CORE_REDIS_API_TRAEFIK_HOST=redis.${ROOT_DOMAIN}
+```
+
+### Secrets
+
+Sensitive values are stored in `/home/valknar/Projects/kompose/secrets.env`:
+
+```bash
+# Core stack secrets
+CORE_DB_PASSWORD=xxx
+CORE_REDIS_PASSWORD=xxx
+CORE_REDIS_API_PASSWORD=xxx
+```
+
+Generate secrets with:
+```bash
+./kompose.sh secrets generate
+```
+
+### Viewing Configuration
+
+```bash
+# Show all core stack variables
+./kompose.sh env show core
+
+# Validate core configuration
+./kompose.sh env validate core
+```
+
 ## Services
 
 ### PostgreSQL
@@ -22,11 +86,21 @@ All other Kompose services depend on the core stack.
 - **Auto-initialization:** Creates databases on first start
 - **Health checks:** Built-in readiness probes
 
+**Configuration:**
+```bash
+CORE_POSTGRES_IMAGE=postgres:16-alpine
+CORE_DB_USER=valknar
+CORE_DB_NAME=kompose
+CORE_POSTGRES_MAX_CONNECTIONS=100
+CORE_POSTGRES_SHARED_BUFFERS=256MB
+```
+
 **Databases Created:**
 - `kompose` - Main application database
 - `n8n` - Workflow automation data
 - `semaphore` - Ansible automation data
 - `gitea` - Git repositories and CI/CD data
+- `keycloak` - Authentication data
 
 ### Redis
 - **Image:** `redis:7-alpine`
@@ -38,6 +112,12 @@ All other Kompose services depend on the core stack.
   - AOF persistence enabled
   - Health monitoring
   - Used by multiple services for caching
+
+**Configuration:**
+```bash
+CORE_REDIS_IMAGE=redis:7-alpine
+CORE_REDIS_PASSWORD=${REDIS_PASSWORD}  # from secrets.env
+```
 
 ### Mosquitto MQTT
 - **Image:** `eclipse-mosquitto:latest`
@@ -52,6 +132,13 @@ All other Kompose services depend on the core stack.
   - Anonymous access (configurable)
   - WebSocket support for web clients
 
+**Configuration:**
+```bash
+CORE_MOSQUITTO_IMAGE=eclipse-mosquitto:2
+CORE_MQTT_PORT=1883
+CORE_MQTT_WS_PORT=9001
+```
+
 ### Redis Commander
 - **Image:** `ghcr.io/joeferner/redis-commander:latest`
 - **Container:** `core-redis-api`
@@ -64,22 +151,46 @@ All other Kompose services depend on the core stack.
   - Real-time monitoring
   - HTTP authentication
 
-## Quick Start
-
-### 1. Configure Secrets
-
-Add to `secrets.env`:
-
+**Configuration:**
 ```bash
-# PostgreSQL
-POSTGRES_PASSWORD=$(openssl rand -base64 32)
-
-# Redis
-REDIS_PASSWORD=$(openssl rand -base64 32)
-REDIS_API_PASSWORD=$(openssl rand -base64 32)
+CORE_REDIS_COMMANDER_IMAGE=rediscommander/redis-commander:latest
+CORE_REDIS_API_USER=admin
+CORE_REDIS_API_PORT=8081
+CORE_REDIS_API_TRAEFIK_HOST=redis.${ROOT_DOMAIN}
+CORE_REDIS_API_PASSWORD=${REDIS_API_PASSWORD}  # from secrets.env
 ```
 
-### 2. Start Core Stack
+## Quick Start
+
+### 1. Configure Environment
+
+All configuration is in the root `.env` file. Review and adjust core stack settings:
+
+```bash
+vim .env
+# Scroll to CORE STACK CONFIGURATION section
+# Adjust values as needed
+```
+
+### 2. Configure Secrets
+
+Add passwords to `secrets.env`:
+
+```bash
+vim secrets.env
+
+# Add or verify:
+CORE_DB_PASSWORD=<strong-password>
+CORE_REDIS_PASSWORD=<strong-password>
+CORE_REDIS_API_PASSWORD=<strong-password>
+```
+
+Or generate all secrets:
+```bash
+./kompose.sh secrets generate
+```
+
+### 3. Start Core Stack
 
 ```bash
 # Create network (if not exists)
@@ -100,42 +211,67 @@ Expected output:
 ✓ core-redis-api (healthy)
 ```
 
-### 3. Verify Databases
+### 4. Verify Databases
 
 ```bash
 # List databases
-docker exec core-postgres psql -U kompose -l
+docker exec core-postgres psql -U valknar -l
 
 # Should show:
 # - kompose
 # - n8n
 # - semaphore
 # - gitea
+# - keycloak
 ```
 
-## Configuration
+## Customizing Configuration
 
-Located in `core/.env`:
+### Change PostgreSQL Settings
+
+Edit root `.env`:
 
 ```bash
-# Compose Settings
-COMPOSE_PROJECT_NAME=core
-NETWORK_NAME=kompose
+vim .env
 
-# PostgreSQL
-POSTGRES_USER=kompose
-POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-POSTGRES_DB=kompose
+# Find and modify:
+CORE_POSTGRES_MAX_CONNECTIONS=200
+CORE_POSTGRES_SHARED_BUFFERS=512MB
 
-# Redis
-REDIS_PASSWORD=${REDIS_PASSWORD}
+# Restart
+./kompose.sh restart core
+```
 
-# Redis Commander
-REDIS_API_PASSWORD=${REDIS_API_PASSWORD}
+### Change Redis Port
 
-# MQTT (optional authentication)
-# MQTT_USERNAME=kompose
-# MQTT_PASSWORD=${MQTT_PASSWORD}
+```bash
+vim .env
+
+# Modify:
+CORE_REDIS_PORT=6380  # if exposing externally
+
+# Update compose.yaml to expose port (uncomment):
+# ports:
+#   - "${CORE_REDIS_PORT}:6379"
+
+./kompose.sh restart core
+```
+
+### Enable MQTT Authentication
+
+```bash
+# Edit mosquitto config
+vim core/mosquitto/config/mosquitto.conf
+
+# Add:
+allow_anonymous false
+password_file /mosquitto/config/passwd
+
+# Create password file
+docker exec core-mqtt mosquitto_passwd -b /mosquitto/config/passwd kompose <password>
+
+# Restart
+docker restart core-mqtt
 ```
 
 ## Database Management
@@ -196,7 +332,7 @@ Shows:
 
 ```bash
 # Redis CLI
-docker exec -it core-redis redis-cli -a <REDIS_PASSWORD>
+docker exec -it core-redis redis-cli -a <CORE_REDIS_PASSWORD>
 
 # Get all keys
 KEYS "*"
@@ -213,7 +349,7 @@ INFO MEMORY
 
 ### Web UI (Redis Commander)
 
-Access: `http://localhost:8081`
+Access: `http://localhost:8081` or `https://redis.yourdomain.com`
 
 **Features:**
 - Browse keys by pattern
@@ -225,8 +361,8 @@ Access: `http://localhost:8081`
 - Execute commands
 
 **Authentication:**
-- Username: From `core/.env` → `REDIS_API_USER`
-- Password: From `secrets.env` → `REDIS_API_PASSWORD`
+- Username: From `CORE_REDIS_API_USER` (default: `admin`)
+- Password: From `secrets.env` → `CORE_REDIS_API_PASSWORD`
 
 ## MQTT Management
 
@@ -267,29 +403,13 @@ mosquitto_sub -h localhost -t '$SYS/broker/clients/total' -C 1
 mosquitto_sub -h localhost -t '$SYS/broker/messages/received' -C 1
 ```
 
-### Enable Authentication (Optional)
-
-Edit `core/mosquitto/config/mosquitto.conf`:
-
-```conf
-allow_anonymous false
-password_file /mosquitto/config/passwd
-```
-
-Create password file:
-
-```bash
-docker exec core-mqtt mosquitto_passwd -b /mosquitto/config/passwd kompose <password>
-docker restart core-mqtt
-```
-
 ## Monitoring
 
 ### Health Checks
 
 ```bash
 # PostgreSQL
-docker exec core-postgres pg_isready -U kompose
+docker exec core-postgres pg_isready -U valknar
 
 # Redis
 docker exec core-redis redis-cli -a <password> PING
@@ -320,23 +440,19 @@ docker stats core-postgres core-redis core-mqtt
 docker system df -v | grep core_
 ```
 
-### Prometheus Metrics
-
-Core services export metrics for Prometheus:
-
-- **PostgreSQL:** `http://core-postgres-exporter:9187/metrics`
-- **Redis:** `http://core-redis-exporter:9121/metrics`
-- **MQTT:** `http://core-mqtt-exporter:9000/metrics`
-
-See [Monitoring Guide](/guide/monitoring) for details.
-
 ## Troubleshooting
 
 ### PostgreSQL Issues
 
 **Container won't start:**
 ```bash
+# Check configuration
+./kompose.sh env validate core
+
+# View logs
 docker logs core-postgres
+
+# Inspect container
 docker inspect core-postgres
 ```
 
@@ -349,7 +465,7 @@ docker ps | grep core-postgres
 docker network inspect kompose | grep core-postgres
 
 # Test connection
-docker exec core-postgres pg_isready -U kompose
+docker exec core-postgres pg_isready -U valknar
 ```
 
 **Databases not created:**
@@ -358,7 +474,7 @@ docker exec core-postgres pg_isready -U kompose
 docker logs core-postgres | grep "init-databases"
 
 # Manually create
-docker exec core-postgres psql -U kompose -c "CREATE DATABASE n8n;"
+docker exec core-postgres psql -U valknar -c "CREATE DATABASE n8n;"
 ```
 
 ### Redis Issues
@@ -370,6 +486,9 @@ docker ps | grep core-redis
 
 # Check password
 docker exec core-redis redis-cli -a <password> PING
+
+# Verify configuration
+./kompose.sh env show core | grep REDIS
 ```
 
 **Out of memory:**
@@ -404,133 +523,16 @@ mosquitto_sub -h localhost -t '$SYS/broker/messages/#' -C 5
 mosquitto_sub -h localhost -t "#" -v
 ```
 
-## Backup and Recovery
-
-### Full Backup
-
-```bash
-#!/bin/bash
-# Daily backup script
-
-# PostgreSQL
-./kompose.sh db backup --compress
-
-# Redis (optional - data is cached)
-docker exec core-redis redis-cli -a <password> BGSAVE
-
-# MQTT (if using persistence)
-docker exec core-mqtt cp -r /mosquitto/data /mosquitto/backup/
-
-# Volumes
-docker run --rm \
-  -v core_postgres_data:/data \
-  -v $(pwd)/backups:/backup \
-  alpine tar czf /backup/postgres-data-$(date +%Y%m%d).tar.gz /data
-```
-
-### Disaster Recovery
-
-```bash
-# 1. Stop services
-./kompose.sh down core
-
-# 2. Remove volumes
-docker volume rm core_postgres_data
-docker volume rm core_redis_data
-
-# 3. Restore volumes from backup
-docker volume create core_postgres_data
-docker run --rm \
-  -v core_postgres_data:/data \
-  -v $(pwd)/backups:/backup \
-  alpine tar xzf /backup/postgres-data-20250112.tar.gz -C /
-
-# 4. Start services
-./kompose.sh up core
-
-# 5. Verify
-./kompose.sh db status
-```
-
-## Performance Tuning
-
-### PostgreSQL
-
-Edit `core/postgres/postgresql.conf`:
-
-```conf
-# Memory
-shared_buffers = 256MB
-effective_cache_size = 1GB
-
-# Connections
-max_connections = 200
-
-# Performance
-work_mem = 4MB
-maintenance_work_mem = 64MB
-```
-
-### Redis
-
-Edit `core/redis/redis.conf`:
-
-```conf
-# Memory
-maxmemory 512mb
-maxmemory-policy allkeys-lru
-
-# Persistence
-save 900 1
-save 300 10
-appendonly yes
-```
-
-## Security
-
-### Best Practices
-
-1. **Strong Passwords:** Use `openssl rand -base64 32`
-2. **Internal Network:** Keep ports internal (no external exposure)
-3. **Enable Auth:** Enable MQTT authentication
-4. **Regular Backups:** Daily automated backups
-5. **Monitor Access:** Check connection logs regularly
-6. **Update Images:** Regular security updates
-
-### Firewall Rules
-
-```bash
-# Only allow from Docker network
-# No external access to core services
-
-# If external access needed (not recommended):
-sudo ufw allow from 10.0.0.0/8 to any port 5432 proto tcp  # PostgreSQL
-sudo ufw allow from 10.0.0.0/8 to any port 6379 proto tcp  # Redis
-sudo ufw allow from 10.0.0.0/8 to any port 1883 proto tcp  # MQTT
-```
-
-## Volumes
-
-```bash
-# List volumes
-docker volume ls | grep core_
-
-# Inspect volume
-docker volume inspect core_postgres_data
-
-# Backup volume
-docker run --rm \
-  -v core_postgres_data:/data \
-  -v $(pwd):/backup \
-  alpine tar czf /backup/postgres.tar.gz /data
-
-# Remove unused volumes
-docker volume prune
-```
-
 ## See Also
 
-- [Core Quick Reference](/reference/core-quick-reference)
+- [Stack Configuration Overview](/reference/stack-configuration)
+- [Environment Migration Guide](/guide/environment-migration)
 - [Database Management Guide](/guide/database)
 - [MQTT Events Guide](/guide/mqtt-events)
 - [Monitoring Guide](/guide/monitoring)
+
+---
+
+**Configuration Location:** `/home/valknar/Projects/kompose/.env` (CORE section)  
+**Secrets Location:** `/home/valknar/Projects/kompose/secrets.env`  
+**Docker Network:** `kompose`
