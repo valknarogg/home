@@ -1,0 +1,103 @@
+# Gitea Actions CI/CD Workflow
+# This workflow runs on push to main branch and pull requests
+# Integrates with the chain stack (n8n) for deployment automation
+
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  # Build and Test Job
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install dependencies
+        run: |
+          npm ci
+      
+      - name: Run linter
+        run: |
+          npm run lint
+      
+      - name: Run tests
+        run: |
+          npm test
+      
+      - name: Build project
+        run: |
+          npm run build
+      
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: dist/
+
+  # Trigger n8n Deployment Workflow
+  trigger-deployment:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+      - name: Trigger n8n Deployment Workflow
+        run: |
+          curl -X POST \
+            "${{ secrets.N8N_WEBHOOK_URL }}/deploy" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "repository": "${{ github.repository }}",
+              "branch": "${{ github.ref_name }}",
+              "commit": "${{ github.sha }}",
+              "commit_message": "${{ github.event.head_commit.message }}",
+              "author": "${{ github.event.head_commit.author.name }}",
+              "timestamp": "${{ github.event.head_commit.timestamp }}"
+            }'
+      
+      - name: Send Gotify Notification
+        run: |
+          curl -X POST \
+            "${{ secrets.GOTIFY_URL }}/message" \
+            -H "X-Gotify-Key: ${{ secrets.GOTIFY_TOKEN }}" \
+            -F "title=Deployment Started" \
+            -F "message=Repository: ${{ github.repository }}\nBranch: ${{ github.ref_name }}\nCommit: ${{ github.sha }}" \
+            -F "priority=5"
+
+  # Security Scanning
+  security-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Run npm audit
+        run: |
+          npm audit --audit-level=moderate
+        continue-on-error: true
+      
+      - name: Notify on vulnerabilities
+        if: failure()
+        run: |
+          curl -X POST \
+            "${{ secrets.GOTIFY_URL }}/message" \
+            -H "X-Gotify-Key: ${{ secrets.GOTIFY_TOKEN }}" \
+            -F "title=Security Vulnerabilities Detected" \
+            -F "message=Repository: ${{ github.repository }}\nBranch: ${{ github.ref_name }}" \
+            -F "priority=8"

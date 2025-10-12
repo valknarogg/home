@@ -1,0 +1,149 @@
+# Gitea Actions Workflow - Ansible Deployment via Semaphore
+# Triggers infrastructure deployment using Semaphore (from chain stack)
+
+name: Infrastructure Deployment
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'infrastructure/**'
+      - 'ansible/**'
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment environment'
+        required: true
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+      task_name:
+        description: 'Semaphore task to execute'
+        required: true
+        type: string
+
+jobs:
+  # Validate Ansible Playbooks
+  validate-playbooks:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Install Ansible
+        run: |
+          pip install ansible ansible-lint
+      
+      - name: Lint Ansible playbooks
+        run: |
+          ansible-lint ansible/
+      
+      - name: Validate playbook syntax
+        run: |
+          ansible-playbook --syntax-check ansible/*.yml
+
+  # Trigger Semaphore Deployment
+  deploy-infrastructure:
+    needs: validate-playbooks
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Get Semaphore API Token
+        id: get-token
+        run: |
+          # Login to Semaphore and get JWT token
+          TOKEN=$(curl -s -X POST \
+            "${{ secrets.SEMAPHORE_URL }}/api/auth/login" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "auth": "${{ secrets.SEMAPHORE_USER }}",
+              "password": "${{ secrets.SEMAPHORE_PASSWORD }}"
+            }' | jq -r '.token')
+          echo "::add-mask::$TOKEN"
+          echo "token=$TOKEN" >> $GITHUB_OUTPUT
+      
+      - name: Trigger Semaphore Task
+        run: |
+          RESPONSE=$(curl -X POST \
+            "${{ secrets.SEMAPHORE_URL }}/api/project/${{ secrets.SEMAPHORE_PROJECT_ID }}/tasks" \
+            -H "Authorization: Bearer ${{ steps.get-token.outputs.token }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "template_id": ${{ secrets.SEMAPHORE_TEMPLATE_ID }},
+              "environment": "${{ github.event.inputs.environment || 'development' }}",
+              "debug": false,
+              "playbook": "deploy.yml"
+            }')
+          
+          TASK_ID=$(echo $RESPONSE | jq -r '.id')
+          echo "Task ID: $TASK_ID"
+          echo "task_id=$TASK_ID" >> $GITHUB_OUTPUT
+      
+      - name: Monitor Task Execution
+        run: |
+          # Poll task status
+          while true; do
+            STATUS=$(curl -s -X GET \
+              "${{ secrets.SEMAPHORE_URL }}/api/project/${{ secrets.SEMAPHORE_PROJECT_ID }}/tasks/${{ steps.trigger-task.outputs.task_id }}" \
+              -H "Authorization: Bearer ${{ steps.get-token.outputs.token }}" \
+              | jq -r '.status')
+            
+            echo "Task status: $STATUS"
+            
+            if [ "$STATUS" = "success" ]; then
+              echo "✅ Deployment successful!"
+              break
+            elif [ "$STATUS" = "error" ] || [ "$STATUS" = "failed" ]; then
+              echo "❌ Deployment failed!"
+              exit 1
+            fi
+            
+            sleep 10
+          done
+      
+      - name: Send Deployment Notification
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            PRIORITY=5
+            TITLE="✅ Deployment Successful"
+          else
+            PRIORITY=9
+            TITLE="❌ Deployment Failed"
+          fi
+          
+          curl -X POST \
+            "${{ secrets.GOTIFY_URL }}/message" \
+            -H "X-Gotify-Key: ${{ secrets.GOTIFY_TOKEN }}" \
+            -F "title=$TITLE" \
+            -F "message=Environment: ${{ github.event.inputs.environment || 'development' }}\nRepository: ${{ github.repository }}\nCommit: ${{ github.sha }}" \
+            -F "priority=$PRIORITY"
+
+  # Update n8n with deployment status
+  update-n8n:
+    needs: deploy-infrastructure
+    runs-on: ubuntu-latest
+    if: always()
+    
+    steps:
+      - name: Trigger n8n Workflow Update
+        run: |
+          curl -X POST \
+            "${{ secrets.N8N_WEBHOOK_URL }}/deployment-status" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "repository": "${{ github.repository }}",
+              "commit": "${{ github.sha }}",
+              "environment": "${{ github.event.inputs.environment || 'development' }}",
+              "status": "${{ job.status }}",
+              "timestamp": "'$(date -Iseconds)'"
+            }'

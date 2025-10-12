@@ -1,0 +1,203 @@
+name: code
+
+services:
+  # Gitea - Self-hosted Git Service
+  gitea:
+    image: ${GITEA_IMAGE:-gitea/gitea:latest}
+    container_name: ${COMPOSE_PROJECT_NAME}_gitea
+    restart: unless-stopped
+    environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
+      USER_UID: ${GITEA_UID:-1000}
+      USER_GID: ${GITEA_GID:-1000}
+      
+      # Application Configuration
+      GITEA__server__DOMAIN: ${GITEA_TRAEFIK_HOST}
+      GITEA__server__SSH_DOMAIN: ${GITEA_TRAEFIK_HOST}
+      GITEA__server__ROOT_URL: https://${GITEA_TRAEFIK_HOST}/
+      GITEA__server__HTTP_PORT: 3000
+      GITEA__server__SSH_PORT: 2222
+      GITEA__server__START_SSH_SERVER: true
+      GITEA__server__OFFLINE_MODE: false
+      GITEA__server__LANDING_PAGE: explore
+      
+      # Database Configuration (PostgreSQL from core stack)
+      GITEA__database__DB_TYPE: postgres
+      GITEA__database__HOST: ${DB_HOST}:5432
+      GITEA__database__NAME: ${GITEA_DB_NAME:-gitea}
+      GITEA__database__USER: ${DB_USER}
+      GITEA__database__PASSWD: ${DB_PASSWORD}
+      GITEA__database__SCHEMA: public
+      GITEA__database__SSL_MODE: disable
+      
+      # Cache Configuration (Redis from core stack)
+      GITEA__cache__ENABLED: true
+      GITEA__cache__ADAPTER: redis
+      GITEA__cache__HOST: redis://${REDIS_HOST}:6379/1?password=${REDIS_PASSWORD}
+      
+      # Session Configuration (Redis from core stack)
+      GITEA__session__PROVIDER: redis
+      GITEA__session__PROVIDER_CONFIG: redis://${REDIS_HOST}:6379/2?password=${REDIS_PASSWORD}
+      
+      # Queue Configuration (Redis from core stack)
+      GITEA__queue__TYPE: redis
+      GITEA__queue__CONN_STR: redis://${REDIS_HOST}:6379/3?password=${REDIS_PASSWORD}
+      
+      # Security Configuration
+      GITEA__security__INSTALL_LOCK: true
+      GITEA__security__SECRET_KEY: ${GITEA_SECRET_KEY}
+      GITEA__security__INTERNAL_TOKEN: ${GITEA_INTERNAL_TOKEN}
+      
+      # Email Configuration (Mailhog from messaging stack)
+      GITEA__mailer__ENABLED: true
+      GITEA__mailer__SMTP_ADDR: ${EMAIL_SMTP_HOST}
+      GITEA__mailer__SMTP_PORT: ${EMAIL_SMTP_PORT}
+      GITEA__mailer__FROM: ${EMAIL_FROM}
+      GITEA__mailer__USER: ${EMAIL_SMTP_USER:-}
+      GITEA__mailer__PASSWD: ${EMAIL_SMTP_PASSWORD:-}
+      GITEA__mailer__PROTOCOL: ${EMAIL_SMTP_PROTOCOL:-smtp}
+      
+      # Actions/CI Configuration
+      GITEA__actions__ENABLED: true
+      GITEA__actions__DEFAULT_ACTIONS_URL: https://github.com
+      
+      # Service Configuration
+      GITEA__service__DISABLE_REGISTRATION: ${GITEA_DISABLE_REGISTRATION:-false}
+      GITEA__service__REQUIRE_SIGNIN_VIEW: ${GITEA_REQUIRE_SIGNIN:-false}
+      GITEA__service__REGISTER_EMAIL_CONFIRM: ${GITEA_EMAIL_CONFIRM:-false}
+      GITEA__service__ENABLE_NOTIFY_MAIL: true
+      GITEA__service__DEFAULT_KEEP_EMAIL_PRIVATE: true
+      GITEA__service__DEFAULT_ALLOW_CREATE_ORGANIZATION: true
+      
+      # OAuth2 Provider Configuration
+      GITEA__oauth2__ENABLE: true
+      GITEA__oauth2__JWT_SECRET: ${GITEA_OAUTH2_JWT_SECRET}
+      
+      # Webhook Configuration (for n8n integration)
+      GITEA__webhook__ALLOWED_HOST_LIST: ${WEBHOOK_ALLOWED_HOSTS:-*}
+      GITEA__webhook__SKIP_TLS_VERIFY: ${WEBHOOK_SKIP_TLS:-false}
+      
+      # Metrics (for monitoring stack)
+      GITEA__metrics__ENABLED: true
+      GITEA__metrics__TOKEN: ${GITEA_METRICS_TOKEN}
+      
+      # Log Configuration
+      GITEA__log__MODE: console
+      GITEA__log__LEVEL: ${GITEA_LOG_LEVEL:-Info}
+      
+      # Repository Configuration
+      GITEA__repository__DEFAULT_BRANCH: main
+      GITEA__repository__DEFAULT_PRIVATE: last
+      GITEA__repository__ENABLE_PUSH_CREATE_USER: true
+      GITEA__repository__ENABLE_PUSH_CREATE_ORG: true
+      
+      # UI Configuration
+      GITEA__ui__DEFAULT_THEME: auto
+      GITEA__ui__THEMES: auto,gitea,arc-green
+    
+    volumes:
+      - gitea_data:/data
+      - gitea_config:/etc/gitea
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    
+    ports:
+      # SSH port for git operations
+      - "${GITEA_SSH_PORT:-2222}:2222"
+      # HTTP port (internal only, proxied by Traefik)
+      - "${GITEA_HTTP_PORT:-3000}:3000"
+    
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/api/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    
+    networks:
+      - kompose_network
+    
+    depends_on:
+      # Ensure core services are running
+      - gitea-init
+    
+    labels:
+      - 'traefik.enable=true'
+      
+      # HTTP to HTTPS redirect
+      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-gitea-redirect-web-secure.redirectscheme.scheme=https'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-gitea-web.middlewares=${COMPOSE_PROJECT_NAME}-gitea-redirect-web-secure'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-gitea-web.rule=Host(`${GITEA_TRAEFIK_HOST}`)'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-gitea-web.entrypoints=web'
+      
+      # HTTPS configuration
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-gitea-web-secure.rule=Host(`${GITEA_TRAEFIK_HOST}`)'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-gitea-web-secure.tls.certresolver=resolver'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-gitea-web-secure.entrypoints=web-secure'
+      
+      # Compression middleware
+      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-gitea-web-secure-compress.compress=true'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-gitea-web-secure.middlewares=${COMPOSE_PROJECT_NAME}-gitea-web-secure-compress'
+      
+      # Load balancer configuration
+      - 'traefik.http.services.${COMPOSE_PROJECT_NAME}-gitea-web-secure.loadbalancer.server.port=3000'
+      - 'traefik.docker.network=${NETWORK_NAME}'
+
+  # Database initialization service
+  gitea-init:
+    image: postgres:16-alpine
+    container_name: ${COMPOSE_PROJECT_NAME}_gitea_init
+    restart: "no"
+    environment:
+      PGPASSWORD: ${DB_PASSWORD}
+    networks:
+      - kompose_network
+    entrypoint: >
+      sh -c "
+        until pg_isready -h ${DB_HOST} -U ${DB_USER}; do
+          echo 'Waiting for PostgreSQL...';
+          sleep 2;
+        done;
+        echo 'PostgreSQL is ready!';
+        
+        if ! psql -h ${DB_HOST} -U ${DB_USER} -lqt | cut -d \| -f 1 | grep -qw ${GITEA_DB_NAME}; then
+          echo 'Creating gitea database...';
+          psql -h ${DB_HOST} -U ${DB_USER} -c 'CREATE DATABASE ${GITEA_DB_NAME};';
+          echo 'Database created successfully!';
+        else
+          echo 'Database already exists.';
+        fi
+      "
+
+  # Gitea Actions Runner
+  gitea-runner:
+    image: ${GITEA_RUNNER_IMAGE:-gitea/act_runner:latest}
+    container_name: ${COMPOSE_PROJECT_NAME}_gitea_runner
+    restart: unless-stopped
+    environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
+      GITEA_INSTANCE_URL: https://${GITEA_TRAEFIK_HOST}
+      GITEA_RUNNER_REGISTRATION_TOKEN: ${CODE_RUNNER_TOKEN}
+      GITEA_RUNNER_NAME: ${GITEA_RUNNER_NAME:-kompose-runner-1}
+      GITEA_RUNNER_LABELS: ${GITEA_RUNNER_LABELS:-ubuntu-latest:docker://node:16-bullseye,ubuntu-22.04:docker://node:16-bullseye}
+    volumes:
+      - gitea_runner_data:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - kompose_network
+    depends_on:
+      gitea:
+        condition: service_healthy
+
+volumes:
+  gitea_data:
+    name: ${COMPOSE_PROJECT_NAME}_gitea_data
+  gitea_config:
+    name: ${COMPOSE_PROJECT_NAME}_gitea_config
+  gitea_runner_data:
+    name: ${COMPOSE_PROJECT_NAME}_gitea_runner_data
+
+networks:
+  kompose_network:
+    name: ${NETWORK_NAME:-kompose}
+    external: true

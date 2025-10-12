@@ -41,6 +41,7 @@ declare -A STACKS=(
     ["vpn"]="VPN - WireGuard remote access (wg-easy)"
     ["messaging"]="Communication - Gotify notifications"
     ["chain"]="Automation Platform - n8n workflows, Semaphore/Ansible tasks"
+    ["code"]="Git Repository & CI/CD - Gitea with Actions runner"
     ["proxy"]="Reverse Proxy - Traefik with SSL"
 )
 
@@ -70,7 +71,7 @@ declare -A DATABASES=(
     ["kompose"]="Main application database"
     ["n8n"]="n8n workflow database"
     ["semaphore"]="Semaphore Ansible automation database"
-    ["gitea"]="Gitea git database"
+    ["gitea"]="Gitea git repository database"
 )
 
 # ============================================================================
