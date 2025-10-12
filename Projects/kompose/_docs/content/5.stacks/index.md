@@ -25,6 +25,7 @@ This section contains detailed documentation for each stack in the Kompose ecosy
 - [Track](/stacks/track)
 - [Vault](/stacks/vault)
 - [Vpn](/stacks/vpn)
+- [Watch](/stacks/watch)
 
 ## Stack Categories
 
@@ -48,4 +49,5 @@ Management and monitoring tools:
 - [Dock](/stacks/dock) - Dockge Docker UI
 - [Chat](/stacks/chat) - Gotify notifications
 - [Track](/stacks/track) - Umami analytics
+- [Watch](/stacks/watch) - Observability & monitoring
 - [Auto](/stacks/auto) - Semaphore CI/CD
