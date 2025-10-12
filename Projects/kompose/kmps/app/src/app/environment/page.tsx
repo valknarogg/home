@@ -4,9 +4,9 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import Layout from '@/components/Layout';
-import StacksDashboard from '@/components/stacks/StacksDashboard';
+import EnvironmentDashboard from '@/components/environment/EnvironmentDashboard';
 
-export default function StacksPage() {
+export default function EnvironmentPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
@@ -33,7 +33,7 @@ export default function StacksPage() {
 
   return (
     <Layout>
-      <StacksDashboard />
+      <EnvironmentDashboard />
     </Layout>
   );
 }
