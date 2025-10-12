@@ -1,116 +1,328 @@
 ---
-title: Chain - Workflow Automation Powerhouse
-description: "If you can dream it, you can automate it!"
+title: Chain - Workflow & Infrastructure Automation
+description: "n8n + Semaphore: Automate everything!"
 navigation:
   icon: i-lucide-link-2
 ---
 
-> *"If you can dream it, you can automate it!"* - n8n philosophy
+> *"If you can dream it, you can automate it!"* - Chain stack philosophy
 
 ## What's This All About?
 
-This stack is your automation Swiss Army knife! n8n lets you connect different apps and services to create powerful workflows without writing code (though you can if you want!). Think Zapier or IFTTT, but open-source, self-hosted, and infinitely more powerful.
+The **chain** stack combines two powerful automation platforms to create a comprehensive automation ecosystem: **n8n** for workflow automation and **Semaphore** for infrastructure automation via Ansible. Together, they can automate virtually any task, from simple data transformations to complex infrastructure deployments.
 
-## The Star of the Show
+## The Stack
 
 ### :icon{name="lucide:zap"} n8n
 
-**Container**: `chain_app`  
+**Container**: `chain_n8n`  
 **Image**: `n8nio/n8n:latest`  
-**Home**: https://chain.localhost  
+**URL**: https://chain.localhost  
 **Port**: 5678
 
-n8n is workflow automation done right:
+Visual workflow automation platform:
 - :icon{name="lucide:plug"} **400+ Integrations**: Connect virtually anything
-- :icon{name="lucide:palette"} **Visual Builder**: Drag-and-drop workflow creation
-- :icon{name="lucide:laptop"} **Code Nodes**: Write JavaScript when you need it
-- :icon{name="lucide:git-branch"} **Webhooks**: Trigger workflows from anywhere
+- :icon{name="lucide:palette"} **Visual Builder**: Drag-and-drop workflows
+- :icon{name="lucide:code"} **Code Nodes**: JavaScript when needed
+- :icon{name="lucide:webhook"} **Webhooks**: Trigger from anywhere
 - :icon{name="lucide:clock"} **Scheduling**: Cron-style automation
-- :icon{name="lucide:bar-chart"} **Data Transformation**: Powerful data manipulation
-- :icon{name="lucide:refresh-cw"} **Error Handling**: Retry logic and fallbacks
-- :icon{name="lucide:file-text"} **Version Control**: Export workflows as JSON
+- :icon{name="lucide:git-branch"} **Branching Logic**: Complex workflows
+- :icon{name="lucide:refresh-cw"} **Error Handling**: Retry and fallback
+- :icon{name="lucide:database"} **PostgreSQL**: Reliable storage
 
-## Configuration Breakdown
+### :icon{name="lucide:server"} Semaphore
 
-### Database Connection
-All workflows and credentials stored in PostgreSQL:
+**Container**: `chain_semaphore`  
+**Image**: `semaphoreui/semaphore:v2.16.18`  
+**URL**: https://auto.localhost  
+**Port**: 3000
+
+Ansible automation UI and task runner:
+- :icon{name="lucide:play"} **Ansible Playbooks**: Web-based execution
+- :icon{name="lucide:folder"} **Project Management**: Organize playbooks
+- :icon{name="lucide:users"} **Team Collaboration**: User management
+- :icon{name="lucide:history"} **Task History**: Track all executions
+- :icon{name="lucide:bell"} **Email Alerts**: Task notifications
+- :icon{name="lucide:lock"} **Credential Vault**: Secure secrets
+- :icon{name="lucide:database"} **PostgreSQL**: Persistent storage
+
+### :icon{name="lucide:play-circle"} Semaphore Runner
+
+**Container**: `chain_semaphore_runner`  
+**Image**: `public.ecr.aws/semaphore/pro/runner:v2.16.18`
+
+Background task executor:
+- :icon{name="lucide:cpu"} **Task Execution**: Runs Ansible playbooks
+- :icon{name="lucide:refresh-cw"} **Auto-Registration**: Connects to Semaphore
+- :icon{name="lucide:shield"} **Isolated**: Runs tasks separately
+- :icon{name="lucide:zap"} **Fast**: Dedicated executor
+
+## Architecture
+
 ```
-Database: n8n
-Host: Shared data stack (postgres)
+┌──────────────────────────────────────────────────────┐
+│                   Chain Stack                         │
+│                                                        │
+│  ┌────────────┐          ┌──────────────────┐        │
+│  │    n8n     │──────────▶│   Semaphore     │        │
+│  │ Workflows  │   API     │   Ansible UI    │        │
+│  └─────┬──────┘          └────────┬─────────┘        │
+│        │                           │                  │
+│        │                           │ JWT Auth         │
+│        │                           ▼                  │
+│        │                  ┌────────────────┐         │
+│        │                  │   Semaphore    │         │
+│        │                  │     Runner     │         │
+│        │                  └────────────────┘         │
+│        │                                              │
+│        ▼                                              │
+│  ┌──────────────┐                                    │
+│  │  PostgreSQL  │◀───(from core stack)               │
+│  │   Databases  │                                    │
+│  │  - n8n       │                                    │
+│  │  - semaphore │                                    │
+│  └──────────────┘                                    │
+└──────────────────────────────────────────────────────┘
 ```
 
-### Basic Auth :icon{name="lucide:lock"}
+## Configuration
+
+### n8n Setup
+
 **Default Credentials**:
 - Username: `admin`
-- Password: `changeme`
+- Password: Set in `.env` (`N8N_BASIC_AUTH_PASSWORD`)
 
-**:icon{name="lucide:alert-triangle"} CRITICAL**: Change these immediately after first login!
+**:icon{name="lucide:alert-triangle"} CRITICAL**: Change default password immediately!
 
-### Encryption Key
-Credentials are encrypted using `N8N_ENCRYPTION_KEY`. This is auto-generated during setup. Never lose this key or you'll lose access to saved credentials!
+**Database**: Stores workflows and credentials in `n8n` database
+
+**Encryption**: All credentials encrypted with `N8N_ENCRYPTION_KEY`
+
+### Semaphore Setup
+
+**Default Admin**:
+- Username: Set in `.env` (`SEMAPHORE_ADMIN`)
+- Password: Set in `.env` (`SEMAPHORE_ADMIN_PASSWORD`)
+- Email: Set in `.env` (`ADMIN_EMAIL`)
+
+**Database**: Stores projects and tasks in `semaphore` database
+
+**Runner**: Auto-registers using `SEMAPHORE_RUNNER_TOKEN`
 
 ## Getting Started
 
-### First Login
+### First Login - n8n
 
-1. **Start the stack**:
-   ```bash
-   docker compose up -d
-   ```
+1. **Access n8n**: https://chain.localhost
+2. **Login**: Use admin credentials
+3. **Change Password**: User icon → Settings
+4. **Create Workflow**: Click "New Workflow"
 
-2. **Access n8n**:
-   ```
-   URL: https://chain.localhost
-   Username: admin
-   Password: changeme
-   ```
+### First Login - Semaphore
 
-3. **:icon{name="lucide:alert-triangle"} IMMEDIATELY Change Password**:
-   - Click user icon (top right)
-   - Settings → Personal
-   - Change password
+1. **Access Semaphore**: https://auto.localhost
+2. **Login**: Use admin credentials
+3. **Create Project**: Projects → New Project
+4. **Add Playbooks**: Upload Ansible playbooks
+5. **Add Inventory**: Configure target hosts
 
-### Creating Your First Workflow
+## Integration: n8n ↔ Semaphore
 
-1. **Click "New Workflow"** button
-2. **Add trigger node**: Webhook, Schedule, or Manual
-3. **Add action nodes**: Drag from left panel
-4. **Connect with arrows**
-5. **Test**: Execute manually
-6. **Activate**: Toggle switch (top right)
+### Trigger Ansible from n8n
 
-## Common Integrations
+**n8n HTTP Request Node**:
+```javascript
+{
+  "method": "POST",
+  "url": "http://semaphore:3000/api/project/{{$json.project_id}}/tasks",
+  "authentication": "headerAuth",
+  "headerParameters": {
+    "parameters": [
+      {
+        "name": "Authorization",
+        "value": "Bearer YOUR_API_TOKEN"
+      }
+    ]
+  },
+  "bodyParameters": {
+    "parameters": [
+      {
+        "name": "template_id",
+        "value": "={{$json.template_id}}"
+      },
+      {
+        "name": "debug",
+        "value": false
+      }
+    ]
+  }
+}
+```
 
-- **Slack/Discord**: Send messages
-- **Gmail**: Email operations
-- **Google Sheets**: Read/write data
-- **GitHub**: Issues, PRs, releases
-- **Home Assistant**: Control devices
-- **Webhooks**: Trigger anything
+### Use Cases
+
+**Deployment Automation**:
+- n8n detects Git push
+- Triggers Semaphore deployment playbook
+- Sends notification on completion
+
+**Infrastructure Updates**:
+- Scheduled n8n workflow
+- Runs Semaphore maintenance tasks
+- Logs results to database
+
+**Event-Driven Operations**:
+- Webhook triggers n8n
+- n8n processes data
+- Executes Ansible via Semaphore
+
+## Common n8n Workflows
+
+### Data Integration
+- Pull data from APIs
+- Transform and clean
+- Push to database or services
+
+### Notifications
+- Monitor events
+- Send alerts (Slack, Email, Gotify)
+- Track responses
+
+### Automation Chains
+- Trigger on schedule or webhook
+- Multi-step processing
+- Error handling and retries
+
+## Common Semaphore Tasks
+
+### Infrastructure Deployment
+- Deploy applications
+- Configure servers
+- Update packages
+
+### Maintenance Tasks
+- Backup databases
+- Clean up resources
+- Health checks
+
+### Configuration Management
+- Update configs across servers
+- Restart services
+- Apply security patches
+
+## Database Management
+
+**Both services use PostgreSQL from core stack**:
+
+```bash
+# Check databases
+./kompose.sh db shell -d n8n
+./kompose.sh db shell -d semaphore
+
+# Backup
+./kompose.sh db backup -d n8n --compress
+./kompose.sh db backup -d semaphore --compress
+
+# Restore
+./kompose.sh db restore -f backup.sql.gz -d n8n
+```
+
+## Environment Variables
+
+**n8n**:
+- `N8N_ENCRYPTION_KEY`: Credential encryption (CRITICAL!)
+- `N8N_BASIC_AUTH_USER`: Admin username
+- `N8N_BASIC_AUTH_PASSWORD`: Admin password
+- `WEBHOOK_URL`: Public webhook URL
+
+**Semaphore**:
+- `SEMAPHORE_ADMIN`: Admin username
+- `SEMAPHORE_ADMIN_PASSWORD`: Admin password
+- `SEMAPHORE_RUNNER_TOKEN`: Runner registration token
+- Email configuration for notifications
 
 ## Troubleshooting
 
-**Q: Forgot password?**  
-A: Update `N8N_BASIC_AUTH_PASSWORD` in `.env` and restart
+**n8n won't start**:
+```bash
+# Check logs
+docker logs chain_n8n -f
 
-**Q: Credentials not working?**  
-A: Check `N8N_ENCRYPTION_KEY` hasn't changed
+# Verify database connection
+./kompose.sh db exec -d postgres "\l" | grep n8n
+```
 
-**Q: Workflow not triggering?**  
-A: Verify it's activated and check execution logs
+**Semaphore runner not connecting**:
+```bash
+# Check runner logs
+docker logs chain_semaphore_runner -f
 
-## Security Notes :icon{name="lucide:lock"}
+# Verify token
+docker exec chain_semaphore_runner env | grep SEMAPHORE
+```
 
-- :icon{name="lucide:key"} **Encryption Key**: Store securely
-- :icon{name="lucide:lock-keyhole"} **Change Default Auth**: ASAP!
+**Forgot n8n password**:
+```bash
+# Update in .env file
+# Restart container
+./kompose.sh restart chain
+```
+
+## Security
+
+- :icon{name="lucide:lock-keyhole"} **Change Defaults**: Update all passwords
+- :icon{name="lucide:key"} **Strong Encryption Key**: Use secure random key
 - :icon{name="lucide:globe"} **HTTPS Only**: Via Traefik
-- :icon{name="lucide:lock"} **OAuth**: Use for sensitive integrations
+- :icon{name="lucide:shield"} **API Tokens**: Use tokens, not passwords
+- :icon{name="lucide:database"} **Backup Encryption Keys**: Store securely!
 
-## Resources
+## Documentation
 
+**In stack directory**:
+- :icon{name="lucide:book-open"} **INTEGRATION_GUIDE.md**: Complete setup guide
+
+**External Resources**:
 - [n8n Documentation](https://docs.n8n.io/)
-- [Workflow Templates](https://n8n.io/workflows)
-- [Community Forum](https://community.n8n.io/)
+- [Semaphore Documentation](https://docs.semaphoreui.com/)
+- [Ansible Documentation](https://docs.ansible.com/)
+
+## Quick Commands
+
+```bash
+# Start stack
+./kompose.sh up chain
+
+# Stop stack
+./kompose.sh down chain
+
+# View logs
+./kompose.sh logs chain -f
+
+# Restart n8n only
+docker restart chain_n8n
+
+# Restart Semaphore only
+docker restart chain_semaphore
+```
+
+## Integration with Other Stacks
+
+### Core Stack
+- :icon{name="lucide:database"} **PostgreSQL**: Data storage
+- :icon{name="lucide:share-2"} **MQTT**: Pub/sub messaging
+- :icon{name="lucide:zap"} **Redis**: Caching
+
+### Home Stack
+- :icon{name="lucide:home"} **Home Assistant**: Control automation
+- :icon{name="lucide:webhook"} **Webhooks**: Trigger workflows
+
+### Messaging Stack
+- :icon{name="lucide:bell"} **Gotify**: Send notifications
+- :icon{name="lucide:mail"} **Email**: Task alerts
+
+### Auth Stack
+- :icon{name="lucide:key"} **Keycloak**: SSO integration (optional)
 
 ---
 
