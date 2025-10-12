@@ -162,14 +162,18 @@ export async function getUserGroups(userId: string) {
 
 export async function getRealmStats() {
   const client = await getKeycloakAdminClient();
-  const [users, clients, groups] = await Promise.all([
-    client.users.count(),
+  const [usersData, clients, groups] = await Promise.all([
+    client.users.find(),
     client.clients.find(),
     client.groups.count(),
   ]);
   
+  // Count active (enabled) users
+  const activeUsersCount = usersData.filter(user => user.enabled !== false).length;
+  
   return {
-    usersCount: users,
+    usersCount: usersData.length,
+    activeUsersCount,
     clientsCount: clients.length,
     groupsCount: groups.count || 0,
   };
