@@ -1,150 +1,253 @@
 ---
 title: CLI Reference
-description: Complete command-line interface reference
+description: Complete command-line interface reference for all Kompose commands
 ---
 
-Complete reference for all Kompose CLI commands and options.
+Complete reference for all Kompose CLI commands, options, and examples.
 
 ## Synopsis
 
 ```bash
-./kompose.sh [OPTIONS] <PATTERN> <COMMAND> [ARGS...]
+./kompose.sh [COMMAND] [OPTIONS] [ARGS...]
 ```
 
-## Options
+## Global Options
 
-### Global Options
+| Option | Description |
+|--------|-------------|
+| `-h, --help` | Show help message and exit |
+| `-d, --detach` | Run in detached mode (for up command) |
+| `-f, --force` | Force operation (remove volumes, force tag operations) |
+| `--no-cache` | Build without cache |
+| `--scale SERVICE=N` | Scale service to N replicas |
+| `-v, --verbose` | Verbose output |
 
-| Option | Short | Description |
-|--------|-------|-------------|
-| `--help` | `-h` | Show help message |
-| `--list` | `-l` | List all available stacks |
-| `--dry-run` | `-n` | Preview actions without executing |
-| `--network <n>` | | Override network name |
-| `-e <KEY=VALUE>` | | Set environment variable |
+## Stack Management Commands
 
-### Examples
+### up
 
+Start one or all stacks.
+
+**Syntax:**
 ```bash
-# Show help
-./kompose.sh --help
-
-# List all stacks
-./kompose.sh --list
-
-# Dry run mode
-./kompose.sh --dry-run "*" up -d
-
-# Override network
-./kompose.sh --network staging "*" up -d
-
-# Set environment variable
-./kompose.sh -e DB_HOST=localhost news up -d
+./kompose.sh up [STACK] [-d|--detach]
 ```
 
-## Stack Patterns
-
-### Pattern Syntax
-
-- `*` - All stacks
-- `stack1,stack2,stack3` - Specific stacks (comma-separated)
-- `stack` - Single stack
-
-### Examples
-
+**Examples:**
 ```bash
-# All stacks
-./kompose.sh "*" up -d
+# Start all stacks
+./kompose.sh up
 
-# Multiple specific stacks
-./kompose.sh "auth,blog,news" logs -f
+# Start specific stack
+./kompose.sh up core
 
-# Single stack
-./kompose.sh proxy restart
+# Start in detached mode
+./kompose.sh up home -d
 ```
 
-## Docker Compose Commands
+### down
 
-Any Docker Compose command can be passed through:
+Stop one or all stacks.
 
+**Syntax:**
 ```bash
-# Start services
-./kompose.sh <pattern> up -d
-
-# Stop services
-./kompose.sh <pattern> down
-
-# View logs
-./kompose.sh <pattern> logs -f
-
-# Restart services
-./kompose.sh <pattern> restart
-
-# Pull images
-./kompose.sh <pattern> pull
-
-# Check status
-./kompose.sh <pattern> ps
-
-# Execute commands
-./kompose.sh <pattern> exec <service> <command>
+./kompose.sh down [STACK] [-f|--force]
 ```
 
-## Database Commands
-
-### db:export
-
-Export PostgreSQL database to SQL dump file.
-
+**Examples:**
 ```bash
-./kompose.sh <pattern> db:export
+# Stop all stacks
+./kompose.sh down
+
+# Stop specific stack
+./kompose.sh down auth
+
+# Stop and remove volumes
+./kompose.sh down core -f
 ```
 
-**Output:** `<stack-dir>/<db-name>_YYYYMMDD_HHMMSS.sql`
+### restart
 
-### db:import
+Restart one or all stacks.
 
-Import PostgreSQL database from SQL dump file.
-
+**Syntax:**
 ```bash
-# Import latest dump (auto-detected)
-./kompose.sh <stack> db:import
-
-# Import specific dump file
-./kompose.sh <stack> db:import path/to/dump.sql
+./kompose.sh restart [STACK]
 ```
 
-**:icon{name="lucide:alert-triangle"} WARNING:** Drops and recreates the database!
-
-### db:cleanup
-
-Remove old database dump files (keeps only the latest).
-
+**Examples:**
 ```bash
-./kompose.sh <pattern> db:cleanup
+# Restart all stacks
+./kompose.sh restart
+
+# Restart specific stack
+./kompose.sh restart chain
 ```
 
-## Exit Codes
+### status
 
-| Code | Meaning |
-|------|---------|
-| 0 | Success |
-| 1 | General error |
-| 2 | Missing required arguments |
-| 3 | No matching stacks |
+Show status of one or all stacks.
 
-## Environment Variables
-
-Environment variables can be set via:
-
-1. Root `.env` file
-2. Stack `.env` file
-3. CLI `-e` flag (highest priority)
-
-### Precedence
-
+**Syntax:**
+```bash
+./kompose.sh status [STACK]
 ```
-CLI (-e flag) > Stack .env > Root .env > Compose defaults
+
+**Examples:**
+```bash
+# Show all stack statuses
+./kompose.sh status
+
+# Show specific stack status
+./kompose.sh status home
+```
+
+### logs
+
+Show logs for a stack.
+
+**Syntax:**
+```bash
+./kompose.sh logs STACK [OPTIONS]
+```
+
+**Options:**
+- `-f` - Follow log output
+- `--tail=N` - Show last N lines
+- `--since=TIME` - Show logs since timestamp
+
+**Examples:**
+```bash
+# Follow logs
+./kompose.sh logs chain -f
+
+# Last 100 lines
+./kompose.sh logs core --tail=100
+
+# Logs since 10 minutes ago
+./kompose.sh logs auth --since=10m
+```
+
+### pull
+
+Pull latest images for one or all stacks.
+
+**Syntax:**
+```bash
+./kompose.sh pull [STACK]
+```
+
+**Examples:**
+```bash
+# Pull all stacks
+./kompose.sh pull
+
+# Pull specific stack
+./kompose.sh pull home
+```
+
+### build
+
+Build images for a stack.
+
+**Syntax:**
+```bash
+./kompose.sh build STACK [--no-cache]
+```
+
+**Examples:**
+```bash
+# Build with cache
+./kompose.sh build frontend
+
+# Build without cache
+./kompose.sh build backend --no-cache
+```
+
+### deploy
+
+Deploy a stack with specific version.
+
+**Syntax:**
+```bash
+./kompose.sh deploy STACK VERSION
+```
+
+**Examples:**
+```bash
+# Deploy version 1.2.3
+./kompose.sh deploy api 1.2.3
+
+# Deploy version 2.0.0
+./kompose.sh deploy frontend 2.0.0
+```
+
+### list
+
+List all available stacks.
+
+**Syntax:**
+```bash
+./kompose.sh list
+```
+
+**Output:**
+```
+Available stacks:
+
+  core        - Core services - MQTT, Redis, Postgres
+  auth        - Authentication - Keycloak SSO
+  chain       - Automation Platform - n8n workflows
+  home        - Smart Home - Home Assistant
+  ...
+```
+
+### validate
+
+Validate compose files for one or all stacks.
+
+**Syntax:**
+```bash
+./kompose.sh validate [STACK]
+```
+
+**Examples:**
+```bash
+# Validate all stacks
+./kompose.sh validate
+
+# Validate specific stack
+./kompose.sh validate core
+```
+
+### exec
+
+Execute command in a stack container.
+
+**Syntax:**
+```bash
+./kompose.sh exec STACK COMMAND [ARGS...]
+```
+
+**Examples:**
+```bash
+# Execute shell in postgres
+./kompose.sh exec core postgres bash
+
+# Run npm command
+./kompose.sh exec frontend npm install
+
+# Check n8n version
+./kompose.sh exec chain n8n --version
+```
+
+### ps
+
+Show all running containers.
+
+**Syntax:**
+```bash
+./kompose.sh ps
 ```
 
 ## API Server Commands
@@ -153,6 +256,7 @@ CLI (-e flag) > Stack .env > Root .env > Compose defaults
 
 Start the REST API server.
 
+**Syntax:**
 ```bash
 ./kompose.sh api start [PORT] [HOST]
 ```
@@ -163,7 +267,7 @@ Start the REST API server.
 
 **Examples:**
 ```bash
-# Start on default port
+# Start on default port (localhost only)
 ./kompose.sh api start
 
 # Start on custom port
@@ -171,80 +275,550 @@ Start the REST API server.
 
 # Start on all interfaces
 ./kompose.sh api start 8080 0.0.0.0
+
+# Start on specific interface
+./kompose.sh api start 8080 192.168.1.10
 ```
+
+**Environment Variables:**
+- `API_PORT` - Default port (default: 8080)
+- `API_HOST` - Default host (default: 127.0.0.1)
+- `API_PIDFILE` - PID file location
+- `API_LOGFILE` - Log file location
 
 ### api stop
 
 Stop the running API server.
 
+**Syntax:**
 ```bash
 ./kompose.sh api stop
 ```
 
 ### api status
 
-Check API server status and show recent log entries.
+Check API server status and view recent logs.
 
+**Syntax:**
 ```bash
 ./kompose.sh api status
+```
+
+**Output:**
+```
+[SUCCESS] API server is running (PID: 12345)
+Server URL: http://127.0.0.1:8080
+
+Recent log entries:
+  [2025-01-15 10:30:00] [STARTUP] Kompose API Server starting...
+  [2025-01-15 10:30:15] GET /api/health - 200
+  [2025-01-15 10:30:20] GET /api/stacks - 200
 ```
 
 ### api logs
 
 View API server logs in real-time.
 
+**Syntax:**
 ```bash
 ./kompose.sh api logs
 ```
 
-## Examples
+## Database Commands
 
-### Daily Workflow
+### db backup
 
+Create database backups.
+
+**Syntax:**
+```bash
+./kompose.sh db backup [OPTIONS]
+```
+
+**Options:**
+- `-d, --database NAME` - Database name (default: all)
+- `-f, --file FILE` - Backup file path
+- `-t, --timestamp` - Add timestamp to backup
+- `--compress` - Compress backup with gzip
+
+**Examples:**
+```bash
+# Backup all databases
+./kompose.sh db backup
+
+# Backup specific database
+./kompose.sh db backup -d kompose
+
+# Backup with compression
+./kompose.sh db backup --compress
+
+# Backup to specific file
+./kompose.sh db backup -d n8n -f my-backup.sql
+```
+
+### db restore
+
+Restore database from backup.
+
+**Syntax:**
+```bash
+./kompose.sh db restore [OPTIONS]
+```
+
+**Options:**
+- `-f, --file FILE` - Backup file path (required)
+- `-d, --database NAME` - Database name (auto-detected if not specified)
+
+**Examples:**
+```bash
+# Restore from file (auto-detect database)
+./kompose.sh db restore -f kompose_20250115-103000.sql
+
+# Restore to specific database
+./kompose.sh db restore -f backup.sql -d kompose
+```
+
+**⚠️ WARNING:** This drops and recreates the database!
+
+### db list
+
+List all available database backups.
+
+**Syntax:**
+```bash
+./kompose.sh db list
+```
+
+**Output:**
+```
+Available database backups:
+
+  📦 kompose_20250115-103000.sql - 2.5M - 2025-01-15 10:30:00
+  📦 n8n_20250115-090000.sql.gz - 1.1M - 2025-01-15 09:00:00
+  📦 gitea_20250114-180000.sql - 5.2M - 2025-01-14 18:00:00
+```
+
+### db status
+
+Show database status, sizes, and connections.
+
+**Syntax:**
+```bash
+./kompose.sh db status
+```
+
+**Output:**
+```
+Database status:
+
+[SUCCESS] PostgreSQL container is running
+
+Available databases:
+  kompose  | postgres | UTF8 | 15 MB
+
+Database sizes:
+  kompose: 15 MB - Main application database
+  n8n: 8 MB - n8n workflow database
+  gitea: 12 MB - Gitea git database
+
+Active connections:
+  datname  | count
+-----------+-------
+  kompose  |     5
+  n8n      |     2
+```
+
+### db exec
+
+Execute SQL command on a database.
+
+**Syntax:**
+```bash
+./kompose.sh db exec -d DATABASE "SQL_COMMAND"
+```
+
+**Examples:**
+```bash
+# Count users
+./kompose.sh db exec -d kompose "SELECT COUNT(*) FROM users;"
+
+# Check tables
+./kompose.sh db exec -d n8n "\\dt"
+
+# Vacuum database
+./kompose.sh db exec -d gitea "VACUUM ANALYZE;"
+```
+
+### db shell
+
+Open interactive PostgreSQL shell for a database.
+
+**Syntax:**
+```bash
+./kompose.sh db shell [-d DATABASE]
+```
+
+**Examples:**
+```bash
+# Open shell for kompose database
+./kompose.sh db shell -d kompose
+
+# Default database
+./kompose.sh db shell
+```
+
+**Commands in shell:**
+- `\q` - Quit
+- `\l` - List databases
+- `\dt` - List tables
+- `\d table` - Describe table
+
+### db migrate
+
+Run database migrations.
+
+**Syntax:**
+```bash
+./kompose.sh db migrate [-d DATABASE]
+```
+
+**Examples:**
+```bash
+# Migrate kompose database
+./kompose.sh db migrate -d kompose
+
+# Migrate default database
+./kompose.sh db migrate
+```
+
+### db reset
+
+Reset a database (WARNING: deletes all data).
+
+**Syntax:**
+```bash
+./kompose.sh db reset -d DATABASE
+```
+
+**Examples:**
+```bash
+# Reset kompose database
+./kompose.sh db reset -d kompose
+```
+
+**⚠️ WARNING:** Creates backup before reset, but still destructive!
+
+## Git Tag Deployment Commands
+
+### tag create
+
+Create a new deployment tag.
+
+**Syntax:**
+```bash
+./kompose.sh tag create [OPTIONS]
+```
+
+**Options:**
+- `-s, --service SERVICE` - Service name (required)
+- `-e, --env ENV` - Environment: dev, staging, prod (required)
+- `-v, --version VERSION` - Version number (required)
+- `-c, --commit COMMIT` - Git commit hash (default: HEAD)
+- `-m, --message MESSAGE` - Tag message
+- `-f, --force` - Force tag creation
+- `-d, --dry-run` - Show what would be done
+
+**Examples:**
+```bash
+# Create deployment tag
+./kompose.sh tag create -s frontend -e dev -v 1.2.3
+
+# Create with custom message
+./kompose.sh tag create -s backend -e prod -v 2.0.0 -m "Production release"
+
+# Create at specific commit
+./kompose.sh tag create -s api -e staging -v 1.5.0 -c abc123
+
+# Dry run
+./kompose.sh tag create -s frontend -e dev -v 1.0.0 -d
+```
+
+### tag deploy
+
+Create tag and trigger deployment workflow.
+
+**Syntax:**
+```bash
+./kompose.sh tag deploy [OPTIONS]
+```
+
+**Options:** Same as `tag create`
+
+**Examples:**
+```bash
+# Deploy to development
+./kompose.sh tag deploy -s frontend -e dev -v 1.2.3
+
+# Deploy to production
+./kompose.sh tag deploy -s api -e prod -v 2.0.0
+
+# Deploy with message
+./kompose.sh tag deploy -s backend -e staging -v 1.5.0 -m "Staging deployment"
+```
+
+### tag move
+
+Move an existing tag to a new commit.
+
+**Syntax:**
+```bash
+./kompose.sh tag move [OPTIONS]
+```
+
+**Options:**
+- `-s, --service SERVICE` - Service name (required)
+- `-e, --env ENV` - Environment (required)
+- `-v, --version VERSION` - Version number (required)
+- `-c, --commit COMMIT` - New commit hash (required)
+- `-d, --dry-run` - Show what would be done
+
+**Examples:**
+```bash
+# Move tag to new commit
+./kompose.sh tag move -s frontend -e dev -v 1.2.3 -c def456
+
+# Dry run
+./kompose.sh tag move -s api -e staging -v 1.0.0 -c abc123 -d
+```
+
+### tag delete
+
+Delete a deployment tag.
+
+**Syntax:**
+```bash
+./kompose.sh tag delete [OPTIONS]
+```
+
+**Options:**
+- `-s, --service SERVICE` - Service name (required)
+- `-e, --env ENV` - Environment (required)
+- `-v, --version VERSION` - Version number (required)
+- `-f, --force` - Skip production confirmation
+- `-d, --dry-run` - Show what would be done
+
+**Examples:**
+```bash
+# Delete tag
+./kompose.sh tag delete -s frontend -e dev -v 1.0.0
+
+# Force delete production tag
+./kompose.sh tag delete -s api -e prod -v 1.5.0 -f
+```
+
+### tag list
+
+List all deployment tags.
+
+**Syntax:**
+```bash
+./kompose.sh tag list [-s SERVICE]
+```
+
+**Examples:**
+```bash
+# List all tags
+./kompose.sh tag list
+
+# List tags for specific service
+./kompose.sh tag list -s frontend
+```
+
+**Output:**
+```
+All deployment tags:
+
+frontend-v1.2.3-prod
+frontend-v1.2.2-staging
+frontend-v1.2.1-dev
+backend-v2.0.0-prod
+api-v1.5.0-staging
+```
+
+### tag rollback
+
+Rollback to a previous deployment tag.
+
+**Syntax:**
+```bash
+./kompose.sh tag rollback [OPTIONS]
+```
+
+**Options:**
+- `-s, --service SERVICE` - Service name (required)
+- `-e, --env ENV` - Environment (required)
+- `-v, --version VERSION` - Version to rollback to (required)
+- `-f, --force` - Skip production confirmation
+
+**Examples:**
+```bash
+# Rollback to previous version
+./kompose.sh tag rollback -s api -e prod -v 1.9.5
+
+# Force rollback production
+./kompose.sh tag rollback -s frontend -e prod -v 1.0.0 -f
+```
+
+### tag status
+
+Show deployment status for a tag.
+
+**Syntax:**
+```bash
+./kompose.sh tag status SERVICE VERSION ENV
+```
+
+**Examples:**
+```bash
+# Check deployment status
+./kompose.sh tag status frontend 1.2.3 prod
+
+# Or with flags
+./kompose.sh tag status -s backend -v 2.0.0 -e staging
+```
+
+## Available Stacks
+
+| Stack | Description |
+|-------|-------------|
+| `core` | Core services (MQTT, Redis, PostgreSQL) |
+| `auth` | Authentication (Keycloak SSO, OAuth2 Proxy) |
+| `kmps` | Kompose Management Portal |
+| `chain` | Automation Platform (n8n, Semaphore) |
+| `home` | Smart Home (Home Assistant, Matter, Zigbee) |
+| `vpn` | VPN Access (WireGuard) |
+| `chat` | Notifications (Gotify) |
+| `vault` | Password Manager (Vaultwarden) |
+| `proxy` | Reverse Proxy (Traefik) |
+| `messaging` | Messaging services |
+| `+custom` | Custom user stacks |
+| `+utility` | System utility services |
+
+## Available Services (for tag commands)
+
+| Service | Description |
+|---------|-------------|
+| `frontend` | Frontend application |
+| `backend` | Backend application |
+| `api` | API service |
+| `worker` | Background workers |
+
+## Environments (for tag commands)
+
+| Environment | Description |
+|-------------|-------------|
+| `dev` | Development |
+| `staging` | Staging |
+| `prod` | Production |
+
+## Available Databases
+
+| Database | Description |
+|----------|-------------|
+| `kompose` | Main application database |
+| `n8n` | n8n workflow database |
+| `semaphore` | Semaphore Ansible database |
+| `gitea` | Gitea git database |
+
+## Exit Codes
+
+| Code | Meaning |
+|------|---------|
+| 0 | Success |
+| 1 | General error |
+| 2 | Missing required arguments |
+| 3 | Stack not found |
+| 4 | Command failed |
+
+## Environment Variables
+
+### Configuration
+- `STACKS_ROOT` - Root directory for stacks (default: current directory)
+- `COMPOSE_FILE` - Compose file name (default: compose.yaml)
+- `REPO_URL` - Git repository URL
+- `GITEA_URL` - Gitea server URL
+- `N8N_WEBHOOK_BASE` - n8n webhook base URL
+
+### API Server
+- `API_PORT` - API server port (default: 8080)
+- `API_HOST` - API server host (default: 127.0.0.1)
+- `API_PIDFILE` - PID file location
+- `API_LOGFILE` - Log file location
+
+### Database
+- `POSTGRES_CONTAINER` - PostgreSQL container name
+- `BACKUP_DIR` - Backup directory
+- `DB_USER` - Database user
+- `DB_PASS` - Database password
+
+## Example Workflows
+
+### Daily Operations
 ```bash
 # Morning: Start everything
-./kompose.sh "*" up -d
+./kompose.sh up
 
-# Check status
-./kompose.sh "*" ps
+# Check what's running
+./kompose.sh ps
 
 # View logs
-./kompose.sh "*" logs --tail=50
-
-# Evening: Backup databases
-./kompose.sh "*" db:export
-./kompose.sh "*" db:cleanup
+./kompose.sh logs chain -f
 ```
 
-### Deployment
-
+### Deployment Workflow
 ```bash
-# Pull latest images
-./kompose.sh "*" pull
+# Create and deploy tag
+./kompose.sh tag deploy -s api -e prod -v 2.0.0
 
-# Backup before update
-./kompose.sh "*" db:export
+# Monitor deployment
+./kompose.sh logs api -f
 
-# Restart with new images
-./kompose.sh "*" down
-./kompose.sh "*" up -d
-
-# Verify health
-./kompose.sh "*" ps
+# If issues, rollback
+./kompose.sh tag rollback -s api -e prod -v 1.9.5
 ```
 
-### Development
-
+### Database Workflow
 ```bash
-# Start dev environment
-./kompose.sh "data,proxy,news" up -d
+# Daily backup
+./kompose.sh db backup --compress
 
-# Override for testing
-./kompose.sh -e DB_NAME=test_db news up -d
+# Before major update
+./kompose.sh db backup -d kompose
 
-# Watch logs
-./kompose.sh news logs -f
-
-# Clean up
-./kompose.sh news down
+# After update fails
+./kompose.sh db restore -f latest-backup.sql
 ```
+
+### API Server Workflow
+```bash
+# Start server
+./kompose.sh api start
+
+# Use API
+curl http://localhost:8080/api/stacks | jq .
+curl -X POST http://localhost:8080/api/stacks/home/restart
+
+# Check logs
+./kompose.sh api logs
+
+# Stop server
+./kompose.sh api stop
+```
+
+## See Also
+
+- [Quick Start Guide](/guide/quick-start) - Get started quickly
+- [Stack Management](/guide/stack-management) - Detailed stack operations
+- [API Server Guide](/guide/api-server) - REST API documentation
+- [Database Guide](/guide/database) - Database management
+- [Environment Reference](/reference/environment) - All environment variables
