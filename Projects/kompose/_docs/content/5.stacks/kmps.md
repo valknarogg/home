@@ -4,8 +4,9 @@ Kompose Management Portal - Web-based management interface for SSO and user admi
 
 ## Overview
 
-KMPS (Kompose Management Portal) provides a modern web interface for managing Keycloak users, clients, and groups. It offers:
+KMPS (Kompose Management Portal) provides a modern web interface for managing Keycloak users, clients, groups, and Kompose stacks. It offers:
 
+- **Stack Monitoring** - Real-time monitoring and control of Kompose stacks
 - **User Management** - Create, edit, delete users
 - **Password Management** - Reset user passwords
 - **Account Control** - Enable/disable accounts, verify emails
@@ -19,25 +20,33 @@ KMPS (Kompose Management Portal) provides a modern web interface for managing Ke
 ┌─────────────────────────────────────────┐
 │          KMPS Web Interface             │
 │        (Next.js 14 + React)             │
-└──────────────┬──────────────────────────┘
-               │
-        ┌──────▼──────┐
-        │  NextAuth   │
-        │ (Auth Layer)│
-        └──────┬──────┘
-               │
-        ┌──────▼──────────┐
-        │  Keycloak API   │
-        │ (Admin Client)  │
-        └──────┬──────────┘
-               │
-        ┌──────▼──────────┐
-        │    Keycloak     │
-        │  (Identity DB)  │
-        └─────────────────┘
+└──────────┬──────────────────┬───────────┘
+           │                  │
+    ┌──────▼──────┐    ┌─────▼──────────┐
+    │  NextAuth   │    │  Kompose API   │
+    │ (Auth Layer)│    │   (REST API)   │
+    └──────┬──────┘    └─────┬──────────┘
+           │                  │
+    ┌──────▼──────────┐       │
+    │  Keycloak API   │       │
+    │ (Admin Client)  │       │
+    └──────┬──────────┘       │
+           │                  │
+    ┌──────▼──────────┐  ┌───▼──────────┐
+    │    Keycloak     │  │ Docker Daemon│
+    │  (Identity DB)  │  │   (Stacks)   │
+    └─────────────────┘  └──────────────┘
 ```
 
 ## Services
+
+### Kompose API Server
+- **Runtime:** Python 3.11
+- **Container:** `kmps_api`
+- **Port:** 8080 (internal)
+- **Purpose:** REST API for Kompose stack management
+- **Features:** Start, stop, restart stacks, view logs
+- **Access:** Internal only (not exposed externally)
 
 ### KMPS Application
 - **Framework:** Next.js 14 with App Router
@@ -150,6 +159,37 @@ Visit: `https://manage.yourdomain.com`
 You'll be redirected to Keycloak for authentication. Use your Keycloak admin credentials or any user in the realm.
 
 ## Features
+
+### Stack Monitoring
+
+**Overview Dashboard:**
+- Total stacks count
+- Running stacks count
+- Stopped stacks count
+- System uptime ratio
+
+**Stack Management:**
+- **Start Stack** - Launch stopped services
+- **Stop Stack** - Gracefully shutdown services
+- **Restart Stack** - Restart all services in a stack
+- **View Logs** - Real-time log streaming with download option
+
+**Stack Cards:**
+- Visual status indicators (running/stopped)
+- Quick action buttons for each stack
+- Stack descriptions and metadata
+- Color-coded status badges
+
+**Supported Stacks:**
+- Core (Database, Redis, MQTT)
+- Auth (Keycloak SSO)
+- Code (Gitea, CI/CD)
+- Home (Home Assistant)
+- Chain (n8n, Automation)
+- Messaging (Communication tools)
+- Proxy (Traefik)
+- VPN (WireGuard)
+- And more...
 
 ### Dashboard
 
@@ -377,6 +417,64 @@ Response:
 **Get Recent Users:**
 ```bash
 GET /api/dashboard/recent-users
+```
+
+### Kompose Stack API
+
+**List All Stacks:**
+```bash
+GET /api/kompose/stacks
+```
+
+Response:
+```json
+{
+  "status": "success",
+  "data": [
+    {
+      "name": "core",
+      "description": "Core infrastructure services",
+      "url": "/api/stacks/core"
+    }
+  ]
+}
+```
+
+**Get Stack Status:**
+```bash
+GET /api/kompose/stacks/{name}
+```
+
+**Start Stack:**
+```bash
+POST /api/kompose/stacks/{name}/start
+```
+
+**Stop Stack:**
+```bash
+POST /api/kompose/stacks/{name}/stop
+```
+
+**Restart Stack:**
+```bash
+POST /api/kompose/stacks/{name}/restart
+```
+
+**Get Stack Logs:**
+```bash
+GET /api/kompose/stacks/{name}/logs
+```
+
+Response:
+```json
+{
+  "status": "success",
+  "data": {
+    "stack": "core",
+    "logs": "[logs content here]",
+    "lines": 100
+  }
+}
 ```
 
 ## Development

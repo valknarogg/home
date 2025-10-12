@@ -3,7 +3,7 @@
 import { useSession, signOut } from 'next-auth/react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Users, Key, Layers, LogOut, Shield } from 'lucide-react';
+import { Home, Users, Key, Layers, LogOut, Shield, Server } from 'lucide-react';
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
@@ -11,6 +11,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
   const navigation = [
     { name: 'Dashboard', href: '/', icon: Home },
+    { name: 'Stacks', href: '/stacks', icon: Server },
     { name: 'Users', href: '/users', icon: Users },
     { name: 'Clients', href: '/clients', icon: Key },
     { name: 'Groups', href: '/groups', icon: Layers },

@@ -1,6 +1,32 @@
 name: kmps
 
 services:
+  # Kompose API Server
+  kompose-api:
+    image: ${DOCKER_IMAGE:-python:3.11-alpine}
+    container_name: ${COMPOSE_PROJECT_NAME}_api
+    restart: unless-stopped
+    working_dir: /kompose
+    command: sh -c "python3 /kompose/kompose-api-server.sh"
+    environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
+      API_PORT: ${KMPS_API_PORT:-8080}
+      API_HOST: ${KMPS_API_HOST:-0.0.0.0}
+      KOMPOSE_SCRIPT: /kompose/kompose.sh
+    volumes:
+      - ${KOMPOSE_ROOT:-/home/valknar/Projects/kompose}:/kompose:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:${KMPS_API_PORT:-8080}/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - kompose_network
+    labels:
+      - 'traefik.enable=false'
+
   # Kompose Management Portal & SSO Administration
   kmps-app:
     image: ${DOCKER_IMAGE:-node:20-alpine}
@@ -17,6 +43,9 @@ services:
       KEYCLOAK_REALM: kompose
       KEYCLOAK_CLIENT_ID: ${KMPS_CLIENT_ID:-kmps-admin}
       KEYCLOAK_CLIENT_SECRET: ${KMPS_CLIENT_SECRET}
+      
+      # Kompose API Configuration
+      KOMPOSE_API_URL: http://kompose-api:${KMPS_API_PORT:-8080}
       
       # Database Configuration
       DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:5432/${DB_NAME}
@@ -36,6 +65,8 @@ services:
     volumes:
       - ./app:/app
       - kmps_node_modules:/app/node_modules
+    depends_on:
+      - kompose-api
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:${APP_PORT}/api/health"]
       interval: 30s
