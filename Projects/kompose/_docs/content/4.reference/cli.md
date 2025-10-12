@@ -147,6 +147,56 @@ Environment variables can be set via:
 CLI (-e flag) > Stack .env > Root .env > Compose defaults
 ```
 
+## API Server Commands
+
+### api start
+
+Start the REST API server.
+
+```bash
+./kompose.sh api start [PORT] [HOST]
+```
+
+**Parameters:**
+- `PORT` - Port number (default: 8080)
+- `HOST` - Host to bind to (default: 127.0.0.1)
+
+**Examples:**
+```bash
+# Start on default port
+./kompose.sh api start
+
+# Start on custom port
+./kompose.sh api start 9000
+
+# Start on all interfaces
+./kompose.sh api start 8080 0.0.0.0
+```
+
+### api stop
+
+Stop the running API server.
+
+```bash
+./kompose.sh api stop
+```
+
+### api status
+
+Check API server status and show recent log entries.
+
+```bash
+./kompose.sh api status
+```
+
+### api logs
+
+View API server logs in real-time.
+
+```bash
+./kompose.sh api logs
+```
+
 ## Examples
 
 ### Daily Workflow

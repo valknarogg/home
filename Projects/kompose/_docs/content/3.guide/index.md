@@ -14,6 +14,7 @@ Learn everything you need to know about using Kompose effectively.
 
 - [Stack Management](/guide/stack-management) - Managing multiple Docker Compose stacks
 - [Database Operations](/guide/database) - Backup, restore, and maintain databases
+- [REST API Server](/guide/api-server) - Remote management via JSON API
 - [Hooks System](/guide/hooks) - Extend functionality with custom hooks
 - [Network Architecture](/guide/network) - Understanding networking in Kompose
 
