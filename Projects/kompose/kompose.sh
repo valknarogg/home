@@ -44,10 +44,10 @@ declare -A STACKS=(
     ["code"]="Git Repository & CI/CD - Gitea with Actions runner"
     ["proxy"]="Reverse Proxy - Traefik with SSL"
     ["link"]="Link Management - Linkwarden bookmark manager"
-    ["news"]="Newsletter - Letterspace app"
     ["track"]="Activity Tracking - Umami analytics"
     ["vault"]="Password Manager - Vaultwarden"
     ["watch"]="Monitoring & Observability - Uptime Kuma, Grafana"
+    ["_docs"]="Kompose Docs - Full documentation"
 )
 
 # Custom stacks (dynamically discovered)

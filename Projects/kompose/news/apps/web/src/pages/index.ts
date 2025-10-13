@@ -1,6 +1,0 @@
-export * from "./dashboard";
-export * from "./onboarding";
-export * from "./unsubscribe";
-export * from "./auth";
-export * from "./not-found";
-export * from "./verify-email";
