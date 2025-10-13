@@ -162,16 +162,15 @@ generate_htpasswd() {
     
     if [ -z "$password" ]; then
         password=$(generate_password 16)
-        log_info "Generated password for htpasswd: $password"
+        # log_info "Generated password for htpasswd: $password"
     fi
     
     if command -v htpasswd &> /dev/null; then
         htpasswd -nb "$username" "$password" 2>/dev/null | tr -d '\n'
     else
         # Fallback using openssl
-        local salt=$(openssl rand -base64 6)
-        local hash=$(echo -n "${password}${salt}" | openssl dgst -binary -md5 | openssl base64)
-        echo "${username}:$apr1$${salt}$${hash}"
+        local hash=$(echo -n "${password}" | openssl dgst -binary -md5 | openssl base64)
+        echo "${username}:${hash}"
     fi
 }
 
