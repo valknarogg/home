@@ -247,6 +247,8 @@ test_core_stack_lifecycle() {
     
     log_test "Testing core stack lifecycle (up/status/down)"
     
+    TESTS_RUN=$((TESTS_RUN+1))
+    
     # Start core stack
     log_info "Starting core stack..."
     local up_output
@@ -256,8 +258,11 @@ test_core_stack_lifecycle() {
     set -e
     
     if [ $up_exit -ne 0 ]; then
-        log_warning "Core stack up failed (may not be configured)"
-        log_info "Output: $up_output"
+        log_fail "Core stack lifecycle test - failed to start stack"
+        if [ "${VERBOSE:-0}" = "1" ]; then
+            echo "Output: $up_output"
+        fi
+        TESTS_FAILED=$((TESTS_FAILED+1))
         return
     fi
     
@@ -273,8 +278,18 @@ test_core_stack_lifecycle() {
     set -e
     
     # Should contain core stack info
-    assert_contains "$status_output" "core" \
-        "Status shows core stack information"
+    if ! echo "$status_output" | grep -qi "core"; then
+        log_fail "Core stack lifecycle test - status check failed"
+        if [ "${VERBOSE:-0}" = "1" ]; then
+            echo "Status output: $status_output"
+        fi
+        # Cleanup before failing
+        set +e
+        run_kompose down core >/dev/null 2>&1
+        set -e
+        TESTS_FAILED=$((TESTS_FAILED+1))
+        return
+    fi
     
     # Stop core stack
     log_info "Stopping core stack..."
@@ -283,8 +298,7 @@ test_core_stack_lifecycle() {
     set -e
     
     log_pass "Core stack lifecycle test completed"
-    TESTS_RUN=$((TESTS_RUN+1))
-    TESTS_RUN=$((TESTS_PASSED+1))
+    TESTS_PASSED=$((TESTS_PASSED+1))
 }
 
 # ============================================================================
