@@ -168,7 +168,8 @@ test_run_suite() {
 
 usage() {
     local exit_code="${1:-1}"
-    cat << EOF
+    echo -e "$(
+    cat << EOM
 ${CYAN}╔════════════════════════════════════════════════════════════════╗${NC}
 ${CYAN}║              KOMPOSE - Docker Compose Stack Manager            ║${NC}
 ${CYAN}║                      Modular Edition 2.0                       ║${NC}
@@ -339,7 +340,8 @@ ${BLUE}EXAMPLES:${NC}
     kompose validate                   # Validate configuration
     kompose cleanup                    # Clean up project
 
-EOF
+EOM
+)"
     exit $exit_code
 }
 
