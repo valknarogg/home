@@ -23,6 +23,12 @@ Learn everything you need to know about using Kompose effectively.
 - [Configuration Guide](/guide/configuration) - Configure Kompose and stacks
 - [Environment Variables](/reference/environment) - All available environment variables
 
+## Testing & Quality
+
+- [Testing Guide](/guide/testing) - Comprehensive testing documentation
+- [Known Issues](/guide/known-issues) - Bug reports and fixes
+
 ## Troubleshooting
 
-- [Common Issues](/guide/troubleshooting) - Solutions to common problems
+- [Troubleshooting Guide](/guide/troubleshooting) - Solutions to common problems
+- [Console Colors Fix](/guide/known-issues#console-colors-not-working-properly) - Fix color display issues

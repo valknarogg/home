@@ -9,14 +9,14 @@ set -e
 # Script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Colors
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-MAGENTA='\033[0;35m'
-NC='\033[0m'
+# Colors - Export for module access
+export RED='\033[0;31m'
+export GREEN='\033[0;32m'
+export YELLOW='\033[1;33m'
+export BLUE='\033[0;34m'
+export CYAN='\033[0;36m'
+export MAGENTA='\033[0;35m'
+export NC='\033[0m'
 
 # Configuration
 STACKS_ROOT="${STACKS_ROOT:-$(pwd)}"
@@ -114,6 +114,16 @@ log_db() {
 log_api() {
     echo -e "${MAGENTA}[API]${NC} $1"
 }
+
+# Export logging functions for module usage
+export -f log_info
+export -f log_success
+export -f log_warning
+export -f log_error
+export -f log_stack
+export -f log_tag
+export -f log_db
+export -f log_api
 
 # ============================================================================
 # LOAD MODULES
