@@ -38,7 +38,7 @@ get_all_stacks() {
     echo "${stacks[@]}"
 }
 
-# Helper function to run docker-compose with proper environment
+# Helper function to run docker compose with proper environment
 run_compose() {
     local stack=$1
     shift
@@ -49,9 +49,9 @@ run_compose() {
     # Change to stack directory
     cd "${STACKS_ROOT}/${stack}"
     
-    # Run docker-compose with the generated env file
+    # Run docker compose with the generated env file
     if [ -f ".env.generated" ]; then
-        docker-compose --env-file .env.generated "$@"
+        docker compose --env-file .env.generated "$@"
     else
         log_error "Failed to generate environment file for stack: $stack"
         return 1
@@ -196,8 +196,8 @@ list_stacks() {
         if stack_exists "$stack" 2>/dev/null; then
             export_stack_env "$stack" > /dev/null 2>&1
             cd "${STACKS_ROOT}/${stack}"
-            local running=$(docker-compose --env-file .env.generated ps -q 2>/dev/null | wc -l)
-            local total=$(docker-compose --env-file .env.generated config --services 2>/dev/null | wc -l)
+            local running=$(docker compose --env-file .env.generated ps -q 2>/dev/null | wc -l)
+            local total=$(docker compose --env-file .env.generated config --services 2>/dev/null | wc -l)
             echo -e "    Status: ${running}/${total} containers running"
         fi
         echo ""

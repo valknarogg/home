@@ -3,4 +3,99 @@
 [WARNING] secrets.env file not found. Secrets will not be loaded.
 [INFO] Generating .env file for stack: auth
 [SUCCESS] Generated .env file at: /home/valknar/Projects/kompose/auth/.env.generated
-/home/valknar/Projects/kompose/kompose-stack.sh: Zeile 54: docker-compose: Kommando nicht gefunden.
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"TRAEFIK_HOST\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"KC_ADMIN_PASSWORD\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"TRAEFIK_HOST\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"TRAEFIK_HOST\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"OAUTH2_CLIENT_SECRET\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"TRAEFIK_HOST\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"OAUTH2_COOKIE_SECRET\" variable is not set. Defaulting to a blank string."
+NAME      IMAGE     COMMAND   SERVICE   CREATED   STATUS    PORTS
+[STACK: chain] Status:
+[WARNING] secrets.env file not found. Secrets will not be loaded.
+[INFO] Generating .env file for stack: chain
+[SUCCESS] Generated .env file at: /home/valknar/Projects/kompose/chain/.env.generated
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"N8N_TRAEFIK_HOST\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"N8N_TRAEFIK_HOST\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"N8N_BASIC_AUTH_PASSWORD\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"N8N_ENCRYPTION_KEY\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"EMAIL_SMTP_PASSWORD\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"N8N_TRAEFIK_HOST\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"SEMAPHORE_ADMIN_PASSWORD\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"EMAIL_SMTP_PASSWORD\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"SEMAPHORE_TRAEFIK_HOST\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"SEMAPHORE_TRAEFIK_HOST\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"SEMAPHORE_RUNNER_TOKEN\" variable is not set. Defaulting to a blank string."
+NAME      IMAGE     COMMAND   SERVICE   CREATED   STATUS    PORTS
+[STACK: code] Status:
+[WARNING] secrets.env file not found. Secrets will not be loaded.
+[INFO] Generating .env file for stack: code
+[SUCCESS] Generated .env file at: /home/valknar/Projects/kompose/code/.env.generated
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"GITEA_TRAEFIK_HOST\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"GITEA_INTERNAL_TOKEN\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"GITEA_SECRET_KEY\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"GITEA_TRAEFIK_HOST\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"GITEA_TRAEFIK_HOST\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"GITEA_METRICS_TOKEN\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"REDIS_HOST\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"REDIS_PASSWORD\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"REDIS_HOST\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"REDIS_PASSWORD\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"REDIS_HOST\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"REDIS_PASSWORD\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"GITEA_OAUTH2_JWT_SECRET\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"GITEA_TRAEFIK_HOST\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"GITEA_TRAEFIK_HOST\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"GITEA_TRAEFIK_HOST\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"CODE_RUNNER_TOKEN\" variable is not set. Defaulting to a blank string."
+NAME      IMAGE     COMMAND   SERVICE   CREATED   STATUS    PORTS
+[STACK: core] Status:
+[WARNING] secrets.env file not found. Secrets will not be loaded.
+[INFO] Generating .env file for stack: core
+[SUCCESS] Generated .env file at: /home/valknar/Projects/kompose/core/.env.generated
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"REDIS_PASSWORD\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"REDIS_API_PASSWORD\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"REDIS_PASSWORD\" variable is not set. Defaulting to a blank string."
+NAME      IMAGE     COMMAND   SERVICE   CREATED   STATUS    PORTS
+[STACK: home] Status:
+[WARNING] secrets.env file not found. Secrets will not be loaded.
+[INFO] Generating .env file for stack: home
+[SUCCESS] Generated .env file at: /home/valknar/Projects/kompose/home/.env.generated
+NAME      IMAGE     COMMAND   SERVICE   CREATED   STATUS    PORTS
+[STACK: kmps] Status:
+[WARNING] secrets.env file not found. Secrets will not be loaded.
+[INFO] Generating .env file for stack: kmps
+[SUCCESS] Generated .env file at: /home/valknar/Projects/kompose/kmps/.env.generated
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"NEXTAUTH_SECRET\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"KMPS_CLIENT_SECRET\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"TRAEFIK_HOST\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"APP_PORT\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"TRAEFIK_HOST\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"TRAEFIK_HOST\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"APP_PORT\" variable is not set. Defaulting to a blank string."
+NAME      IMAGE     COMMAND   SERVICE   CREATED   STATUS    PORTS
+[STACK: messaging] Status:
+[WARNING] secrets.env file not found. Secrets will not be loaded.
+[INFO] Generating .env file for stack: messaging
+[SUCCESS] Generated .env file at: /home/valknar/Projects/kompose/messaging/.env.generated
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"GOTIFY_DEFAULTUSER_NAME\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"GOTIFY_DEFAULTUSER_PASS\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"MAILHOG_PORT\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"MAILHOG_IMAGE\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"EMAIL_SMTP_PASSWORD\" variable is not set. Defaulting to a blank string."
+NAME      IMAGE     COMMAND   SERVICE   CREATED   STATUS    PORTS
+[STACK: proxy] Status:
+[WARNING] secrets.env file not found. Secrets will not be loaded.
+[INFO] Generating .env file for stack: proxy
+[SUCCESS] Generated .env file at: /home/valknar/Projects/kompose/proxy/.env.generated
+time="2025-10-13T07:38:26+02:00" level=warning msg="The \"TRAEFIK_DASHBOARD_AUTH\" variable is not set. Defaulting to a blank string."
+NAME      IMAGE     COMMAND   SERVICE   CREATED   STATUS    PORTS
+[STACK: vpn] Status:
+[WARNING] secrets.env file not found. Secrets will not be loaded.
+[INFO] Generating .env file for stack: vpn
+[SUCCESS] Generated .env file at: /home/valknar/Projects/kompose/vpn/.env.generated
+time="2025-10-13T07:38:27+02:00" level=warning msg="The \"APP_PORT\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:27+02:00" level=warning msg="The \"TRAEFIK_HOST\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:27+02:00" level=warning msg="The \"TRAEFIK_HOST\" variable is not set. Defaulting to a blank string."
+time="2025-10-13T07:38:27+02:00" level=warning msg="The \"APP_PORT\" variable is not set. Defaulting to a blank string."
+NAME      IMAGE     COMMAND   SERVICE   CREATED   STATUS    PORTS
