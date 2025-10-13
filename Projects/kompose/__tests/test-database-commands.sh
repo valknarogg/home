@@ -156,16 +156,14 @@ test_db_shell_syntax() {
     # We don't actually try to connect since the container may not exist
     # and the command is interactive
     
+    TESTS_RUN=$((TESTS_RUN+1))
+    
     # Check if 'shell' is a valid db subcommand by checking source code
     if grep -q "shell)" "${KOMPOSE_ROOT}/kompose.sh" || \
        grep -q "shell)" "${KOMPOSE_ROOT}"/kompose-*.sh 2>/dev/null; then
         log_pass "DB shell command is defined"
-        ((TESTS_RUN++))
-        ((TESTS_PASSED++))
     else
         log_fail "DB shell command not found in source"
-        ((TESTS_RUN++))
-        ((TESTS_FAILED++))
     fi
 }
 

@@ -1,3 +1,6 @@
 
 [STACK: auth] Status:
-/home/valknar/Projects/kompose/.env: Zeile 201: Git: Kommando nicht gefunden.
+[WARNING] secrets.env file not found. Secrets will not be loaded.
+[INFO] Generating .env file for stack: auth
+[SUCCESS] Generated .env file at: /home/valknar/Projects/kompose/auth/.env.generated
+/home/valknar/Projects/kompose/kompose-stack.sh: Zeile 54: docker-compose: Kommando nicht gefunden.

@@ -1,3 +1,20 @@
 
 [INFO] Available stacks:
   auth - Authentication - Keycloak SSO, OAuth2 Proxy
+    Status: 0/0 containers running
+  chain - Automation Platform - n8n workflows, Semaphore/Ansible tasks
+    Status: 0/0 containers running
+  code - Git Repository & CI/CD - Gitea with Actions runner
+    Status: 0/0 containers running
+  core - Core services - MQTT, Redis, Postgres
+    Status: 0/0 containers running
+  home - Smart Home - Home Assistant, Matter, Zigbee, ESPHome
+    Status: 0/0 containers running
+  kmps - Management Portal - User & SSO Administration
+    Status: 0/0 containers running
+  messaging - Communication - Gotify notifications, Mailhog
+    Status: 0/0 containers running
+  proxy - Reverse Proxy - Traefik with SSL
+    Status: 0/0 containers running
+  vpn - VPN - WireGuard remote access (wg-easy)
+    Status: 0/0 containers running
