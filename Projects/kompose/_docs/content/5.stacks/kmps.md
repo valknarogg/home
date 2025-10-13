@@ -115,48 +115,66 @@ Without these roles, KMPS cannot manage users!
 
 ### 4. Configure KMPS Environment
 
-Edit `kmps/.env`:
+The KMPS stack is configured through the root `.env` and `secrets.env` files:
 
+**Root `.env` (already configured):**
 ```bash
-# Keycloak Configuration
-KEYCLOAK_URL=https://auth.yourdomain.com
-KEYCLOAK_REALM=kompose
-KEYCLOAK_CLIENT_ID=kmps-admin
-KEYCLOAK_CLIENT_SECRET=${KMPS_CLIENT_SECRET}
-
-# NextAuth Configuration
-NEXTAUTH_URL=https://manage.yourdomain.com
-NEXTAUTH_SECRET=${KMPS_NEXTAUTH_SECRET}
-
-# Application
-NODE_ENV=production
-APP_PORT=3000
+# KMPS Stack Configuration
+KMPS_COMPOSE_PROJECT_NAME=kmps
+KMPS_DB_NAME=kmps
+KMPS_TRAEFIK_HOST=${TRAEFIK_HOST_MANAGE}  # manage.yourdomain.com
+KMPS_APP_PORT=3100
+KMPS_API_PORT=8080
+KMPS_CLIENT_ID=kmps-admin
+KMPS_REALM=kompose
 ```
 
-Add to `secrets.env`:
-
+**`secrets.env` (add these):**
 ```bash
-KMPS_CLIENT_SECRET=<from-keycloak>
+# KMPS Stack Secrets
+KMPS_CLIENT_SECRET=<from-keycloak-credentials-tab>
 KMPS_NEXTAUTH_SECRET=$(openssl rand -base64 32)
 ```
 
-### 5. Start KMPS
+**Generate the NextAuth secret:**
+```bash
+openssl rand -base64 32
+```
+
+### 5. Configure Domain
+
+Ensure your domain configuration includes KMPS:
+
+**`domain.env`:**
+```bash
+SUBDOMAIN_MANAGE=manage      # KMPS - Kompose Management Portal
+```
+
+This creates the full URL: `https://manage.yourdomain.com`
+
+### 6. Start KMPS
 
 ```bash
 ./kompose.sh up kmps
 
-# Verify
+# Verify services are running
 ./kompose.sh status kmps
 
 # Check logs
 ./kompose.sh logs kmps -f
 ```
 
-### 6. Access KMPS
+**Expected output:**
+```
+✓ kmps_api running
+✓ kmps_app running
+```
 
-Visit: `https://manage.yourdomain.com`
+### 7. Access KMPS
 
-You'll be redirected to Keycloak for authentication. Use your Keycloak admin credentials or any user in the realm.
+Visit: `https://manage.yourdomain.com` (or your configured domain)
+
+You'll be redirected to Keycloak for authentication. Login with your Keycloak credentials.
 
 ## Features
 
@@ -479,47 +497,61 @@ Response:
 
 ## Development
 
-### Local Development
+### Local Development Setup
+
+For detailed development instructions, see [DEVELOPMENT.md](../kmps/DEVELOPMENT.md)
+
+**Quick start:**
 
 ```bash
-cd kmps/app
+cd /home/valknar/Projects/kompose/kmps
 
 # Install dependencies
 npm install
 
+# Set environment variables
+export NODE_ENV=development
+export KEYCLOAK_URL=https://auth.yourdomain.com
+export KEYCLOAK_REALM=kompose
+export KEYCLOAK_CLIENT_ID=kmps-admin
+export KEYCLOAK_CLIENT_SECRET="<your-secret>"
+export NEXTAUTH_URL=http://localhost:3100
+export NEXTAUTH_SECRET="<your-secret>"
+export KOMPOSE_API_URL=http://localhost:8080
+
 # Run development server
 npm run dev
 
-# Access at http://localhost:3000
+# Access at http://localhost:3100
+```
+
+### Docker Development
+
+```bash
+# Start in development mode (auto-installs and runs dev server)
+./kompose.sh up kmps
+
+# View logs
+./kompose.sh logs kmps -f
 ```
 
 ### Environment Variables
 
-```bash
-# Development
-NODE_ENV=development
-KEYCLOAK_URL=http://localhost:8080
-NEXTAUTH_URL=http://localhost:3000
+All environment variables are centrally managed in:
+- **Configuration:** `/.env`
+- **Secrets:** `/secrets.env`
+- **Stack-specific:** Generated in `kmps/.env.generated`
 
-# Production
-NODE_ENV=production
-KEYCLOAK_URL=https://auth.yourdomain.com
-NEXTAUTH_URL=https://manage.yourdomain.com
-```
+No manual `.env` file is needed in the kmps directory.
 
 ### Build for Production
 
+Production builds happen automatically in Docker:
+
 ```bash
-cd kmps/app
-
-# Build
-npm run build
-
-# Start production server
-npm start
-
-# Or use Docker
-docker-compose up --build
+# Set NODE_ENV=production in .env
+# Then deploy
+./kompose.sh up kmps
 ```
 
 ## Technology Stack
