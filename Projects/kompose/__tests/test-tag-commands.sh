@@ -238,8 +238,8 @@ test_tag_create_dry_run() {
     exit_code=$?
     set -e
     
-    # With dry-run, should show what would be done (or fail with validation)
-    # The command should be recognized and options parsed
+    # With dry-run, options should be parsed correctly
+    # May fail if not in git repo or if validation fails, but should recognize options
     assert_not_contains "$output" "Unknown option" \
         "Tag create accepts dry-run option"
 }
@@ -260,8 +260,18 @@ test_tag_options_parsing() {
     set -e
     
     # Should parse all options without "unknown option" errors
+    # Dry run should show what would be done
     assert_not_contains "$output" "Unknown option" \
         "Tag create accepts all documented options"
+    
+    # Should indicate dry run mode
+    if [ $exit_code -eq 0 ]; then
+        assert_contains "$output" "DRY RUN\|Would create\|dry" \
+            "Dry run mode is working"
+    else
+        # May fail if not in git repo, but options should still be parsed
+        log_info "Tag create failed (likely not in git repo), but option parsing worked"
+    fi
 }
 
 # ============================================================================

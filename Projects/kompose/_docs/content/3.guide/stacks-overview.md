@@ -120,29 +120,111 @@ Kompose organizes services into **stacks** - logical groups of related Docker co
 
 ---
 
+### :icon{name="lucide:link"} **Link** - Bookmark Management
+**Save and organize your links**
+
+- **Linkwarden**: Modern bookmark manager
+- **Tags & Collections**: Organize effectively
+- **Screenshots**: Archive page snapshots
+
+**Dependencies**: Core (PostgreSQL)
+
+**Learn more**: [Link Stack Documentation](/stacks/link)
+
+---
+
+### :icon{name="lucide:newspaper"} **News** - RSS Feed Reader
+**Stay updated with your favorite sources**
+
+- **FreshRSS**: Self-hosted RSS aggregator
+- **Feed Management**: Subscribe to any RSS/Atom feed
+- **Mobile Apps**: Android/iOS compatible
+
+**Dependencies**: Core (PostgreSQL)
+
+**Learn more**: [News Stack Documentation](/stacks/news)
+
+---
+
+### :icon{name="lucide:activity"} **Track** - Analytics
+**Privacy-focused website analytics**
+
+- **Umami**: Simple, fast analytics
+- **Privacy-First**: GDPR compliant
+- **No Cookies**: Respects user privacy
+
+**Dependencies**: Core (PostgreSQL)
+
+**Learn more**: [Track Stack Documentation](/stacks/track)
+
+---
+
+### :icon{name="lucide:lock"} **Vault** - Password Manager
+**Secure password management**
+
+- **Vaultwarden**: Bitwarden-compatible server
+- **Cross-Platform**: Works everywhere
+- **Secure**: End-to-end encryption
+
+**Dependencies**: Core (PostgreSQL)
+
+**Learn more**: [Vault Stack Documentation](/stacks/vault)
+
+---
+
+### :icon{name="lucide:play"} **Watch** - Media Server
+**Stream your media collection**
+
+- **Jellyfin**: Free media system
+- **Hardware Acceleration**: GPU support
+- **Live TV**: DVR capabilities
+
+**Dependencies**: None
+
+**Learn more**: [Watch Stack Documentation](/stacks/watch)
+
+---
+
+### :icon{name="lucide:activity"} **Trace** - Monitoring
+**Monitor your infrastructure**
+
+- **Uptime Kuma**: Uptime monitoring
+- **Grafana**: Metrics visualization  
+- **Prometheus**: Metrics collection
+
+**Dependencies**: Core (optional)
+
+**Learn more**: [Trace Stack Documentation](/stacks/trace)
+
+---
+
 ## Stack Dependency Graph
 
 ```
-┌────────────────────────────────────────────────────────┐
-│                    Dependency Flow                      │
-└────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                     Dependency Flow                          │
+└─────────────────────────────────────────────────────────────┘
 
-                         ┌──────────┐
-                         │  Proxy   │ (Traefik - HTTPS for all)
-                         └────┬─────┘
-                              │
-              ┌───────────────┼───────────────┐
-              │               │               │
-         ┌────▼─────┐    ┌───▼────┐    ┌────▼────┐
-         │   Core   │    │  VPN   │    │Messaging│
-         │  (Base)  │    └────────┘    └─────────┘
-         └────┬─────┘
-              │
-     ┌────────┼────────┬──────────┬──────────┐
-     │        │        │          │          │
- ┌───▼──┐ ┌──▼───┐ ┌──▼───┐  ┌──▼───┐  ┌───▼───┐
- │ Auth │ │ Home │ │ Code │  │Chain │  │ KMPS  │
- └──────┘ └──────┘ └──────┘  └──────┘  └───────┘
+                      ┌──────────┐
+                      │  Proxy   │ (Traefik - HTTPS for all)
+                      └────┬─────┘
+                           │
+         ┌─────────────────┼─────────────────┐
+         │                 │                 │
+    ┌────▼─────┐      ┌───▼────┐       ┌────▼────┐
+    │   Core   │      │  VPN   │       │Messaging│
+    │  (Base)  │      └────────┘       └─────────┘
+    └────┬─────┘
+         │
+         ├─────────┬─────────┬─────────┬─────────┬─────────┐
+         │         │         │         │         │         │
+    ┌────▼───┐┌───▼───┐┌───▼───┐┌───▼───┐┌───▼───┐┌───▼───┐
+    │  Auth  ││ Home  ││ Code  ││ Chain ││ KMPS  ││ Link  │
+    └────────┘└───────┘└───────┘└───────┘└───────┘└───────┘
+         │
+    ┌────▼───┐┌───────┐┌───────┐┌───────┐┌───────┐
+    │  News  ││ Track ││ Vault ││ Watch ││ Trace │
+    └────────┘└───────┘└───────┘└───────┘└───────┘
 ```
 
 ## Recommended Startup Order

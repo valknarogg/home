@@ -39,10 +39,16 @@ declare -A STACKS=(
     ["kmps"]="Management Portal - User & SSO Administration"
     ["home"]="Smart Home - Home Assistant, Matter, Zigbee, ESPHome"
     ["vpn"]="VPN - WireGuard remote access (wg-easy)"
-    ["messaging"]="Communication - Gotify notifications"
+    ["messaging"]="Communication - Gotify notifications, Mailhog"
     ["chain"]="Automation Platform - n8n workflows, Semaphore/Ansible tasks"
     ["code"]="Git Repository & CI/CD - Gitea with Actions runner"
     ["proxy"]="Reverse Proxy - Traefik with SSL"
+    ["link"]="Link Management - Linkwarden bookmark manager"
+    ["news"]="News Aggregation - FreshRSS feed reader"
+    ["track"]="Activity Tracking - Umami analytics"
+    ["vault"]="Password Manager - Vaultwarden"
+    ["watch"]="Media Server - Jellyfin or similar"
+    ["trace"]="Monitoring & Observability - Uptime Kuma, Grafana"
 )
 
 # Service definitions for tagging
@@ -126,6 +132,7 @@ done
 # ============================================================================
 
 usage() {
+    local exit_code="${1:-1}"
     cat << EOF
 ${CYAN}╔════════════════════════════════════════════════════════════════╗${NC}
 ${CYAN}║              KOMPOSE - Docker Compose Stack Manager            ║${NC}
@@ -235,7 +242,7 @@ ${BLUE}EXAMPLES:${NC}
     kompose cleanup                    # Clean up project
 
 EOF
-    exit 1
+    exit $exit_code
 }
 
 # ============================================================================
@@ -244,7 +251,7 @@ EOF
 
 main() {
     if [ $# -eq 0 ]; then
-        usage
+        usage 0
     fi
     
     local command=$1
@@ -654,7 +661,7 @@ main() {
             show_all_containers
             ;;
         help|--help|-h)
-            usage
+            usage 0
             ;;
         *)
             log_error "Unknown command: $command"

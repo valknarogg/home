@@ -146,11 +146,12 @@ test_api_logs_syntax() {
     local exit_code
     
     set +e
-    output=$(run_kompose api logs 2>&1)
+    # Use timeout to prevent hanging if log file doesn't exist
+    output=$(timeout 3 bash -c "cd ${KOMPOSE_ROOT} && bash kompose.sh api logs" 2>&1 || true)
     exit_code=$?
     set -e
     
-    # Command should be recognized
+    # Command should be recognized (may timeout or show "not running")
     assert_not_contains "$output" "Unknown API command" \
         "API logs command is recognized"
 }
