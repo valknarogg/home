@@ -56,8 +56,8 @@ docker-compose.override.yml
 
 # Customer stacks
 # TODO: Comment in, when finalized
-+custom/
-_docs/content/5.stacks/+custom/
+# +custom/
+# _docs/content/5.stacks/+custom/
 
 # Home Assistant
 home/homeassistant/
