@@ -45,6 +45,12 @@ generate_traefik_hosts() {
         export TRAEFIK_HOST_VPN="${SUBDOMAIN_VPN:-localhost:51821}"
         export TRAEFIK_HOST_OAUTH2="${SUBDOMAIN_OAUTH2:-localhost:4180}"
         export TRAEFIK_HOST_ZIGBEE="${SUBDOMAIN_ZIGBEE:-localhost:8080}"
+        
+        # Watch Stack Services
+        export TRAEFIK_HOST_PROMETHEUS="${SUBDOMAIN_PROMETHEUS:-localhost:9090}"
+        export TRAEFIK_HOST_GRAFANA="${SUBDOMAIN_GRAFANA:-localhost:3010}"
+        export TRAEFIK_HOST_LOKI="${SUBDOMAIN_LOKI:-localhost:3100}"
+        export TRAEFIK_HOST_ALERTMANAGER="${SUBDOMAIN_ALERTMANAGER:-localhost:9093}"
     else
         # Production mode: combine subdomain with root domain
         export TRAEFIK_HOST_PROXY="${SUBDOMAIN_PROXY}.${ROOT_DOMAIN}"
@@ -70,6 +76,12 @@ generate_traefik_hosts() {
         export TRAEFIK_HOST_VPN="${SUBDOMAIN_VPN}.${ROOT_DOMAIN}"
         export TRAEFIK_HOST_OAUTH2="${SUBDOMAIN_OAUTH2}.${ROOT_DOMAIN}"
         export TRAEFIK_HOST_ZIGBEE="${SUBDOMAIN_ZIGBEE}.${ROOT_DOMAIN}"
+        
+        # Watch Stack Services
+        export TRAEFIK_HOST_PROMETHEUS="${SUBDOMAIN_PROMETHEUS}.${ROOT_DOMAIN}"
+        export TRAEFIK_HOST_GRAFANA="${SUBDOMAIN_GRAFANA}.${ROOT_DOMAIN}"
+        export TRAEFIK_HOST_LOKI="${SUBDOMAIN_LOKI}.${ROOT_DOMAIN}"
+        export TRAEFIK_HOST_ALERTMANAGER="${SUBDOMAIN_ALERTMANAGER}.${ROOT_DOMAIN}"
     fi
     
     # Service-specific aliases for backwards compatibility and clarity
@@ -340,6 +352,12 @@ TRAEFIK_HOST_MANAGE=${TRAEFIK_HOST_MANAGE}
 TRAEFIK_HOST_VPN=${TRAEFIK_HOST_VPN}
 TRAEFIK_HOST_OAUTH2=${TRAEFIK_HOST_OAUTH2}
 TRAEFIK_HOST_ZIGBEE=${TRAEFIK_HOST_ZIGBEE}
+
+# Watch Stack Traefik hosts
+TRAEFIK_HOST_PROMETHEUS=${TRAEFIK_HOST_PROMETHEUS}
+TRAEFIK_HOST_GRAFANA=${TRAEFIK_HOST_GRAFANA}
+TRAEFIK_HOST_LOKI=${TRAEFIK_HOST_LOKI}
+TRAEFIK_HOST_ALERTMANAGER=${TRAEFIK_HOST_ALERTMANAGER}
 
 # Service-specific host aliases
 N8N_TRAEFIK_HOST=${N8N_TRAEFIK_HOST}
