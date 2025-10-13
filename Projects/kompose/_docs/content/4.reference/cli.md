@@ -22,6 +22,213 @@ Complete reference for all Kompose CLI commands, options, and examples.
 | `--scale SERVICE=N` | Scale service to N replicas |
 | `-v, --verbose` | Verbose output |
 
+## Setup & Initialization Commands
+
+### init
+
+Interactive project initialization wizard.
+
+**Syntax:**
+```bash
+./kompose.sh init
+```
+
+**What it does:**
+1. Checks system dependencies (Docker, Git, Node.js, pnpm, Python 3)
+2. Guides you to choose local development, production, or both
+3. Creates and configures environment files (.env, domain.env, secrets.env)
+4. Installs project dependencies (_docs and kmps using pnpm)
+5. Creates Docker network
+6. Sets up directory structure
+
+**Examples:**
+```bash
+# First time setup
+./kompose.sh init
+
+# Re-initialize after updates
+./kompose.sh init
+```
+
+**Output:**
+```
+═══════════════════════════════════════════════════════════
+       Kompose Project Initialization
+═══════════════════════════════════════════════════════════
+
+Step 1: Checking system dependencies
+✓ Docker: 24.0.6
+✓ Docker Compose: 2.23.0
+✓ Git: 2.42.0
+✓ Node.js: 20.10.0
+✓ pnpm: 8.15.0
+✓ Python 3: 3.11.6
+
+Step 2: Choose your environment
+  1) Local Development (recommended)
+  2) Production
+  3) Both
+
+Choose (1/2/3) [1]:
+```
+
+### setup
+
+Manage local and production configurations.
+
+**Syntax:**
+```bash
+./kompose.sh setup <command>
+```
+
+**Commands:**
+- `local` - Switch to local development mode
+- `prod` - Switch to production mode
+- `status` - Show current configuration mode
+- `save-prod` - Save current config as production default
+- `backup` - Backup current configuration
+
+#### setup local
+
+Switch to local development mode.
+
+**Syntax:**
+```bash
+./kompose.sh setup local
+```
+
+**What it does:**
+1. Backs up current configuration
+2. Activates `.env.local` and `domain.env.local`
+3. Configures services for localhost access
+4. Disables Traefik (direct port access)
+
+**Examples:**
+```bash
+# Switch to local development
+./kompose.sh setup local
+
+# Check it worked
+./kompose.sh setup status
+```
+
+#### setup prod
+
+Switch to production mode.
+
+**Syntax:**
+```bash
+./kompose.sh setup prod
+```
+
+**What it does:**
+1. Backs up current configuration
+2. Activates `.env.production` and `domain.env.production`
+3. Configures services for domain-based access
+4. Enables Traefik with SSL
+
+**Examples:**
+```bash
+# Switch to production
+./kompose.sh setup prod
+
+# Verify configuration
+./kompose.sh setup status
+./kompose.sh validate
+```
+
+#### setup status
+
+Show current configuration mode.
+
+**Syntax:**
+```bash
+./kompose.sh setup status
+```
+
+**Output (local mode):**
+```
+═══════════════════════════════════════
+      Configuration Status
+═══════════════════════════════════════
+
+✓ Current Mode: LOCAL DEVELOPMENT
+
+Local Development Services:
+  Core Services:
+    PostgreSQL:      localhost:5432
+    Redis:           localhost:6379
+    MQTT:            localhost:1883
+
+  Main Applications:
+    Keycloak:        http://localhost:8180
+    KMPS:            http://localhost:3100
+    Gitea:           http://localhost:3001
+    n8n:             http://localhost:5678
+```
+
+**Output (production mode):**
+```
+✓ Current Mode: PRODUCTION
+
+Production Services (example.com):
+  Main Applications:
+    Keycloak:        https://auth.example.com
+    KMPS:            https://manage.example.com
+    Gitea:           https://code.example.com
+    n8n:             https://chain.example.com
+```
+
+#### setup save-prod
+
+Save current configuration as production default.
+
+**Syntax:**
+```bash
+./kompose.sh setup save-prod
+```
+
+**What it does:**
+- Copies `.env` to `.env.production`
+- Copies `domain.env` to `domain.env.production`
+
+**Examples:**
+```bash
+# After manually configuring production settings
+./kompose.sh setup save-prod
+
+# Now you can switch back and forth
+./kompose.sh setup local
+./kompose.sh setup prod
+```
+
+#### setup backup
+
+Create backup of current configuration.
+
+**Syntax:**
+```bash
+./kompose.sh setup backup
+```
+
+**What it does:**
+Creates timestamped backup in `backups/config_backup_YYYYMMDD_HHMMSS/` containing:
+- `.env`
+- `domain.env`
+- `secrets.env`
+
+**Examples:**
+```bash
+# Before making changes
+./kompose.sh setup backup
+
+# List backups
+ls backups/config_backup_*/
+
+# Restore if needed
+cp backups/config_backup_20250115_103000/.env .env
+```
+
 ## Stack Management Commands
 
 ### up
@@ -685,6 +892,114 @@ Show deployment status for a tag.
 
 # Or with flags
 ./kompose.sh tag status -s backend -v 2.0.0 -e staging
+```
+
+## Utility Commands
+
+### cleanup
+
+Clean up backup and temporary files.
+
+**Syntax:**
+```bash
+./kompose.sh cleanup
+```
+
+**What it does:**
+- Removes old backup files (older than 30 days by default)
+- Cleans up temporary files
+- Shows summary of cleaned files
+
+**Examples:**
+```bash
+# Run cleanup
+./kompose.sh cleanup
+
+# Manual cleanup with custom retention
+find backups/ -name "*.sql" -mtime +30 -delete
+find backups/ -name "*.sql.gz" -mtime +30 -delete
+```
+
+### validate
+
+Validate entire project configuration.
+
+**Syntax:**
+```bash
+./kompose.sh validate
+```
+
+**What it checks:**
+- Required files exist (domain.env, .env, secrets.env)
+- Domain configuration is valid
+- Docker network exists
+- All compose files are syntactically correct
+- Security settings (file permissions, .gitignore)
+- Environment consistency
+
+**Examples:**
+```bash
+# Validate everything
+./kompose.sh validate
+
+# Validate specific stack
+./kompose.sh validate core
+```
+
+**Output:**
+```
+[INFO] Validating Kompose configuration...
+
+[SUCCESS] Configuration files exist
+  ✓ .env found
+  ✓ domain.env found
+  ✓ secrets.env found
+
+[SUCCESS] Docker network 'kompose' exists
+
+[SUCCESS] All compose files are valid
+  ✓ core/compose.yaml
+  ✓ auth/compose.yaml
+  ✓ kmps/compose.yaml
+  ...
+
+[SUCCESS] Security checks passed
+  ✓ secrets.env is not world-readable
+  ✓ secrets.env in .gitignore
+
+[SUCCESS] All validation checks passed!
+```
+
+### version
+
+Show Kompose version information.
+
+**Syntax:**
+```bash
+./kompose.sh version
+```
+
+**Examples:**
+```bash
+./kompose.sh version
+```
+
+**Output:**
+```
+Kompose Version: 2.0.0
+Modular Edition
+
+Components:
+  - kompose.sh (main CLI)
+  - kompose-setup.sh (setup & initialization)
+  - kompose-stack.sh (stack management)
+  - kompose-db.sh (database operations)
+  - kompose-tag.sh (git tag deployments)
+  - kompose-api.sh (REST API management)
+  - kompose-api-server.sh (REST API server)
+  - kompose-utils.sh (utility functions)
+
+Git: abc123def (main branch)
 ```
 
 ## Available Stacks
