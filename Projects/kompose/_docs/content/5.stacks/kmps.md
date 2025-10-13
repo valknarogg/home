@@ -497,6 +497,33 @@ Response:
 
 ## Development
 
+### Quick Start: Local Development Mode ⚡
+
+The easiest way to develop KMPS locally:
+
+```bash
+# 1. Switch to local development mode
+./kompose-local.sh local
+
+# 2. Start required services
+./kompose.sh up core      # PostgreSQL, Redis
+./kompose.sh up auth      # Keycloak
+./kompose.sh up kmps      # KMPS
+
+# 3. Access KMPS
+open http://localhost:3100  # KMPS
+open http://localhost:8180  # Keycloak
+```
+
+Local mode features:
+- ✅ No domain names needed (uses localhost:PORT)
+- ✅ No SSL certificates required
+- ✅ Direct port access
+- ✅ Faster iteration
+- ✅ Simplified configuration
+
+See [LOCAL_DEVELOPMENT.md](../LOCAL_DEVELOPMENT.md) for complete local dev guide.
+
 ### Local Development Setup
 
 For detailed development instructions, see [DEVELOPMENT.md](../kmps/DEVELOPMENT.md)

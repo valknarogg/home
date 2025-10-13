@@ -177,8 +177,16 @@ ${YELLOW}DATABASE COMMANDS:${NC}
     db migrate           Run database migrations
     db reset             Reset database (WARNING: deletes all data)
 
+${BLUE}SETUP & INITIALIZATION:${NC}
+    init                 Interactive project initialization (guided setup)
+    setup <command>      Manage local/production configuration
+        local            Switch to local development mode
+        prod             Switch to production mode
+        status           Show current configuration mode
+        save-prod        Save current config as production
+        backup           Backup current configuration
+
 ${BLUE}UTILITY COMMANDS:${NC}
-    init                 Initialize kompose environment
     cleanup              Clean up backup and temporary files
     validate             Validate entire configuration
     version              Show version information
@@ -235,8 +243,13 @@ ${BLUE}EXAMPLES:${NC}
     kompose api start                  # Start API server on default port
     kompose api status                 # Check API server status
 
+    ${BLUE}# Setup & Initialization${NC}
+    kompose init                       # Interactive guided setup
+    kompose setup local                # Switch to local development
+    kompose setup prod                 # Switch to production
+    kompose setup status               # Check current mode
+
     ${BLUE}# Utilities${NC}
-    kompose init                       # Initialize environment
     kompose validate                   # Validate configuration
     kompose cleanup                    # Clean up project
 
@@ -515,22 +528,17 @@ main() {
         return 0
     fi
     
+    # Handle setup command
+    if [ "$command" = "setup" ]; then
+        shift
+        handle_setup_command "$@"
+        return 0
+    fi
+    
     # Handle utility commands
     case $command in
         init)
-            log_info "Initializing kompose environment..."
-            make_executable "core"
-            
-            # Create Docker network if not exists
-            if ! docker network inspect kompose &>/dev/null; then
-                docker network create kompose
-                log_success "Created Docker network 'kompose'"
-            else
-                log_info "Docker network 'kompose' already exists"
-            fi
-            
-            log_success "Initialization complete"
-            log_info "Run 'kompose validate' to check your configuration"
+            init_project
             ;;
         
         cleanup)

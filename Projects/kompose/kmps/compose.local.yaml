@@ -1,0 +1,95 @@
+name: kmps
+
+services:
+  # Kompose API Server
+  kompose-api:
+    image: ${DOCKER_IMAGE:-python:3.11-alpine}
+    container_name: ${COMPOSE_PROJECT_NAME}_api
+    restart: unless-stopped
+    working_dir: /kompose
+    command: sh -c "python3 /kompose/kompose-api-server.sh"
+    environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
+      API_PORT: ${KMPS_API_PORT:-8080}
+      API_HOST: ${KMPS_API_HOST:-0.0.0.0}
+      KOMPOSE_SCRIPT: /kompose/kompose.sh
+    volumes:
+      - ${KOMPOSE_ROOT:-/home/valknar/Projects/kompose}:/kompose:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    ports:
+      - "${KMPS_API_PORT:-8080}:${KMPS_API_PORT:-8080}"
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:${KMPS_API_PORT:-8080}/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - kompose_network
+    labels:
+      - 'traefik.enable=false'
+
+  # Kompose Management Portal & SSO Administration
+  kmps-app:
+    image: ${DOCKER_IMAGE:-node:20-alpine}
+    container_name: ${COMPOSE_PROJECT_NAME}_app
+    restart: unless-stopped
+    working_dir: /app
+    command: sh -c "npm install && npm run dev"
+    environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
+      NODE_ENV: ${NODE_ENV:-development}
+      
+      # Keycloak Admin API Configuration (local)
+      KEYCLOAK_URL: ${KEYCLOAK_URL:-http://localhost:8180}
+      KEYCLOAK_REALM: ${KMPS_REALM:-kompose}
+      KEYCLOAK_CLIENT_ID: ${KMPS_CLIENT_ID:-kmps-admin}
+      KEYCLOAK_CLIENT_SECRET: ${KMPS_CLIENT_SECRET}
+      
+      # Kompose API Configuration (local)
+      KOMPOSE_API_URL: http://kompose-api:${KMPS_API_PORT:-8080}
+      
+      # Database Configuration (local)
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@localhost:5432/${DB_NAME}
+      
+      # App Configuration
+      NEXT_PUBLIC_APP_NAME: "Kompose Management Portal (Local)"
+      NEXT_PUBLIC_SSO_URL: ${NEXT_PUBLIC_SSO_URL:-http://localhost:4180}
+      NEXT_PUBLIC_AUTH_URL: ${NEXT_PUBLIC_AUTH_URL:-http://localhost:8180}
+      
+      # Session & Security (local)
+      NEXTAUTH_URL: ${NEXTAUTH_URL:-http://localhost:3100}
+      NEXTAUTH_SECRET: ${KMPS_NEXTAUTH_SECRET}
+      
+      # App Port
+      APP_PORT: ${KMPS_APP_PORT:-3100}
+      
+      # Admin Email for initial setup
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@localhost}
+      
+    volumes:
+      - .:/app
+      - kmps_node_modules:/app/node_modules
+    ports:
+      - "${KMPS_APP_PORT:-3100}:${KMPS_APP_PORT:-3100}"
+    depends_on:
+      - kompose-api
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:${KMPS_APP_PORT:-3100}/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - kompose_network
+    labels:
+      - 'traefik.enable=false'
+
+volumes:
+  kmps_node_modules:
+    name: ${COMPOSE_PROJECT_NAME}_node_modules
+
+networks:
+  kompose_network:
+    name: ${NETWORK_NAME:-kompose}
+    external: true
