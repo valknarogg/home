@@ -186,8 +186,27 @@ generate_htpasswd() {
 prompt_for_password() {
     local prompt_text="${1:-Enter password}"
     local secret_name="${2:-}"
+    local hint="${3:-}"
     local password=""
     local password_confirm=""
+    
+    # Display context and requirements
+    echo "═══════════════════════════════════════════════════════"
+    echo -e "${CYAN}Password Configuration Required${NC}"
+    echo "═══════════════════════════════════════════════════════"
+    echo ""
+    
+    if [ -n "$hint" ]; then
+        echo -e "${YELLOW}Context:${NC}"
+        echo "$hint"
+        echo ""
+    fi
+    
+    echo -e "${YELLOW}Password Requirements:${NC}"
+    echo "• Minimum length: 8 characters"
+    echo "• Recommended: Use a mix of letters, numbers, and special characters"
+    echo "• This password will be stored securely in secrets.env"
+    echo ""
     
     while true; do
         # Prompt for password
@@ -196,7 +215,8 @@ prompt_for_password() {
         
         # Check minimum length
         if [ ${#password} -lt 8 ]; then
-            log_warning "Password must be at least 8 characters long"
+            log_warning "Password must be at least 8 characters long. Please try again."
+            echo ""
             continue
         fi
         
@@ -206,10 +226,12 @@ prompt_for_password() {
         
         # Check if passwords match
         if [ "$password" = "$password_confirm" ]; then
+            log_success "Password set successfully"
             echo "$password"
             return 0
         else
             log_warning "Passwords do not match. Please try again."
+            echo ""
         fi
     done
 }
@@ -237,11 +259,22 @@ generate_secret_value() {
             ;;
         prompt)
             local prompt_desc="${SECRET_DESCRIPTIONS[$secret_name]}"
-            log_info "Setting password for: ${CYAN}${secret_name}${NC}"
-            if [ -n "$prompt_desc" ]; then
-                log_info "$prompt_desc"
-            fi
-            prompt_for_password "Enter password" "$secret_name"
+            local hint=""
+            
+            # Provide context-specific hints based on secret name
+            case $secret_name in
+                N8N_BASIC_AUTH_PASSWORD|CHAIN_N8N_BASIC_AUTH_PASSWORD)
+                    hint="This password secures access to the n8n workflow automation interface.\nYou will use this password to log in to n8n at your configured domain.\nUsername: admin (default)\n\nUse Case: Protects your automation workflows and integrations from unauthorized access."
+                    ;;
+                SEMAPHORE_ADMIN_PASSWORD|CHAIN_SEMAPHORE_ADMIN_PASSWORD)
+                    hint="This password is for the Semaphore admin account.\nYou will use this to log in to the Semaphore web interface for CI/CD automation.\nUsername: admin (default)\n\nUse Case: Manages deployment pipelines and automation tasks."
+                    ;;
+                *)
+                    hint="$prompt_desc"
+                    ;;
+            esac
+            
+            prompt_for_password "Enter password" "$secret_name" "$hint"
             ;;
         manual)
             echo "CHANGE_ME_MANUALLY"
