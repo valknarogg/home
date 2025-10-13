@@ -111,7 +111,7 @@ validate_stack_env() {
     # Check if root .env exists
     if [ ! -f "${STACKS_ROOT}/.env" ]; then
         log_error "Root .env file not found at ${STACKS_ROOT}/.env"
-        ((errors++))
+        errors=$((errors+1))
     fi
     
     # Check if secrets.env exists
@@ -160,7 +160,7 @@ check_required_vars() {
         local var_name="${prefix}_${var_suffix}"
         if [ -z "${!var_name}" ]; then
             log_error "Required variable not set: $var_name"
-            ((errors++))
+            errors=$((errors+1))
         fi
     done
 }

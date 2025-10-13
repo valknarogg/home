@@ -58,15 +58,15 @@ validate_configuration() {
                 log_success "ROOT_DOMAIN is configured: $ROOT_DOMAIN"
             else
                 log_error "ROOT_DOMAIN is not set in domain.env"
-                ((errors++))
+                errors=$((errors+1))
             fi
         else
             log_error "domain.env has syntax errors"
-            ((errors++))
+            errors=$((errors+1))
         fi
     else
         log_error "domain.env not found"
-        ((errors++))
+        errors=$((errors+1))
     fi
     
     # Check for .env
@@ -74,7 +74,7 @@ validate_configuration() {
         log_success ".env exists"
     else
         log_error ".env not found"
-        ((errors++))
+        errors=$((errors+1))
     fi
     
     # Check for secrets
@@ -83,11 +83,11 @@ validate_configuration() {
         
         if grep -q "CHANGE_ME" secrets.env 2>/dev/null; then
             log_warning "secrets.env contains CHANGE_ME placeholders"
-            ((warnings++))
+            warnings=$((warnings+1))
         fi
     else
         log_warning "secrets.env not found (using template)"
-        ((warnings++))
+        warnings=$((warnings+1))
     fi
     
     # Check Docker network
@@ -96,7 +96,7 @@ validate_configuration() {
     else
         log_warning "Docker network 'kompose' not found"
         log_info "Create with: docker network create kompose"
-        ((warnings++))
+        warnings=$((warnings+1))
     fi
     
     # Validate all compose files
@@ -109,11 +109,11 @@ validate_configuration() {
         if stack_exists "$stack" 2>/dev/null; then
             cd "${STACKS_ROOT}/${stack}"
             if docker-compose config > /dev/null 2>&1; then
-                ((valid++))
+                valid=$((valid+1))
             else
                 log_error "Invalid compose file: $stack"
-                ((invalid++))
-                ((errors++))
+                invalid=$((invalid+1))
+                errors=$((errors+1))
             fi
             cd "${STACKS_ROOT}"
         fi

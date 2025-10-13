@@ -313,11 +313,11 @@ EOF
         
         if [ "$method" = "manual" ]; then
             echo "${secret}=CHANGE_ME_MANUALLY" >> "$secrets_file"
-            ((manual_count++))
+            manual_count=$((manual_count+1))
         else
             local value=$(generate_secret_value "$method" "$param")
             echo "${secret}=${value}" >> "$secrets_file"
-            ((generated_count++))
+            generated_count=$((generated_count+1))
         fi
     done
     echo "" >> "$secrets_file"
@@ -330,7 +330,7 @@ EOF
         
         local value=$(generate_secret_value "$method" "$param")
         echo "${secret}=${value}" >> "$secrets_file"
-        ((generated_count++))
+        generated_count=$((generated_count+1))
     done
     echo "" >> "$secrets_file"
     
@@ -342,11 +342,11 @@ EOF
         
         if [ "$method" = "manual" ]; then
             echo "${secret}=GENERATE_IN_GITEA_UI" >> "$secrets_file"
-            ((manual_count++))
+            manual_count=$((manual_count+1))
         else
             local value=$(generate_secret_value "$method" "$param")
             echo "${secret}=${value}" >> "$secrets_file"
-            ((generated_count++))
+            generated_count=$((generated_count+1))
         fi
     done
     echo "" >> "$secrets_file"
@@ -359,7 +359,7 @@ EOF
         
         local value=$(generate_secret_value "$method" "$param")
         echo "${secret}=${value}" >> "$secrets_file"
-        ((generated_count++))
+        generated_count=$((generated_count+1))
     done
     echo "" >> "$secrets_file"
     
@@ -371,11 +371,11 @@ EOF
         
         if [ "$method" = "manual" ]; then
             echo "${secret}=CHANGE_ME_MANUALLY" >> "$secrets_file"
-            ((manual_count++))
+            manual_count=$((manual_count+1))
         else
             local value=$(generate_secret_value "$method" "$param")
             echo "${secret}=${value}" >> "$secrets_file"
-            ((generated_count++))
+            generated_count=$((generated_count+1))
         fi
     done
     
@@ -478,7 +478,7 @@ secrets_validate() {
             fi
         fi
         
-        ((total_count++))
+        total_count=$((total_count+1))
         
         local value="${!secret_name}"
         local method=$(echo "${REQUIRED_SECRETS[$secret_name]}" | cut -d: -f1)
@@ -487,7 +487,7 @@ secrets_validate() {
         if [ -z "$value" ]; then
             log_error "✗ $secret_name - NOT SET"
             issues+=("$secret_name is not set")
-            ((missing_count++))
+            missing_count=$((missing_count+1))
             continue
         fi
         
@@ -495,7 +495,7 @@ secrets_validate() {
         if [[ "$value" =~ CHANGE_ME|UPDATE_ME|GENERATE|your_|xxx ]]; then
             log_warning "⚠ $secret_name - PLACEHOLDER VALUE"
             issues+=("$secret_name contains placeholder value")
-            ((weak_count++))
+            weak_count=$((weak_count+1))
             continue
         fi
         
@@ -505,10 +505,10 @@ secrets_validate() {
                 if [ ${#value} -lt 12 ]; then
                     log_warning "⚠ $secret_name - TOO SHORT (${#value} chars)"
                     issues+=("$secret_name is too short")
-                    ((weak_count++))
+                    weak_count=$((weak_count+1))
                 else
                     log_success "✓ $secret_name"
-                    ((valid_count++))
+                    valid_count=$((valid_count+1))
                 fi
                 ;;
             hex)
@@ -516,34 +516,34 @@ secrets_validate() {
                 if [ ${#value} -ne $expected_length ]; then
                     log_warning "⚠ $secret_name - WRONG LENGTH (expected $expected_length, got ${#value})"
                     issues+=("$secret_name has wrong length")
-                    ((weak_count++))
+                    weak_count=$((weak_count+1))
                 else
                     log_success "✓ $secret_name"
-                    ((valid_count++))
+                    valid_count=$((valid_count+1))
                 fi
                 ;;
             base64|alias)
                 log_success "✓ $secret_name"
-                ((valid_count++))
+                valid_count=$((valid_count+1))
                 ;;
             manual)
                 if [ "$value" = "CHANGE_ME_MANUALLY" ]; then
                     log_warning "⚠ $secret_name - NEEDS MANUAL CONFIGURATION"
                     issues+=("$secret_name needs manual configuration")
-                    ((weak_count++))
+                    weak_count=$((weak_count+1))
                 else
                     log_success "✓ $secret_name"
-                    ((valid_count++))
+                    valid_count=$((valid_count+1))
                 fi
                 ;;
             htpasswd)
                 if [[ ! "$value" =~ : ]]; then
                     log_error "✗ $secret_name - INVALID FORMAT"
                     issues+=("$secret_name has invalid htpasswd format")
-                    ((missing_count++))
+                    missing_count=$((missing_count+1))
                 else
                     log_success "✓ $secret_name"
-                    ((valid_count++))
+                    valid_count=$((valid_count+1))
                 fi
                 ;;
         esac
@@ -649,7 +649,7 @@ secrets_list() {
             echo "    ${CYAN}Value:${NC} ${value:0:20}..."
         fi
         
-        ((count++))
+        count=$((count+1))
     done
     
     echo ""

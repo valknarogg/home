@@ -161,7 +161,7 @@ create_profile() {
     for stack in "${!STACKS[@]}"; do
         echo "  ${idx}. ${stack} - ${STACKS[$stack]}"
         available_stacks+=("$stack")
-        ((idx++))
+        idx=$((idx+1))
     done
     echo ""
     read -p "Enter stack numbers (comma-separated, e.g., 1,2,3) or press Enter to skip: " -r stack_selection

@@ -300,7 +300,7 @@
 #            return 0
 #        fi
 #        sleep 1
-#        ((attempt++))
+#        attempt=$((attempt+1))
 #    done
 #    
 #    return 1
