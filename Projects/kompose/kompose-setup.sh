@@ -324,6 +324,164 @@ check_all_dependencies() {
 }
 
 # ============================================================================
+# COMPOSE PROJECT NAME VALIDATION AND GENERATION
+# ============================================================================
+
+# Get list of all stacks that need COMPOSE_PROJECT_NAME variables
+get_all_stacks() {
+    local stacks=()
+    
+    # Built-in stacks from kompose.sh STACKS array
+    for stack_dir in core auth kmps home vpn messaging chain code proxy link track vault watch _docs; do
+        if [ -d "${SCRIPT_DIR}/${stack_dir}" ]; then
+            stacks+=("$stack_dir")
+        fi
+    done
+    
+    # Custom stacks from +custom directory
+    if [ -d "${SCRIPT_DIR}/+custom" ]; then
+        for custom_stack in "${SCRIPT_DIR}/+custom"/*; do
+            if [ -d "$custom_stack" ] && [ -f "${custom_stack}/compose.yaml" ]; then
+                local stack_name=$(basename "$custom_stack")
+                stacks+=("$stack_name")
+            fi
+        done
+    fi
+    
+    printf '%s\n' "${stacks[@]}"
+}
+
+# Convert stack name to proper variable prefix
+get_stack_prefix() {
+    local stack="$1"
+    
+    # Remove leading underscore and convert to uppercase
+    if [[ "$stack" == _* ]]; then
+        stack="${stack:1}"
+    fi
+    
+    echo "${stack^^}"
+}
+
+# Validate that all stacks have COMPOSE_PROJECT_NAME variables
+validate_compose_project_names() {
+    local env_file="$1"
+    local missing_vars=()
+    
+    if [ ! -f "$env_file" ]; then
+        log_error "Environment file not found: $env_file"
+        return 1
+    fi
+    
+    log_info "Validating COMPOSE_PROJECT_NAME variables in $env_file..."
+    
+    while IFS= read -r stack; do
+        local prefix=$(get_stack_prefix "$stack")
+        local var_name="${prefix}_COMPOSE_PROJECT_NAME"
+        
+        if ! grep -q "^${var_name}=" "$env_file"; then
+            missing_vars+=("$var_name")
+            log_warning "Missing: $var_name (for stack: $stack)"
+        fi
+    done < <(get_all_stacks)
+    
+    if [ ${#missing_vars[@]} -gt 0 ]; then
+        log_warning "Found ${#missing_vars[@]} missing COMPOSE_PROJECT_NAME variables"
+        return 1
+    else
+        log_success "All COMPOSE_PROJECT_NAME variables are present"
+        return 0
+    fi
+}
+
+# Generate missing COMPOSE_PROJECT_NAME variables
+generate_compose_project_names() {
+    local env_file="$1"
+    local mode="${2:-local}"  # local or production
+    
+    if [ ! -f "$env_file" ]; then
+        log_error "Environment file not found: $env_file"
+        return 1
+    fi
+    
+    log_info "Checking and generating COMPOSE_PROJECT_NAME variables..."
+    
+    local added_count=0
+    local temp_file="${env_file}.tmp"
+    cp "$env_file" "$temp_file"
+    
+    while IFS= read -r stack; do
+        local prefix=$(get_stack_prefix "$stack")
+        local var_name="${prefix}_COMPOSE_PROJECT_NAME"
+        
+        # Check if variable already exists
+        if grep -q "^${var_name}=" "$temp_file"; then
+            continue
+        fi
+        
+        # Determine the section to add the variable to
+        local section_marker="# ==.*${prefix^^}.*STACK.*CONFIGURATION"
+        
+        if grep -q "$section_marker" "$temp_file"; then
+            # Add to existing section
+            sed -i "/^# ==.*${prefix^^}.*STACK.*CONFIGURATION/a ${var_name}=${stack}" "$temp_file"
+        else
+            # Create new section at the end of the file
+            cat >> "$temp_file" << EOF
+
+# ===================================================================
+# ${prefix^^} STACK CONFIGURATION
+# ===================================================================
+${var_name}=${stack}
+
+EOF
+        fi
+        
+        log_success "Generated: ${var_name}=${stack}"
+        added_count=$((added_count + 1))
+    done < <(get_all_stacks)
+    
+    if [ $added_count -gt 0 ]; then
+        mv "$temp_file" "$env_file"
+        log_success "Added $added_count COMPOSE_PROJECT_NAME variables to $env_file"
+    else
+        rm "$temp_file"
+        log_info "All COMPOSE_PROJECT_NAME variables already exist"
+    fi
+    
+    return 0
+}
+
+# Ensure all environment files have proper COMPOSE_PROJECT_NAME variables
+ensure_all_compose_project_names() {
+    log_info "Ensuring all environment files have COMPOSE_PROJECT_NAME variables..."
+    echo -e ""
+    
+    # Process .env.local
+    if [ -f "${SCRIPT_DIR}/.env.local" ]; then
+        log_info "Processing .env.local..."
+        generate_compose_project_names "${SCRIPT_DIR}/.env.local" "local"
+        echo -e ""
+    fi
+    
+    # Process .env.production
+    if [ -f "${SCRIPT_DIR}/.env.production" ]; then
+        log_info "Processing .env.production..."
+        generate_compose_project_names "${SCRIPT_DIR}/.env.production" "production"
+        echo -e ""
+    fi
+    
+    # Process active .env if it exists
+    if [ -f "${SCRIPT_DIR}/.env" ]; then
+        log_info "Processing active .env..."
+        generate_compose_project_names "${SCRIPT_DIR}/.env"
+        echo -e ""
+    fi
+    
+    log_success "COMPOSE_PROJECT_NAME validation complete"
+}
+
+# ============================================================================
 # PROJECT INITIALIZATION
 # ============================================================================
 
@@ -408,9 +566,15 @@ init_project() {
     log_info "────────────────────────────────────────────────────────────"
     install_project_dependencies
     
+    # Validate and generate COMPOSE_PROJECT_NAME variables
+    echo -e ""
+    log_info "Step 5: Validating COMPOSE_PROJECT_NAME variables"
+    log_info "────────────────────────────────────────────────────────────"
+    ensure_all_compose_project_names
+    
     # Create Docker network
     echo -e ""
-    log_info "Step 5: Setting up Docker network"
+    log_info "Step 6: Setting up Docker network"
     log_info "────────────────────────────────────────────────────────────"
     if ! docker network inspect kompose &>/dev/null; then
         docker network create kompose
@@ -421,7 +585,7 @@ init_project() {
     
     # Create necessary directories
     echo -e ""
-    log_info "Step 6: Creating project directories"
+    log_info "Step 7: Creating project directories"
     log_info "────────────────────────────────────────────────────────────"
     mkdir -p backups/database backups/config
     log_success "Project directories created"

@@ -281,6 +281,13 @@ ${MAGENTA}PROFILE MANAGEMENT COMMANDS:${NC}
     profile up           Start stacks defined in current profile
     profile current      Show current active profile
 
+${MAGENTA}ENVIRONMENT MANAGEMENT COMMANDS:${NC}
+    env list [STACK]     List environment variables for all or specific stack
+    env generate [STACK] Generate .env.example files for all or specific stack
+    env export [STACK]   Export environment variables to JSON
+    env stacks           List all stacks with environment definitions
+    env help             Show environment management help
+
 ${MAGENTA}STACK GENERATOR COMMANDS:${NC}
     generate <name>      Generate a new custom stack with templates
     generate list        List all custom stacks
@@ -379,6 +386,13 @@ ${BLUE}EXAMPLES:${NC}
     kompose profile use production     # Switch to production profile
     kompose profile up                 # Start all stacks in current profile
     kompose profile current            # Show active profile
+
+    ${MAGENTA}# Environment Management${NC}
+    kompose env list                   # List all stacks with env vars
+    kompose env list core              # List core stack environment variables
+    kompose env generate all           # Generate all .env.example files
+    kompose env generate auth --force  # Force regenerate auth .env.example
+    kompose env export all config.json # Export all variables to JSON
 
     ${MAGENTA}# REST API Server${NC}
     kompose api start                  # Start API server on default port
@@ -718,6 +732,26 @@ main() {
                 ;;
         esac
         
+        return 0
+    fi
+    
+    # Handle env subcommands
+    if [ "$command" = "env" ]; then
+        if [ $# -eq 0 ]; then
+            log_error "ENV subcommand required"
+            echo ""
+            echo "Available env commands:"
+            echo "  list [STACK]         - List environment variables"
+            echo "  generate [STACK]     - Generate .env.example files"
+            echo "  export [STACK] [FILE] - Export to JSON"
+            echo "  stacks               - List all stacks"
+            echo "  help                 - Show env help"
+            echo ""
+            echo "Example: kompose env list core"
+            exit 1
+        fi
+        
+        handle_env_command "$@"
         return 0
     fi
     
