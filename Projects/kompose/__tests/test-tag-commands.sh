@@ -262,28 +262,27 @@ test_tag_options_parsing() {
     # The main goal is to verify options are parsed without "Unknown option" errors
     # The command may fail for other reasons (not in git repo, validation, etc.)
     
-    # Check that options were recognized
-    if echo "$output" | grep -qi "Unknown option"; then
+    # Use a more specific pattern to avoid false positives from other error messages
+    if echo "$output" | grep -q "Unknown option\|unknown option"; then
+        # Found "Unknown option" error - test fails
+        TESTS_RUN=$((TESTS_RUN+1))
         log_fail "Tag create reported unknown option"
-        ((TESTS_RUN++))
-        ((TESTS_FAILED++))
         if [ "${VERBOSE:-0}" = "1" ]; then
             echo "Output: $output"
         fi
     else
-        # Options were parsed successfully
+        # No "Unknown option" error - options were parsed successfully
+        TESTS_RUN=$((TESTS_RUN+1))
         log_pass "Tag create accepts all documented options"
-        ((TESTS_RUN++))
-        ((TESTS_PASSED++))
         
-        # Additional check: if it succeeded, should indicate dry-run
+        # Additional info about what happened
         if [ $exit_code -eq 0 ]; then
             if echo "$output" | grep -qi "DRY RUN\|Would create\|would"; then
                 log_info "Dry run mode working correctly"
             fi
         else
-            # Failed for other reasons (probably git repo or validation)
-            log_info "Command failed (exit $exit_code) but options were parsed"
+            # Failed for other reasons (probably validation or git repo)
+            log_info "Command failed (exit $exit_code) but options were parsed correctly"
         fi
     fi
 }

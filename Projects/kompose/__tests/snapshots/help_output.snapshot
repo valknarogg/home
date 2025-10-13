@@ -71,13 +71,12 @@
     kmps            - Management Portal - User & SSO Administration
     link            - Link Management - Linkwarden bookmark manager
     messaging       - Communication - Gotify notifications, Mailhog
-    news            - News Aggregation - FreshRSS feed reader
+    news            - Newsletter - Letterspace app
     proxy           - Reverse Proxy - Traefik with SSL
-    trace           - Monitoring & Observability - Uptime Kuma, Grafana
     track           - Activity Tracking - Umami analytics
     vault           - Password Manager - Vaultwarden
     vpn             - VPN - WireGuard remote access (wg-easy)
-    watch           - Media Server - Jellyfin or similar
+    watch           - Monitoring & Observability - Uptime Kuma, Grafana
 \033[0;34mEXAMPLES:\033[0m
     \033[0;32m# Stack Management\033[0m
     kompose up home                    # Start home stack
