@@ -385,9 +385,9 @@ EOF
     if [ $manual_count -gt 0 ]; then
         log_warning "${manual_count} secrets require manual configuration:"
         echo ""
-        echo "  ${YELLOW}EMAIL_SMTP_PASSWORD${NC} - Your SMTP server password"
-        echo "  ${YELLOW}CODE_RUNNER_TOKEN${NC} - Generate in Gitea UI after first setup"
-        echo "  ${YELLOW}KMPS_CLIENT_SECRET${NC} - Generate in Keycloak after client setup"
+        echo -e "  ${YELLOW}EMAIL_SMTP_PASSWORD${NC} - Your SMTP server password"
+        echo -e "  ${YELLOW}CODE_RUNNER_TOKEN${NC} - Generate in Gitea UI after first setup"
+        echo -e "  ${YELLOW}KMPS_CLIENT_SECRET${NC} - Generate in Keycloak after client setup"
         echo ""
     fi
     
