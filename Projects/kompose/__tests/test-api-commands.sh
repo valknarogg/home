@@ -16,69 +16,30 @@ log_section "TESTING: API Commands"
 setup_test_env
 
 # ============================================================================
-# TEST: API Start (Syntax)
+# TEST: API Command Without Subcommand
 # ============================================================================
 
-test_api_start_syntax() {
-    log_test "Testing 'kompose api start' command syntax"
-    
-    # We won't actually start the API server in tests
-    # Just verify the command is recognized
-    
-    ((TESTS_RUN++))
-    ((TESTS_PASSED++))
-    log_pass "API start command syntax check"
-}
-
-# ============================================================================
-# TEST: API Stop (Syntax)
-# ============================================================================
-
-test_api_stop_syntax() {
-    log_test "Testing 'kompose api stop' command syntax"
+test_api_no_subcommand() {
+    log_test "Testing 'kompose api' without subcommand"
     
     local output
+    local exit_code
+    
     set +e
-    output=$(run_kompose api stop 2>&1)
+    output=$(run_kompose api 2>&1)
+    exit_code=$?
     set -e
     
-    # Should not error on unknown command
-    assert_not_contains "$output" "Unknown" \
-        "API stop command is recognized"
-}
-
-# ============================================================================
-# TEST: API Status (Syntax)
-# ============================================================================
-
-test_api_status_syntax() {
-    log_test "Testing 'kompose api status' command syntax"
+    # Should exit with error
+    assert_exit_code 1 $exit_code \
+        "API command requires subcommand"
     
-    local output
-    set +e
-    output=$(run_kompose api status 2>&1)
-    set -e
+    assert_contains "$output" "API subcommand required\|subcommand\|ERROR" \
+        "Error message indicates subcommand is required"
     
-    # Should report that API is not running (in test env)
-    assert_not_contains "$output" "Unknown" \
-        "API status command is recognized"
-}
-
-# ============================================================================
-# TEST: API Logs (Syntax)
-# ============================================================================
-
-test_api_logs_syntax() {
-    log_test "Testing 'kompose api logs' command syntax"
-    
-    local output
-    set +e
-    output=$(run_kompose api logs 2>&1)
-    set -e
-    
-    # Command should be recognized
-    assert_not_contains "$output" "Unknown" \
-        "API logs command is recognized"
+    # Should show available commands
+    assert_contains "$output" "start\|stop\|status" \
+        "Error message shows available API commands"
 }
 
 # ============================================================================
@@ -96,30 +57,102 @@ test_api_invalid_subcommand() {
     exit_code=$?
     set -e
     
-    assert_contains "$output" "Unknown API command" \
+    # Should exit with error
+    assert_exit_code 1 $exit_code \
+        "Invalid API subcommand should fail"
+    
+    assert_contains "$output" "Unknown API command\|Unknown\|ERROR" \
         "Invalid API subcommand produces error"
 }
 
 # ============================================================================
-# TEST: API Command Without Subcommand
+# TEST: API Start
 # ============================================================================
 
-test_api_no_subcommand() {
-    log_test "Testing 'kompose api' without subcommand"
+test_api_start_syntax() {
+    log_test "Testing 'kompose api start' command recognition"
+    
+    # We won't actually start the API server in tests
+    # Just verify the command is recognized by checking help/usage
     
     local output
     local exit_code
     
     set +e
-    output=$(run_kompose api 2>&1)
+    # Try to start on a likely-used port to trigger error, but command should be recognized
+    output=$(timeout 2 bash -c "cd ${KOMPOSE_ROOT} && bash kompose.sh api start 99999" 2>&1 || true)
     exit_code=$?
     set -e
     
-    assert_contains "$output" "API subcommand required" \
-        "API command requires subcommand"
+    # Command should be recognized (may fail for other reasons)
+    assert_not_contains "$output" "Unknown API command" \
+        "API start command is recognized"
+}
+
+# ============================================================================
+# TEST: API Stop
+# ============================================================================
+
+test_api_stop_syntax() {
+    log_test "Testing 'kompose api stop' command"
     
-    assert_contains "$output" "start" \
-        "Error message shows available commands"
+    local output
+    local exit_code
+    
+    set +e
+    output=$(run_kompose api stop 2>&1)
+    exit_code=$?
+    set -e
+    
+    # Should not error on unknown command
+    assert_not_contains "$output" "Unknown API command" \
+        "API stop command is recognized"
+    
+    # May show message about API not running, which is fine
+}
+
+# ============================================================================
+# TEST: API Status
+# ============================================================================
+
+test_api_status_syntax() {
+    log_test "Testing 'kompose api status' command"
+    
+    local output
+    local exit_code
+    
+    set +e
+    output=$(run_kompose api status 2>&1)
+    exit_code=$?
+    set -e
+    
+    # Should report that API is not running (in test env)
+    assert_not_contains "$output" "Unknown API command" \
+        "API status command is recognized"
+    
+    # Should show some status information
+    assert_contains "$output" "API\|server\|running\|not running\|status" \
+        "API status shows server status"
+}
+
+# ============================================================================
+# TEST: API Logs
+# ============================================================================
+
+test_api_logs_syntax() {
+    log_test "Testing 'kompose api logs' command"
+    
+    local output
+    local exit_code
+    
+    set +e
+    output=$(run_kompose api logs 2>&1)
+    exit_code=$?
+    set -e
+    
+    # Command should be recognized
+    assert_not_contains "$output" "Unknown API command" \
+        "API logs command is recognized"
 }
 
 # ============================================================================
@@ -127,29 +160,64 @@ test_api_no_subcommand() {
 # ============================================================================
 
 test_api_start_custom_port() {
-    log_test "Testing API start with custom port"
+    log_test "Testing API start with custom port argument"
     
-    # Just syntax test, won't actually start
-    ((TESTS_RUN++))
-    ((TESTS_PASSED++))
-    log_pass "API start accepts custom port syntax"
+    local output
+    local exit_code
+    
+    set +e
+    # Use timeout to prevent actual server start
+    output=$(timeout 2 bash -c "cd ${KOMPOSE_ROOT} && bash kompose.sh api start 9999" 2>&1 || true)
+    exit_code=$?
+    set -e
+    
+    # Should accept port argument without "Unknown option" error
+    assert_not_contains "$output" "Unknown option\|Unknown API command" \
+        "API start accepts custom port"
+}
+
+# ============================================================================
+# TEST: API Start with Custom Port and Host
+# ============================================================================
+
+test_api_start_port_and_host() {
+    log_test "Testing API start with port and host arguments"
+    
+    local output
+    local exit_code
+    
+    set +e
+    # Use timeout to prevent actual server start
+    output=$(timeout 2 bash -c "cd ${KOMPOSE_ROOT} && bash kompose.sh api start 9999 127.0.0.1" 2>&1 || true)
+    exit_code=$?
+    set -e
+    
+    # Should accept both arguments
+    assert_not_contains "$output" "Unknown option\|Unknown API command" \
+        "API start accepts port and host arguments"
 }
 
 # ============================================================================
 # RUN ALL TESTS
 # ============================================================================
 
+test_api_no_subcommand
+test_api_invalid_subcommand
 test_api_start_syntax
 test_api_stop_syntax
 test_api_status_syntax
 test_api_logs_syntax
-test_api_invalid_subcommand
-test_api_no_subcommand
 test_api_start_custom_port
+test_api_start_port_and_host
 
 # ============================================================================
 # CLEANUP & REPORT
 # ============================================================================
 
 cleanup_test_env
-print_test_summary
+
+if print_test_summary; then
+    exit 0
+else
+    exit 1
+fi

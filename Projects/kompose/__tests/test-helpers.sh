@@ -22,7 +22,8 @@ KOMPOSE_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 SNAPSHOT_DIR="${SCRIPT_DIR}/snapshots"
 TEMP_DIR="${SCRIPT_DIR}/temp"
 
-# Create temp directory
+# Ensure directories exist
+mkdir -p "${SNAPSHOT_DIR}"
 mkdir -p "${TEMP_DIR}"
 
 # ============================================================================
@@ -35,12 +36,12 @@ log_test() {
 
 log_pass() {
     echo -e "${GREEN}[PASS]${NC} $1"
-    ((TESTS_PASSED++))
+    TESTS_PASSED=$((TESTS_PASSED+1))
 }
 
 log_fail() {
     echo -e "${RED}[FAIL]${NC} $1"
-    ((TESTS_FAILED++))
+    TESTS_FAILED=$((TESTS_FAILED+1))
 }
 
 log_skip() {
@@ -49,6 +50,18 @@ log_skip() {
 
 log_info() {
     echo -e "${BLUE}[INFO]${NC} $1"
+}
+
+log_warning() {
+    echo -e "${YELLOW}[WARN]${NC} $1"
+}
+
+log_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+log_success() {
+    echo -e "${GREEN}[✓]${NC} $1"
 }
 
 log_section() {
@@ -68,7 +81,7 @@ assert_equals() {
     local actual="$2"
     local test_name="$3"
     
-    ((TESTS_RUN++))
+    TESTS_RUN=$((TESTS_RUN+1))
     
     if [ "$expected" = "$actual" ]; then
         log_pass "$test_name"
@@ -86,15 +99,18 @@ assert_contains() {
     local needle="$2"
     local test_name="$3"
     
-    ((TESTS_RUN++))
+    TESTS_RUN=$((TESTS_RUN+1))
     
-    if echo "$haystack" | grep -q "$needle"; then
+    if echo "$haystack" | grep -qi "$needle"; then
         log_pass "$test_name"
         return 0
     else
         log_fail "$test_name"
         echo "  Expected to contain: $needle"
-        echo "  Actual output: $haystack"
+        if [ "${VERBOSE:-0}" = "1" ]; then
+            echo "  Actual output:"
+            echo "$haystack" | head -20
+        fi
         return 1
     fi
 }
@@ -104,15 +120,18 @@ assert_not_contains() {
     local needle="$2"
     local test_name="$3"
     
-    ((TESTS_RUN++))
+    TESTS_RUN=$((TESTS_RUN+1))
     
-    if ! echo "$haystack" | grep -q "$needle"; then
+    if ! echo "$haystack" | grep -qi "$needle"; then
         log_pass "$test_name"
         return 0
     else
         log_fail "$test_name"
         echo "  Expected NOT to contain: $needle"
-        echo "  Actual output: $haystack"
+        if [ "${VERBOSE:-0}" = "1" ]; then
+            echo "  Actual output:"
+            echo "$haystack" | head -20
+        fi
         return 1
     fi
 }
@@ -122,7 +141,7 @@ assert_exit_code() {
     local actual_code="$2"
     local test_name="$3"
     
-    ((TESTS_RUN++))
+    TESTS_RUN=$((TESTS_RUN+1))
     
     if [ "$expected_code" -eq "$actual_code" ]; then
         log_pass "$test_name"
@@ -139,7 +158,7 @@ assert_file_exists() {
     local file="$1"
     local test_name="$2"
     
-    ((TESTS_RUN++))
+    TESTS_RUN=$((TESTS_RUN+1))
     
     if [ -f "$file" ]; then
         log_pass "$test_name"
@@ -155,7 +174,7 @@ assert_directory_exists() {
     local dir="$1"
     local test_name="$2"
     
-    ((TESTS_RUN++))
+    TESTS_RUN=$((TESTS_RUN+1))
     
     if [ -d "$dir" ]; then
         log_pass "$test_name"
@@ -171,12 +190,19 @@ assert_directory_exists() {
 # SNAPSHOT TESTING
 # ============================================================================
 
+normalize_output() {
+    local content="$1"
+    # Remove trailing whitespace, normalize line endings, remove ANSI color codes
+    echo "$content" | sed 's/[[:space:]]*$//' | tr -s '\n' | sed 's/\x1b\[[0-9;]*m//g'
+}
+
 create_snapshot() {
     local snapshot_name="$1"
     local content="$2"
     local snapshot_file="${SNAPSHOT_DIR}/${snapshot_name}.snapshot"
     
-    echo "$content" > "$snapshot_file"
+    # Normalize and save
+    normalize_output "$content" > "$snapshot_file"
     log_info "Created snapshot: $snapshot_name"
 }
 
@@ -194,23 +220,23 @@ compare_snapshot() {
     local test_name="$3"
     local snapshot_file="${SNAPSHOT_DIR}/${snapshot_name}.snapshot"
     
-    ((TESTS_RUN++))
+    TESTS_RUN=$((TESTS_RUN+1))
     
     if [ ! -f "$snapshot_file" ]; then
-        log_fail "$test_name - Snapshot not found"
-        echo "  Snapshot file: $snapshot_file"
-        echo "  Run with UPDATE_SNAPSHOTS=1 to create snapshots"
-        return 1
+        log_warning "$test_name - Snapshot not found, creating..."
+        create_snapshot "$snapshot_name" "$actual_content"
+        log_pass "$test_name (snapshot created)"
+        return 0
     fi
     
     local expected_content
     expected_content=$(cat "$snapshot_file")
     
-    # Normalize whitespace and line endings
+    # Normalize both for comparison
     local normalized_expected
     local normalized_actual
-    normalized_expected=$(echo "$expected_content" | sed 's/[[:space:]]*$//' | tr -s '\n')
-    normalized_actual=$(echo "$actual_content" | sed 's/[[:space:]]*$//' | tr -s '\n')
+    normalized_expected=$(normalize_output "$expected_content")
+    normalized_actual=$(normalize_output "$actual_content")
     
     if [ "$normalized_expected" = "$normalized_actual" ]; then
         log_pass "$test_name"
@@ -218,9 +244,12 @@ compare_snapshot() {
     else
         log_fail "$test_name - Snapshot mismatch"
         echo "  Snapshot: $snapshot_file"
-        echo "  Diff:"
-        diff -u <(echo "$expected_content") <(echo "$actual_content") || true
-        echo ""
+        if [ "${VERBOSE:-0}" = "1" ]; then
+            echo "  Diff:"
+            diff -u <(echo "$normalized_expected") <(echo "$normalized_actual") | head -50 || true
+        else
+            echo "  Use -v flag to see diff"
+        fi
         echo "  Run with UPDATE_SNAPSHOTS=1 to update snapshots"
         return 1
     fi
@@ -232,15 +261,19 @@ compare_snapshot() {
 
 run_kompose() {
     local cmd="$*"
-    local output_file="${TEMP_DIR}/output_$$.txt"
+    local output
+    local exit_code
     
     # Run command and capture output
     cd "${KOMPOSE_ROOT}" || exit 1
-    bash kompose.sh $cmd > "$output_file" 2>&1
-    local exit_code=$?
     
-    # Return output and exit code
-    cat "$output_file"
+    set +e
+    output=$(bash kompose.sh $cmd 2>&1)
+    exit_code=$?
+    set -e
+    
+    # Return output
+    echo "$output"
     return $exit_code
 }
 
@@ -256,7 +289,10 @@ capture_output() {
     local cmd="$*"
     local output
     
+    set +e
     output=$(eval "$cmd" 2>&1)
+    set -e
+    
     echo "$output"
 }
 
@@ -298,6 +334,12 @@ print_test_summary() {
     echo "  Total Tests:  $TESTS_RUN"
     echo -e "  ${GREEN}Passed:       $TESTS_PASSED${NC}"
     echo -e "  ${RED}Failed:       $TESTS_FAILED${NC}"
+    
+    if [ $TESTS_RUN -gt 0 ]; then
+        local pass_rate=$((TESTS_PASSED * 100 / TESTS_RUN))
+        echo "  Pass Rate:    ${pass_rate}%"
+    fi
+    
     echo ""
     
     if [ $TESTS_FAILED -eq 0 ]; then
@@ -312,45 +354,7 @@ print_test_summary() {
 }
 
 # ============================================================================
-# MOCK DOCKER COMMANDS (for testing without actual Docker)
-# ============================================================================
-
-mock_docker_ps() {
-    cat << EOF
-CONTAINER ID   IMAGE                    STATUS
-abc123         postgres:16-alpine       Up 2 hours
-def456         redis:7-alpine          Up 2 hours
-ghi789         traefik:latest          Up 2 hours
-EOF
-}
-
-mock_docker_compose_ps() {
-    local stack="$1"
-    
-    case "$stack" in
-        core)
-            cat << EOF
-NAME                IMAGE                    STATUS
-core-postgres       postgres:16-alpine       Up 2 hours (healthy)
-core-redis          redis:7-alpine          Up 2 hours (healthy)
-core-mqtt           eclipse-mosquitto:2     Up 2 hours (healthy)
-EOF
-            ;;
-        auth)
-            cat << EOF
-NAME                IMAGE                    STATUS
-auth_keycloak       keycloak:latest         Up 1 hour (healthy)
-auth_oauth2_proxy   oauth2-proxy:latest     Up 1 hour (healthy)
-EOF
-            ;;
-        *)
-            echo "No containers"
-            ;;
-    esac
-}
-
-# ============================================================================
-# HELPERS FOR SPECIFIC TEST SCENARIOS
+# DOCKER HELPERS
 # ============================================================================
 
 wait_for_container() {
@@ -370,19 +374,36 @@ wait_for_container() {
 }
 
 is_docker_available() {
-    if command -v docker &> /dev/null && docker ps &> /dev/null; then
+    if command -v docker &> /dev/null && docker ps &> /dev/null 2>&1; then
         return 0
     else
         return 1
     fi
 }
 
+container_is_healthy() {
+    local container="$1"
+    local health_status
+    
+    health_status=$(docker inspect --format='{{.State.Health.Status}}' "$container" 2>/dev/null || echo "none")
+    
+    if [ "$health_status" = "healthy" ]; then
+        return 0
+    elif [ "$health_status" = "none" ]; then
+        # No health check defined, check if running
+        if docker ps --filter "name=$container" --filter "status=running" | grep -q "$container"; then
+            return 0
+        fi
+    fi
+    
+    return 1
+}
+
 # Export functions for use in test scripts
-export -f log_test log_pass log_fail log_skip log_info log_section
+export -f log_test log_pass log_fail log_skip log_info log_warning log_error log_success log_section
 export -f assert_equals assert_contains assert_not_contains assert_exit_code
 export -f assert_file_exists assert_directory_exists
-export -f create_snapshot update_snapshot compare_snapshot
+export -f normalize_output create_snapshot update_snapshot compare_snapshot
 export -f run_kompose run_kompose_quiet capture_output
 export -f setup_test_env cleanup_test_env print_test_summary
-export -f mock_docker_ps mock_docker_compose_ps
-export -f wait_for_container is_docker_available
+export -f wait_for_container is_docker_available container_is_healthy

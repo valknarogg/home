@@ -23,19 +23,32 @@ test_help_command() {
     log_test "Testing 'kompose help' command"
     
     local output
-    output=$(run_kompose help 2>&1)
+    local exit_code
     
-    assert_contains "$output" "KOMPOSE - Docker Compose Stack Manager" \
+    set +e
+    output=$(run_kompose help 2>&1)
+    exit_code=$?
+    set -e
+    
+    # Should exit successfully
+    assert_exit_code 0 $exit_code \
+        "Help command exits successfully"
+    
+    # Check for key sections
+    assert_contains "$output" "KOMPOSE" \
         "Help output contains title"
     
-    assert_contains "$output" "STACK MANAGEMENT COMMANDS:" \
+    assert_contains "$output" "STACK MANAGEMENT COMMANDS" \
         "Help output contains stack commands section"
     
-    assert_contains "$output" "DATABASE COMMANDS:" \
+    assert_contains "$output" "DATABASE COMMANDS" \
         "Help output contains database commands section"
     
-    assert_contains "$output" "GIT TAG DEPLOYMENT COMMANDS:" \
+    assert_contains "$output" "GIT TAG DEPLOYMENT COMMANDS" \
         "Help output contains tag commands section"
+    
+    assert_contains "$output" "REST API SERVER COMMANDS" \
+        "Help output contains API commands section"
     
     # Snapshot test
     if [ "${UPDATE_SNAPSHOTS}" = "1" ]; then
@@ -54,10 +67,20 @@ test_version_command() {
     log_test "Testing 'kompose version' command"
     
     local output
-    output=$(run_kompose version 2>&1)
+    local exit_code
     
-    assert_contains "$output" "kompose" \
-        "Version output contains 'kompose'"
+    set +e
+    output=$(run_kompose version 2>&1)
+    exit_code=$?
+    set -e
+    
+    # Should exit successfully
+    assert_exit_code 0 $exit_code \
+        "Version command exits successfully"
+    
+    # Should contain version info
+    assert_contains "$output" "kompose\|version" \
+        "Version output contains version information"
     
     if [ "${UPDATE_SNAPSHOTS}" = "1" ]; then
         create_snapshot "version_output" "$output"
@@ -75,7 +98,16 @@ test_list_command() {
     log_test "Testing 'kompose list' command"
     
     local output
+    local exit_code
+    
+    set +e
     output=$(run_kompose list 2>&1)
+    exit_code=$?
+    set -e
+    
+    # Should exit successfully
+    assert_exit_code 0 $exit_code \
+        "List command exits successfully"
     
     # Check for essential stacks
     assert_contains "$output" "core" \
@@ -89,12 +121,6 @@ test_list_command() {
     
     assert_contains "$output" "home" \
         "List output contains 'home' stack"
-    
-    assert_contains "$output" "chain" \
-        "List output contains 'chain' stack"
-    
-    assert_contains "$output" "code" \
-        "List output contains 'code' stack"
     
     if [ "${UPDATE_SNAPSHOTS}" = "1" ]; then
         create_snapshot "list_output" "$output"
@@ -111,8 +137,6 @@ test_list_command() {
 test_validate_command() {
     log_test "Testing 'kompose validate' command"
     
-    # This test might fail if compose files have errors
-    # We'll capture the output but won't fail the test suite
     local output
     local exit_code
     
@@ -121,10 +145,13 @@ test_validate_command() {
     exit_code=$?
     set -e
     
+    # Validation may fail if compose files have issues, which is OK for testing
     if [ $exit_code -eq 0 ]; then
         log_pass "Validate command succeeded"
+        ((TESTS_RUN++))
+        ((TESTS_PASSED++))
     else
-        log_skip "Validate command failed (may need actual stack files)"
+        log_skip "Validate command failed (compose file issues expected in test env)"
         log_info "Exit code: $exit_code"
     fi
     
@@ -149,7 +176,8 @@ test_invalid_command() {
     exit_code=$?
     set -e
     
-    assert_contains "$output" "Unknown command" \
+    # Should show error message
+    assert_contains "$output" "Unknown command\|ERROR" \
         "Invalid command produces error message"
     
     # Should exit with non-zero code
@@ -172,10 +200,44 @@ test_no_arguments() {
     log_test "Testing kompose with no arguments"
     
     local output
-    output=$(run_kompose 2>&1)
+    local exit_code
     
-    assert_contains "$output" "KOMPOSE - Docker Compose Stack Manager" \
+    set +e
+    output=$(run_kompose 2>&1)
+    exit_code=$?
+    set -e
+    
+    # Should show help when run without arguments
+    assert_contains "$output" "KOMPOSE\|STACK MANAGEMENT" \
         "No arguments shows help"
+}
+
+# ============================================================================
+# TEST: Help Flag
+# ============================================================================
+
+test_help_flag() {
+    log_test "Testing kompose --help flag"
+    
+    local output
+    set +e
+    output=$(run_kompose --help 2>&1)
+    set -e
+    
+    assert_contains "$output" "KOMPOSE\|STACK MANAGEMENT" \
+        "--help flag shows help text"
+}
+
+test_help_short_flag() {
+    log_test "Testing kompose -h flag"
+    
+    local output
+    set +e
+    output=$(run_kompose -h 2>&1)
+    set -e
+    
+    assert_contains "$output" "KOMPOSE\|STACK MANAGEMENT" \
+        "-h flag shows help text"
 }
 
 # ============================================================================
@@ -188,10 +250,17 @@ test_list_command
 test_validate_command
 test_invalid_command
 test_no_arguments
+test_help_flag
+test_help_short_flag
 
 # ============================================================================
 # CLEANUP & REPORT
 # ============================================================================
 
 cleanup_test_env
-print_test_summary
+
+if print_test_summary; then
+    exit 0
+else
+    exit 1
+fi

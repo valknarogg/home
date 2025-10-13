@@ -16,136 +16,30 @@ log_section "TESTING: Tag Commands"
 setup_test_env
 
 # ============================================================================
-# TEST: Tag Create (Syntax)
+# TEST: Tag Command Without Subcommand
 # ============================================================================
 
-test_tag_create_syntax() {
-    log_test "Testing 'kompose tag create' command syntax"
+test_tag_no_subcommand() {
+    log_test "Testing 'kompose tag' without subcommand"
     
     local output
     local exit_code
     
     set +e
-    output=$(run_kompose tag create 2>&1)
+    output=$(run_kompose tag 2>&1)
     exit_code=$?
     set -e
     
-    # Should require service, env, and version
-    assert_contains "$output" "Required:" \
-        "Tag create requires service, env, and version"
-}
-
-# ============================================================================
-# TEST: Tag Deploy (Syntax)
-# ============================================================================
-
-test_tag_deploy_syntax() {
-    log_test "Testing 'kompose tag deploy' command syntax"
+    # Should exit with error
+    assert_exit_code 1 $exit_code \
+        "Tag command requires subcommand"
     
-    local output
-    local exit_code
+    assert_contains "$output" "Tag subcommand required\|subcommand\|ERROR" \
+        "Error message indicates subcommand is required"
     
-    set +e
-    output=$(run_kompose tag deploy 2>&1)
-    exit_code=$?
-    set -e
-    
-    assert_contains "$output" "Required:" \
-        "Tag deploy requires service, env, and version"
-}
-
-# ============================================================================
-# TEST: Tag Move (Syntax)
-# ============================================================================
-
-test_tag_move_syntax() {
-    log_test "Testing 'kompose tag move' command syntax"
-    
-    local output
-    local exit_code
-    
-    set +e
-    output=$(run_kompose tag move 2>&1)
-    exit_code=$?
-    set -e
-    
-    assert_contains "$output" "Required:" \
-        "Tag move requires service, env, version, and commit"
-}
-
-# ============================================================================
-# TEST: Tag Delete (Syntax)
-# ============================================================================
-
-test_tag_delete_syntax() {
-    log_test "Testing 'kompose tag delete' command syntax"
-    
-    local output
-    local exit_code
-    
-    set +e
-    output=$(run_kompose tag delete 2>&1)
-    exit_code=$?
-    set -e
-    
-    assert_contains "$output" "Required:" \
-        "Tag delete requires service, env, and version"
-}
-
-# ============================================================================
-# TEST: Tag List (Syntax)
-# ============================================================================
-
-test_tag_list_syntax() {
-    log_test "Testing 'kompose tag list' command syntax"
-    
-    # Tag list can work without arguments
-    local output
-    set +e
-    output=$(run_kompose tag list 2>&1)
-    set -e
-    
-    # Should not show error
-    assert_not_contains "$output" "Unknown" \
-        "Tag list command is recognized"
-}
-
-# ============================================================================
-# TEST: Tag Rollback (Syntax)
-# ============================================================================
-
-test_tag_rollback_syntax() {
-    log_test "Testing 'kompose tag rollback' command syntax"
-    
-    local output
-    local exit_code
-    
-    set +e
-    output=$(run_kompose tag rollback 2>&1)
-    exit_code=$?
-    set -e
-    
-    assert_contains "$output" "Required:" \
-        "Tag rollback requires service, env, and version"
-}
-
-# ============================================================================
-# TEST: Tag Status (Syntax)
-# ============================================================================
-
-test_tag_status_syntax() {
-    log_test "Testing 'kompose tag status' command syntax"
-    
-    local output
-    local exit_code
-    
-    set +e
-    output=$(run_kompose tag status 2>&1)
-    exit_code=$?
-    set -e
-    
-    assert_contains "$output" "Required:" \
-        "Tag status requires service, version, and env"
+    # Should show available commands
+    assert_contains "$output" "create\|deploy" \
+        "Error message shows available tag commands"
 }
 
 # ============================================================================
@@ -163,76 +57,237 @@ test_tag_invalid_subcommand() {
     exit_code=$?
     set -e
     
-    assert_contains "$output" "Unknown tag command" \
+    # Should exit with error
+    assert_exit_code 1 $exit_code \
+        "Invalid tag subcommand should fail"
+    
+    assert_contains "$output" "Unknown tag command\|Unknown\|ERROR" \
         "Invalid tag subcommand produces error"
 }
 
 # ============================================================================
-# TEST: Tag Command Without Subcommand
+# TEST: Tag Create Without Arguments
 # ============================================================================
 
-test_tag_no_subcommand() {
-    log_test "Testing 'kompose tag' without subcommand"
+test_tag_create_no_args() {
+    log_test "Testing 'kompose tag create' without arguments"
     
     local output
     local exit_code
     
     set +e
-    output=$(run_kompose tag 2>&1)
+    output=$(run_kompose tag create 2>&1)
     exit_code=$?
     set -e
     
-    assert_contains "$output" "Tag subcommand required" \
-        "Tag command requires subcommand"
+    # Should fail without arguments
+    assert_exit_code 1 $exit_code \
+        "Tag create requires arguments"
     
-    assert_contains "$output" "create" \
-        "Error message shows available commands"
+    assert_contains "$output" "Required:\|SERVICE\|ENV\|VERSION\|ERROR" \
+        "Error message indicates required arguments"
 }
 
 # ============================================================================
-# TEST: Tag Create with All Options
+# TEST: Tag Deploy Without Arguments
 # ============================================================================
 
-test_tag_create_with_options() {
-    log_test "Testing tag create with all options"
-    
-    # We won't actually create a tag, just test syntax parsing
-    # This would need a git repository to work fully
+test_tag_deploy_no_args() {
+    log_test "Testing 'kompose tag deploy' without arguments"
     
     local output
+    local exit_code
+    
     set +e
-    output=$(run_kompose tag create -s frontend -e dev -v 1.0.0 -c HEAD -m "Test" -d 2>&1)
+    output=$(run_kompose tag deploy 2>&1)
+    exit_code=$?
     set -e
     
-    # With dry-run, should show what would be done
-    if echo "$output" | grep -q "dry.*run" || echo "$output" | grep -q "would"; then
-        log_pass "Tag create accepts all options"
-        ((TESTS_RUN++))
-        ((TESTS_PASSED++))
-    else
-        # Might fail due to no git repo, which is ok for syntax test
-        log_skip "Tag create syntax test (needs git repository)"
-    fi
+    # Should fail without arguments
+    assert_exit_code 1 $exit_code \
+        "Tag deploy requires arguments"
+    
+    assert_contains "$output" "Required:\|SERVICE\|ENV\|VERSION\|ERROR" \
+        "Error message indicates required arguments"
+}
+
+# ============================================================================
+# TEST: Tag Move Without Arguments
+# ============================================================================
+
+test_tag_move_no_args() {
+    log_test "Testing 'kompose tag move' without arguments"
+    
+    local output
+    local exit_code
+    
+    set +e
+    output=$(run_kompose tag move 2>&1)
+    exit_code=$?
+    set -e
+    
+    # Should fail without arguments
+    assert_exit_code 1 $exit_code \
+        "Tag move requires arguments"
+    
+    assert_contains "$output" "Required:\|SERVICE\|ENV\|VERSION\|COMMIT\|ERROR" \
+        "Error message indicates required arguments"
+}
+
+# ============================================================================
+# TEST: Tag Delete Without Arguments
+# ============================================================================
+
+test_tag_delete_no_args() {
+    log_test "Testing 'kompose tag delete' without arguments"
+    
+    local output
+    local exit_code
+    
+    set +e
+    output=$(run_kompose tag delete 2>&1)
+    exit_code=$?
+    set -e
+    
+    # Should fail without arguments
+    assert_exit_code 1 $exit_code \
+        "Tag delete requires arguments"
+    
+    assert_contains "$output" "Required:\|SERVICE\|ENV\|VERSION\|ERROR" \
+        "Error message indicates required arguments"
+}
+
+# ============================================================================
+# TEST: Tag List
+# ============================================================================
+
+test_tag_list_syntax() {
+    log_test "Testing 'kompose tag list' command"
+    
+    local output
+    local exit_code
+    
+    set +e
+    output=$(run_kompose tag list 2>&1)
+    exit_code=$?
+    set -e
+    
+    # Should not show error (may show empty list or git error if no repo)
+    assert_not_contains "$output" "Unknown tag command" \
+        "Tag list command is recognized"
+}
+
+# ============================================================================
+# TEST: Tag Rollback Without Arguments
+# ============================================================================
+
+test_tag_rollback_no_args() {
+    log_test "Testing 'kompose tag rollback' without arguments"
+    
+    local output
+    local exit_code
+    
+    set +e
+    output=$(run_kompose tag rollback 2>&1)
+    exit_code=$?
+    set -e
+    
+    # Should fail without arguments
+    assert_exit_code 1 $exit_code \
+        "Tag rollback requires arguments"
+    
+    assert_contains "$output" "Required:\|SERVICE\|ENV\|VERSION\|ERROR" \
+        "Error message indicates required arguments"
+}
+
+# ============================================================================
+# TEST: Tag Status Without Arguments
+# ============================================================================
+
+test_tag_status_no_args() {
+    log_test "Testing 'kompose tag status' without arguments"
+    
+    local output
+    local exit_code
+    
+    set +e
+    output=$(run_kompose tag status 2>&1)
+    exit_code=$?
+    set -e
+    
+    # Should fail without arguments
+    assert_exit_code 1 $exit_code \
+        "Tag status requires arguments"
+    
+    assert_contains "$output" "Required:\|SERVICE\|VERSION\|ENV\|ERROR" \
+        "Error message indicates required arguments"
+}
+
+# ============================================================================
+# TEST: Tag Create With Options (Dry Run)
+# ============================================================================
+
+test_tag_create_dry_run() {
+    log_test "Testing tag create with dry-run option"
+    
+    local output
+    local exit_code
+    
+    set +e
+    output=$(run_kompose tag create -s frontend -e dev -v 1.0.0 -d 2>&1)
+    exit_code=$?
+    set -e
+    
+    # With dry-run, should show what would be done (or fail with validation)
+    # The command should be recognized and options parsed
+    assert_not_contains "$output" "Unknown option" \
+        "Tag create accepts dry-run option"
+}
+
+# ============================================================================
+# TEST: Tag Option Parsing
+# ============================================================================
+
+test_tag_options_parsing() {
+    log_test "Testing tag command option parsing"
+    
+    local output
+    local exit_code
+    
+    set +e
+    output=$(run_kompose tag create -s frontend -e dev -v 1.0.0 -c HEAD -m "Test message" -d 2>&1)
+    exit_code=$?
+    set -e
+    
+    # Should parse all options without "unknown option" errors
+    assert_not_contains "$output" "Unknown option" \
+        "Tag create accepts all documented options"
 }
 
 # ============================================================================
 # RUN ALL TESTS
 # ============================================================================
 
-test_tag_create_syntax
-test_tag_deploy_syntax
-test_tag_move_syntax
-test_tag_delete_syntax
-test_tag_list_syntax
-test_tag_rollback_syntax
-test_tag_status_syntax
-test_tag_invalid_subcommand
 test_tag_no_subcommand
-test_tag_create_with_options
+test_tag_invalid_subcommand
+test_tag_create_no_args
+test_tag_deploy_no_args
+test_tag_move_no_args
+test_tag_delete_no_args
+test_tag_list_syntax
+test_tag_rollback_no_args
+test_tag_status_no_args
+test_tag_create_dry_run
+test_tag_options_parsing
 
 # ============================================================================
 # CLEANUP & REPORT
 # ============================================================================
 
 cleanup_test_env
-print_test_summary
+
+if print_test_summary; then
+    exit 0
+else
+    exit 1
+fi

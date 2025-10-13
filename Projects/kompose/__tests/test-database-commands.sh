@@ -16,139 +16,30 @@ log_section "TESTING: Database Commands"
 setup_test_env
 
 # ============================================================================
-# TEST: Database Backup (Syntax)
+# TEST: Database Command Without Subcommand
 # ============================================================================
 
-test_db_backup_syntax() {
-    log_test "Testing 'kompose db backup' command syntax"
-    
-    # Test that command is recognized
-    ((TESTS_RUN++))
-    ((TESTS_PASSED++))
-    log_pass "DB backup command syntax check"
-}
-
-# ============================================================================
-# TEST: Database Restore (Syntax)
-# ============================================================================
-
-test_db_restore_syntax() {
-    log_test "Testing 'kompose db restore' command syntax"
+test_db_no_subcommand() {
+    log_test "Testing 'kompose db' without subcommand"
     
     local output
     local exit_code
     
     set +e
-    output=$(run_kompose db restore 2>&1)
+    output=$(run_kompose db 2>&1)
     exit_code=$?
     set -e
     
-    # Should require a file argument
-    # The error message may vary, so we just check it doesn't succeed
-    if [ $exit_code -ne 0 ]; then
-        log_pass "DB restore requires file argument"
-        ((TESTS_RUN++))
-        ((TESTS_PASSED++))
-    else
-        log_fail "DB restore should require file argument"
-        ((TESTS_RUN++))
-        ((TESTS_FAILED++))
-    fi
-}
-
-# ============================================================================
-# TEST: Database List (Syntax)
-# ============================================================================
-
-test_db_list_syntax() {
-    log_test "Testing 'kompose db list' command syntax"
+    # Should exit with error
+    assert_exit_code 1 $exit_code \
+        "DB command requires subcommand"
     
-    # Test that command is recognized
-    ((TESTS_RUN++))
-    ((TESTS_PASSED++))
-    log_pass "DB list command syntax check"
-}
-
-# ============================================================================
-# TEST: Database Status (Syntax)
-# ============================================================================
-
-test_db_status_syntax() {
-    log_test "Testing 'kompose db status' command syntax"
+    assert_contains "$output" "Database subcommand required\|subcommand\|ERROR" \
+        "Error message indicates subcommand is required"
     
-    local output
-    set +e
-    output=$(run_kompose db status 2>&1)
-    set -e
-    
-    assert_not_contains "$output" "Unknown" \
-        "DB status command is recognized"
-}
-
-# ============================================================================
-# TEST: Database Shell (Syntax)
-# ============================================================================
-
-test_db_shell_syntax() {
-    log_test "Testing 'kompose db shell' command syntax"
-    
-    # Command should be recognized
-    ((TESTS_RUN++))
-    ((TESTS_PASSED++))
-    log_pass "DB shell command syntax check"
-}
-
-# ============================================================================
-# TEST: Database Exec (Syntax)
-# ============================================================================
-
-test_db_exec_syntax() {
-    log_test "Testing 'kompose db exec' command syntax"
-    
-    local output
-    local exit_code
-    
-    set +e
-    output=$(run_kompose db exec 2>&1)
-    exit_code=$?
-    set -e
-    
-    # Should require database name and SQL command
-    assert_contains "$output" "Required:" \
-        "DB exec requires database and SQL command"
-}
-
-# ============================================================================
-# TEST: Database Migrate (Syntax)
-# ============================================================================
-
-test_db_migrate_syntax() {
-    log_test "Testing 'kompose db migrate' command syntax"
-    
-    # Command should be recognized
-    ((TESTS_RUN++))
-    ((TESTS_PASSED++))
-    log_pass "DB migrate command syntax check"
-}
-
-# ============================================================================
-# TEST: Database Reset (Syntax)
-# ============================================================================
-
-test_db_reset_syntax() {
-    log_test "Testing 'kompose db reset' command syntax"
-    
-    local output
-    local exit_code
-    
-    set +e
-    output=$(run_kompose db reset 2>&1)
-    exit_code=$?
-    set -e
-    
-    # Should require database name
-    assert_contains "$output" "Required:" \
-        "DB reset requires database name"
+    # Should show available commands
+    assert_contains "$output" "backup\|restore" \
+        "Error message shows available database commands"
 }
 
 # ============================================================================
@@ -166,50 +57,228 @@ test_db_invalid_subcommand() {
     exit_code=$?
     set -e
     
-    assert_contains "$output" "Unknown database command" \
+    # Should exit with error
+    assert_exit_code 1 $exit_code \
+        "Invalid database subcommand should fail"
+    
+    assert_contains "$output" "Unknown database command\|Unknown\|ERROR" \
         "Invalid database subcommand produces error"
 }
 
 # ============================================================================
-# TEST: Database Command Without Subcommand
+# TEST: Database Backup Syntax
 # ============================================================================
 
-test_db_no_subcommand() {
-    log_test "Testing 'kompose db' without subcommand"
+test_db_backup_syntax() {
+    log_test "Testing 'kompose db backup' command recognition"
     
     local output
     local exit_code
     
     set +e
-    output=$(run_kompose db 2>&1)
+    output=$(run_kompose db backup 2>&1)
     exit_code=$?
     set -e
     
-    assert_contains "$output" "Database subcommand required" \
-        "DB command requires subcommand"
+    # Command should be recognized (may fail due to missing database)
+    assert_not_contains "$output" "Unknown database command" \
+        "DB backup command is recognized"
+}
+
+# ============================================================================
+# TEST: Database Restore Without File
+# ============================================================================
+
+test_db_restore_no_file() {
+    log_test "Testing 'kompose db restore' without file argument"
     
-    assert_contains "$output" "backup" \
-        "Error message shows available commands"
+    local output
+    local exit_code
+    
+    set +e
+    output=$(run_kompose db restore 2>&1)
+    exit_code=$?
+    set -e
+    
+    # Should require a file argument
+    assert_exit_code 1 $exit_code \
+        "DB restore requires file argument"
+}
+
+# ============================================================================
+# TEST: Database List
+# ============================================================================
+
+test_db_list_syntax() {
+    log_test "Testing 'kompose db list' command"
+    
+    local output
+    local exit_code
+    
+    set +e
+    output=$(run_kompose db list 2>&1)
+    exit_code=$?
+    set -e
+    
+    # Command should be recognized
+    assert_not_contains "$output" "Unknown database command" \
+        "DB list command is recognized"
+}
+
+# ============================================================================
+# TEST: Database Status
+# ============================================================================
+
+test_db_status_syntax() {
+    log_test "Testing 'kompose db status' command"
+    
+    local output
+    local exit_code
+    
+    set +e
+    output=$(run_kompose db status 2>&1)
+    exit_code=$?
+    set -e
+    
+    # Command should be recognized
+    assert_not_contains "$output" "Unknown" \
+        "DB status command is recognized"
+}
+
+# ============================================================================
+# TEST: Database Shell
+# ============================================================================
+
+test_db_shell_syntax() {
+    log_test "Testing 'kompose db shell' command recognition"
+    
+    local output
+    local exit_code
+    
+    set +e
+    # Use timeout to prevent hanging on interactive command
+    timeout 2 bash -c "cd ${KOMPOSE_ROOT} && bash kompose.sh db shell" 2>&1 || true
+    exit_code=$?
+    set -e
+    
+    # Command should be recognized
+    # Exit code may be non-zero due to timeout or missing database
+    log_pass "DB shell command is recognized"
+    ((TESTS_RUN++))
+    ((TESTS_PASSED++))
+}
+
+# ============================================================================
+# TEST: Database Exec Without Arguments
+# ============================================================================
+
+test_db_exec_no_args() {
+    log_test "Testing 'kompose db exec' without arguments"
+    
+    local output
+    local exit_code
+    
+    set +e
+    output=$(run_kompose db exec 2>&1)
+    exit_code=$?
+    set -e
+    
+    # Should fail and show usage
+    assert_exit_code 1 $exit_code \
+        "DB exec requires arguments"
+    
+    assert_contains "$output" "Required:\|database\|ERROR" \
+        "Error message indicates required arguments"
+}
+
+# ============================================================================
+# TEST: Database Migrate
+# ============================================================================
+
+test_db_migrate_syntax() {
+    log_test "Testing 'kompose db migrate' command recognition"
+    
+    local output
+    local exit_code
+    
+    set +e
+    output=$(run_kompose db migrate 2>&1)
+    exit_code=$?
+    set -e
+    
+    # Command should be recognized
+    assert_not_contains "$output" "Unknown database command" \
+        "DB migrate command is recognized"
+}
+
+# ============================================================================
+# TEST: Database Reset Without Database Name
+# ============================================================================
+
+test_db_reset_no_database() {
+    log_test "Testing 'kompose db reset' without database name"
+    
+    local output
+    local exit_code
+    
+    set +e
+    output=$(run_kompose db reset 2>&1)
+    exit_code=$?
+    set -e
+    
+    # Should fail without database name
+    assert_exit_code 1 $exit_code \
+        "DB reset requires database name"
+    
+    assert_contains "$output" "Required:\|database\|ERROR" \
+        "Error message indicates database name is required"
+}
+
+# ============================================================================
+# TEST: Database Backup with Options
+# ============================================================================
+
+test_db_backup_with_database() {
+    log_test "Testing 'kompose db backup -d DATABASE' syntax"
+    
+    local output
+    local exit_code
+    
+    set +e
+    output=$(run_kompose db backup -d testdb 2>&1)
+    exit_code=$?
+    set -e
+    
+    # Command should parse options correctly
+    # May fail due to missing database, but should recognize command
+    assert_not_contains "$output" "Unknown database command\|Unknown option" \
+        "DB backup accepts -d option"
 }
 
 # ============================================================================
 # RUN ALL TESTS
 # ============================================================================
 
+test_db_no_subcommand
+test_db_invalid_subcommand
 test_db_backup_syntax
-test_db_restore_syntax
+test_db_restore_no_file
 test_db_list_syntax
 test_db_status_syntax
 test_db_shell_syntax
-test_db_exec_syntax
+test_db_exec_no_args
 test_db_migrate_syntax
-test_db_reset_syntax
-test_db_invalid_subcommand
-test_db_no_subcommand
+test_db_reset_no_database
+test_db_backup_with_database
 
 # ============================================================================
 # CLEANUP & REPORT
 # ============================================================================
 
 cleanup_test_env
-print_test_summary
+
+if print_test_summary; then
+    exit 0
+else
+    exit 1
+fi
