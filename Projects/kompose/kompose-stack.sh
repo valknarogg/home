@@ -261,11 +261,83 @@ show_all_containers() {
     echo ""
 }
 
+# Get ordered list of stacks for startup/shutdown
+# This ensures proper dependency order
+get_ordered_stacks() {
+    local order_type="${1:-startup}"
+    local ordered_stacks=()
+    
+    if [ "$order_type" = "startup" ]; then
+        # Startup order: dependencies first, custom stacks after built-in, docs last
+        local startup_order=(
+            "core"        # Database, Redis, MQTT - foundational services
+            "chain"       # Automation platform - may be used by other services
+            "watch"       # Monitoring - should start early to capture metrics
+            "messaging"   # Communication services
+            "code"        # Git repository and CI/CD
+            "home"        # Smart home platform
+            "kmps"        # Management portal
+            "track"       # Analytics tracking
+            "vault"       # Password manager
+            "link"        # Link management
+            "proxy"       # Reverse proxy - should be available for all services
+            "vpn"         # VPN access
+            "auth"        # Authentication - after proxy for proper routing
+            "news"        # Newsletter service
+        )
+        
+        # Add built-in stacks in specified order if they exist
+        for stack in "${startup_order[@]}"; do
+            if stack_exists "$stack" 2>/dev/null; then
+                ordered_stacks+=("$stack")
+            fi
+        done
+        
+        # Add any other built-in stacks not in the explicit order
+        for stack in "${!STACKS[@]}"; do
+            if ! [[ " ${startup_order[*]} " =~ " ${stack} " ]]; then
+                if stack_exists "$stack" 2>/dev/null; then
+                    ordered_stacks+=("$stack")
+                fi
+            fi
+        done
+        
+        # Add custom stacks (sorted alphabetically)
+        for stack in $(echo "${!CUSTOM_STACKS[@]}" | tr ' ' '\n' | sort); do
+            if stack_exists "$stack" 2>/dev/null; then
+                ordered_stacks+=("$stack")
+            fi
+        done
+        
+        # Add _docs stack last if it exists
+        if [ -d "${STACKS_ROOT}/_docs" ] && [ -f "${STACKS_ROOT}/_docs/${COMPOSE_FILE}" ]; then
+            ordered_stacks+=("_docs")
+        fi
+    else
+        # Shutdown order: reverse of startup order
+        local shutdown_stacks=($(get_ordered_stacks "startup"))
+        for ((i=${#shutdown_stacks[@]}-1; i>=0; i--)); do
+            ordered_stacks+=("${shutdown_stacks[i]}")
+        done
+    fi
+    
+    echo "${ordered_stacks[@]}"
+}
+
 process_all_stacks() {
     local command=$1
     shift
     
-    local stacks=$(get_all_stacks)
+    # Get appropriately ordered stack list
+    local stacks
+    if [ "$command" = "up" ] || [ "$command" = "restart" ]; then
+        stacks=$(get_ordered_stacks "startup")
+    elif [ "$command" = "down" ]; then
+        stacks=$(get_ordered_stacks "shutdown")
+    else
+        # For status, pull, validate - use startup order
+        stacks=$(get_ordered_stacks "startup")
+    fi
     
     for stack in $stacks; do
         if stack_exists "$stack" 2>/dev/null; then
