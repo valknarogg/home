@@ -17,9 +17,9 @@ The **chain** stack combines two powerful automation platforms to create a compr
 
 **Container**: `chain_n8n`  
 **Image**: `n8nio/n8n:latest`  
-**URL**: Configured via `SUBDOMAIN_CHAIN` in `domain.env`
-- Local: http://localhost:5678
-- Production: https://chain.pivoine.art  
+**URL**: Auto-generated from domain configuration
+- Local: http://localhost:5678 (see `.env`)
+- Production: https://${SUBDOMAIN_CHAIN}.${ROOT_DOMAIN} (e.g., https://chain.pivoine.art)  
 **Port**: 5678
 
 Visual workflow automation platform:
@@ -36,9 +36,9 @@ Visual workflow automation platform:
 
 **Container**: `chain_semaphore`  
 **Image**: `semaphoreui/semaphore:v2.16.18`  
-**URL**: Configured via `SUBDOMAIN_AUTO` in `domain.env`
-- Local: http://localhost:3000
-- Production: https://auto.pivoine.art  
+**URL**: Auto-generated from domain configuration
+- Local: http://localhost:3000 (see `.env`)
+- Production: https://${SUBDOMAIN_AUTO}.${ROOT_DOMAIN} (e.g., https://auto.pivoine.art)  
 **Port**: 3000
 
 Ansible automation UI and task runner:
@@ -239,10 +239,15 @@ Background task executor:
 ## Environment Variables
 
 **Domain Configuration** (in `domain.env`):
-- `SUBDOMAIN_CHAIN`: n8n subdomain (default: `chain` for production, `localhost:5678` for local)
-- `SUBDOMAIN_AUTO`: Semaphore subdomain (default: `auto` for production, `localhost:3000` for local)
+- `SUBDOMAIN_CHAIN`: n8n subdomain (default: `chain`)
+- `SUBDOMAIN_AUTO`: Semaphore subdomain (default: `auto`)
 - `ROOT_DOMAIN`: Your domain (e.g., `pivoine.art`)
-- The system automatically generates `N8N_TRAEFIK_HOST` and `SEMAPHORE_TRAEFIK_HOST` from these values
+
+The system automatically generates:
+- `N8N_TRAEFIK_HOST=${SUBDOMAIN_CHAIN}.${ROOT_DOMAIN}` (e.g., chain.pivoine.art)
+- `SEMAPHORE_TRAEFIK_HOST=${SUBDOMAIN_AUTO}.${ROOT_DOMAIN}` (e.g., auto.pivoine.art)
+
+For local development, these are overridden in `.env` to use localhost ports.
 
 **n8n** (in `.env` or `secrets.env`):
 - `N8N_ENCRYPTION_KEY`: Credential encryption (CRITICAL!)

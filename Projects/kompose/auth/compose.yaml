@@ -12,7 +12,7 @@ services:
       KC_DB_USERNAME: ${DB_USER}
       KC_DB_PASSWORD: ${DB_PASSWORD}
       KC_DB_SCHEMA: public
-      KC_HOSTNAME: https://$TRAEFIK_HOST
+      KC_HOSTNAME: https://${TRAEFIK_HOST}
       KC_HTTP_ENABLED: true
       HTTP_ADDRESS_FORWARDING: true
       KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_ADMIN_USERNAME}
@@ -30,16 +30,16 @@ services:
       - kompose_network
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.middlewares.$COMPOSE_PROJECT_NAME-redirect-web-secure.redirectscheme.scheme=https'
-      - 'traefik.http.routers.$COMPOSE_PROJECT_NAME-web.middlewares=$COMPOSE_PROJECT_NAME-redirect-web-secure'
-      - 'traefik.http.routers.$COMPOSE_PROJECT_NAME-web.rule=Host(`$TRAEFIK_HOST`)'
-      - 'traefik.http.routers.$COMPOSE_PROJECT_NAME-web.entrypoints=web'
-      - 'traefik.http.routers.$COMPOSE_PROJECT_NAME-web-secure.rule=Host(`$TRAEFIK_HOST`)'
-      - 'traefik.http.routers.$COMPOSE_PROJECT_NAME-web-secure.tls.certresolver=resolver'
-      - 'traefik.http.routers.$COMPOSE_PROJECT_NAME-web-secure.entrypoints=web-secure'
-      - 'traefik.http.middlewares.$COMPOSE_PROJECT_NAME-web-secure-compress.compress=true'
-      - 'traefik.http.routers.$COMPOSE_PROJECT_NAME-web-secure.middlewares=$COMPOSE_PROJECT_NAME-web-secure-compress'
-      - 'traefik.http.services.$COMPOSE_PROJECT_NAME-web-secure.loadbalancer.server.port=8080'
+      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-redirect-web-secure.redirectscheme.scheme=https'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.middlewares=${COMPOSE_PROJECT_NAME}-redirect-web-secure'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.rule=Host(`${TRAEFIK_HOST}`)'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.entrypoints=web'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.rule=Host(`${TRAEFIK_HOST}`)'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.tls.certresolver=resolver'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.entrypoints=web-secure'
+      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-web-secure-compress.compress=true'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.middlewares=${COMPOSE_PROJECT_NAME}-web-secure-compress'
+      - 'traefik.http.services.${COMPOSE_PROJECT_NAME}-web-secure.loadbalancer.server.port=8080'
       - 'traefik.docker.network=${NETWORK_NAME:-kompose}'
 
   # OAuth2 Proxy - SSO Forward Authentication

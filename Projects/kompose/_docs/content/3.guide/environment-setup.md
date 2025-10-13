@@ -237,13 +237,21 @@ ROOT_DOMAIN=example.com
 ACME_EMAIL=admin@example.com
 SSL_PROVIDER=letsencrypt
 
-# Subdomains
+# Subdomains (automatically combined with ROOT_DOMAIN)
 SUBDOMAIN_AUTH=auth        # https://auth.example.com
 SUBDOMAIN_KMPS=manage      # https://manage.example.com
 SUBDOMAIN_CHAIN=chain      # https://chain.example.com
 SUBDOMAIN_CODE=code        # https://code.example.com
 SUBDOMAIN_HOME=home        # https://home.example.com
 SUBDOMAIN_VPN=vpn          # https://vpn.example.com
+
+# Auto-generated Traefik hosts (from SUBDOMAIN_* + ROOT_DOMAIN)
+TRAEFIK_HOST=${SUBDOMAIN_AUTH}.${ROOT_DOMAIN}
+N8N_TRAEFIK_HOST=${SUBDOMAIN_CHAIN}.${ROOT_DOMAIN}
+SEMAPHORE_TRAEFIK_HOST=${SUBDOMAIN_AUTO}.${ROOT_DOMAIN}
+TRAEFIK_HOST_HOME=${SUBDOMAIN_HOME}.${ROOT_DOMAIN}
+TRAEFIK_HOST_ZIGBEE=${SUBDOMAIN_ZIGBEE}.${ROOT_DOMAIN}
+OAUTH2_PROXY_HOST=${SUBDOMAIN_OAUTH2}.${ROOT_DOMAIN}
 ```
 
 ### `secrets.env` - Credentials

@@ -49,8 +49,9 @@ HOME_ZIGBEE2MQTT_PORT=8080
 HOME_ESPHOME_IMAGE=ghcr.io/esphome/esphome:stable
 
 # Traefik Configuration
-TRAEFIK_HOST_HOME=${TRAEFIK_HOST_HOME}
-TRAEFIK_HOST_ZIGBEE=zigbee.${ROOT_DOMAIN}
+# Auto-generated from domain.env:
+# TRAEFIK_HOST_HOME=${SUBDOMAIN_HOME}.${ROOT_DOMAIN}  
+# TRAEFIK_HOST_ZIGBEE=${SUBDOMAIN_ZIGBEE}.${ROOT_DOMAIN}
 ```
 
 ### Viewing Configuration
@@ -84,7 +85,8 @@ Your smart home command center:
 ```bash
 HOME_HOMEASSISTANT_IMAGE=ghcr.io/home-assistant/home-assistant:stable
 HOME_HOMEASSISTANT_PORT=8123
-TRAEFIK_HOST_HOME=${TRAEFIK_HOST_HOME}
+# Domain automatically configured from domain.env:
+# TRAEFIK_HOST_HOME=${SUBDOMAIN_HOME}.${ROOT_DOMAIN}
 ```
 
 ### Matter Server

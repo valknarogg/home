@@ -37,7 +37,8 @@ AUTH_DB_NAME=keycloak
 AUTH_KC_ADMIN_USERNAME=admin
 
 # OAuth2 Proxy Configuration
-AUTH_OAUTH2_PROXY_HOST=${TRAEFIK_HOST_OAUTH2}
+# Domain automatically configured from domain.env:
+# OAUTH2_PROXY_HOST=${SUBDOMAIN_OAUTH2}.${ROOT_DOMAIN}
 AUTH_OAUTH2_CLIENT_ID=kompose-sso
 ```
 
@@ -68,7 +69,7 @@ AUTH_OAUTH2_COOKIE_SECRET=xxx  # Generate with: openssl rand -base64 32
 
 **Container**: `auth_keycloak`  
 **Image**: `quay.io/keycloak/keycloak:latest`  
-**URL**: https://auth.pivoine.art  
+**URL**: https://${SUBDOMAIN_AUTH}.${ROOT_DOMAIN} (e.g., https://auth.pivoine.art)  
 **Port**: 8080 (internal)
 
 Identity and Access Management platform with:
@@ -96,7 +97,7 @@ AUTH_KC_ADMIN_PASSWORD=${AUTH_KC_ADMIN_PASSWORD}  # from secrets.env
 
 **Container**: `auth_oauth2_proxy`  
 **Image**: `quay.io/oauth2-proxy/oauth2-proxy:latest`  
-**URL**: https://sso.pivoine.art  
+**URL**: https://${SUBDOMAIN_OAUTH2}.${ROOT_DOMAIN} (e.g., https://oauth.pivoine.art)  
 **Port**: 4180
 
 Forward authentication proxy for protecting services:
@@ -174,7 +175,7 @@ Expected output:
 ### 5. Access Keycloak Admin Console
 
 ```
-URL: https://auth.pivoine.art
+URL: https://${SUBDOMAIN_AUTH}.${ROOT_DOMAIN}  (e.g., https://auth.pivoine.art)
 Username: admin
 Password: <from secrets.env AUTH_KC_ADMIN_PASSWORD>
 ```
@@ -224,7 +225,7 @@ OAUTH2_PROXY_REDIS_CONNECTION_URL=redis://core-redis:6379
 ### Initial Configuration
 
 1. **Access Admin Console:**
-   - URL: https://auth.pivoine.art
+   - URL: https://${SUBDOMAIN_AUTH}.${ROOT_DOMAIN} (e.g., https://auth.pivoine.art)
    - Login with admin credentials
 
 2. **Create a Realm:**
@@ -238,7 +239,7 @@ OAUTH2_PROXY_REDIS_CONNECTION_URL=redis://core-redis:6379
    - Client ID: `kompose-sso`
    - Client Protocol: `openid-connect`
    - Access Type: `confidential`
-   - Valid Redirect URIs: `https://sso.pivoine.art/oauth2/callback`
+   - Valid Redirect URIs: `https://${SUBDOMAIN_OAUTH2}.${ROOT_DOMAIN}/oauth2/callback` (e.g., `https://oauth.pivoine.art/oauth2/callback`)
    - Save
 
 4. **Get Client Secret:**
@@ -418,7 +419,7 @@ grep AUTH_OAUTH2_COOKIE_SECRET secrets.env
 # Should be: https://sso.pivoine.art/oauth2/callback
 
 # Verify OIDC issuer URL is accessible
-curl https://auth.pivoine.art/realms/kompose/.well-known/openid-configuration
+curl https://${SUBDOMAIN_AUTH}.${ROOT_DOMAIN}/realms/kompose/.well-known/openid-configuration
 ```
 
 ### SSL/TLS Issues
@@ -431,7 +432,7 @@ curl https://auth.pivoine.art/realms/kompose/.well-known/openid-configuration
 # Check Keycloak hostname config
 ./kompose.sh env show auth | grep KC_HOSTNAME
 
-# Should be: https://auth.pivoine.art (not http://)
+# Should be: https://${SUBDOMAIN_AUTH}.${ROOT_DOMAIN} (not http://)
 ```
 
 ## Security Best Practices
