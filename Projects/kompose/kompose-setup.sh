@@ -439,8 +439,10 @@ init_project() {
         echo ""
         echo "${BLUE}Next steps:${NC}"
         echo ""
-        echo "  ${YELLOW}1.${NC} Review and update secrets.env with your credentials"
-        echo "     ${CYAN}nano secrets.env${NC}"
+        echo "  ${YELLOW}1.${NC} Generate or review secrets (IMPORTANT!)"
+        echo "     ${CYAN}./kompose.sh secrets generate${NC}      # Generate all secrets"
+        echo "     ${CYAN}./kompose.sh secrets validate${NC}      # Check configuration"
+        echo "     ${CYAN}./kompose.sh secrets list${NC}          # View all secrets"
         echo ""
         echo "  ${YELLOW}2.${NC} Start core services (PostgreSQL, Redis, MQTT)"
         echo "     ${CYAN}./kompose.sh up core${NC}"
@@ -525,6 +527,14 @@ setup_local_environment() {
     # Create secrets.env
     setup_secrets_file "local"
     
+    # Validate secrets
+    log_info "Validating secrets..."
+    if bash "${SCRIPT_DIR}/kompose.sh" secrets validate >/dev/null 2>&1; then
+        log_success "Secrets configured correctly"
+    else
+        log_warning "Some secrets need attention - run 'kompose secrets validate' for details"
+    fi
+    
     log_success "Local environment configured!"
 }
 
@@ -582,6 +592,14 @@ setup_production_environment() {
     
     # Create secrets.env
     setup_secrets_file "production"
+    
+    # Validate secrets
+    log_info "Validating secrets..."
+    if bash "${SCRIPT_DIR}/kompose.sh" secrets validate >/dev/null 2>&1; then
+        log_success "Secrets configured correctly"
+    else
+        log_warning "Some secrets need attention - run 'kompose secrets validate' for details"
+    fi
     
     log_success "Production environment configured!"
     log_warning "Remember to configure DNS records for *.${domain}"

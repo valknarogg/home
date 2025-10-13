@@ -211,6 +211,15 @@ ${YELLOW}DATABASE COMMANDS:${NC}
     db migrate           Run database migrations
     db reset             Reset database (WARNING: deletes all data)
 
+${MAGENTA}SECRETS MANAGEMENT COMMANDS:${NC}
+    secrets generate     Generate all secrets or a specific secret
+    secrets validate     Validate secrets configuration
+    secrets list         List all secrets and their status
+    secrets rotate       Rotate a specific secret (generate new value)
+    secrets set          Set a specific secret value
+    secrets backup       Create backup of secrets.env
+    secrets export       Export secrets to JSON file
+
 ${MAGENTA}PROFILE MANAGEMENT COMMANDS:${NC}
     profile list         List all available profiles
     profile create       Create a new profile interactively
@@ -294,6 +303,12 @@ ${BLUE}EXAMPLES:${NC}
     kompose db backup -d postgres      # Backup PostgreSQL
     kompose db restore -f backup.sql   # Restore from file
     kompose db shell -d gitea          # Open gitea database shell
+
+    ${MAGENTA}# Secrets Management${NC}
+    kompose secrets generate           # Generate all secrets
+    kompose secrets validate           # Check secrets configuration
+    kompose secrets list -s auth       # List auth stack secrets
+    kompose secrets rotate DB_PASSWORD # Rotate database password
 
     ${MAGENTA}# Profile Management${NC}
     kompose profile list               # List all profiles
@@ -497,6 +512,22 @@ main() {
                 ;;
         esac
         
+        return 0
+    fi
+    
+    # Handle secrets subcommands
+    if [ "$command" = "secrets" ]; then
+        if [ $# -eq 0 ]; then
+            log_error "Secrets subcommand required"
+            echo ""
+            echo "Available secrets commands:"
+            echo "  generate, validate, list, rotate, set, backup, export"
+            echo ""
+            echo "Example: kompose secrets generate"
+            exit 1
+        fi
+        
+        handle_secrets_command "$@"
         return 0
     fi
     
