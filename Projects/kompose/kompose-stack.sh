@@ -61,6 +61,8 @@ get_all_stacks() {
 }
 
 # Helper function to run docker compose with proper environment
+# All environment variables are loaded from root .env files and exported to shell
+# Docker Compose automatically uses exported environment variables
 run_compose() {
     local stack=$1
     shift
@@ -72,18 +74,16 @@ run_compose() {
     fi
     
     # Export environment for this stack
+    # This loads variables from root .env, domain.env, and secrets.env
+    # and exports them to the shell environment
     export_stack_env "$stack"
     
     # Change to stack directory
     cd "${stack_dir}"
     
-    # Run docker compose with the generated env file
-    if [ -f ".env.generated" ]; then
-        docker compose --env-file .env.generated "$@"
-    else
-        log_error "Failed to generate environment file for stack: $stack"
-        return 1
-    fi
+    # Run docker compose
+    # Docker Compose will automatically use environment variables from the shell
+    docker compose "$@"
 }
 
 stack_up() {
@@ -225,8 +225,8 @@ list_stacks() {
             
             export_stack_env "$stack" > /dev/null 2>&1
             cd "${stack_dir}"
-            local running=$(docker compose --env-file .env.generated ps -q 2>/dev/null | wc -l)
-            local total=$(docker compose --env-file .env.generated config --services 2>/dev/null | wc -l)
+            local running=$(docker compose ps -q 2>/dev/null | wc -l)
+            local total=$(docker compose config --services 2>/dev/null | wc -l)
             echo -e "    Status: ${running}/${total} containers running"
             echo ""
         fi
@@ -244,8 +244,8 @@ list_stacks() {
                 
                 export_stack_env "$stack" > /dev/null 2>&1
                 cd "${stack_dir}"
-                local running=$(docker compose --env-file .env.generated ps -q 2>/dev/null | wc -l)
-                local total=$(docker compose --env-file .env.generated config --services 2>/dev/null | wc -l)
+                local running=$(docker compose ps -q 2>/dev/null | wc -l)
+                local total=$(docker compose config --services 2>/dev/null | wc -l)
                 echo -e "    Status: ${running}/${total} containers running"
                 echo ""
             fi
@@ -374,17 +374,4 @@ stack_env() {
     fi
     
     show_stack_env "$stack"
-}
-
-# Generate .env file for a stack (for debugging/inspection)
-stack_generate_env() {
-    local stack=$1
-    
-    if ! stack_exists "$stack"; then
-        return 1
-    fi
-    
-    generate_stack_env_file "$stack"
-    log_success "Generated .env file for stack '$stack'"
-    log_info "Location: ${STACKS_ROOT}/${stack}/.env.generated"
 }
