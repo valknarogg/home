@@ -236,6 +236,12 @@ ${MAGENTA}PROFILE MANAGEMENT COMMANDS:${NC}
     profile up           Start stacks defined in current profile
     profile current      Show current active profile
 
+${MAGENTA}STACK GENERATOR COMMANDS:${NC}
+    generate <name>      Generate a new custom stack with templates
+    generate list        List all custom stacks
+    generate show <n>    Show custom stack information
+    generate delete <n>  Delete a custom stack
+
 ${CYAN}TEST COMMANDS:${NC}
     test                 Run all tests
     test [SUITE]         Run specific test suite
@@ -329,6 +335,12 @@ ${BLUE}EXAMPLES:${NC}
     kompose setup local                # Switch to local development
     kompose setup prod                 # Switch to production
     kompose setup status               # Check current mode
+
+    ${MAGENTA}# Stack Generator${NC}
+    kompose generate myapp             # Create new custom stack
+    kompose generate list              # List all custom stacks
+    kompose generate show myapp        # Show stack information
+    kompose generate delete myapp      # Delete custom stack
 
     ${CYAN}# Testing${NC}
     kompose test                       # Run all tests
@@ -653,6 +665,13 @@ main() {
     if [ "$command" = "setup" ]; then
         shift
         handle_setup_command "$@"
+        return 0
+    fi
+    
+    # Handle generate command
+    if [ "$command" = "generate" ]; then
+        shift
+        handle_generate_command "$@"
         return 0
     fi
     
