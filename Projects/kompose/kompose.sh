@@ -137,6 +137,30 @@ for module in "${SCRIPT_DIR}"/kompose-*.sh; do
 done
 
 # ============================================================================
+# TEST COMMAND HANDLERS
+# ============================================================================
+
+test_run_suite() {
+    local test_dir="${SCRIPT_DIR}/__tests"
+    local test_runner="${test_dir}/run-all-tests.sh"
+    
+    if [ ! -f "$test_runner" ]; then
+        log_error "Test runner not found at ${test_runner}"
+        log_info "Expected location: __tests/run-all-tests.sh"
+        exit 1
+    fi
+    
+    if [ ! -x "$test_runner" ]; then
+        log_info "Making test runner executable..."
+        chmod +x "$test_runner"
+    fi
+    
+    # Change to test directory and run
+    cd "$test_dir"
+    bash "./run-all-tests.sh" "$@"
+}
+
+# ============================================================================
 # USAGE / HELP
 # ============================================================================
 
@@ -186,6 +210,15 @@ ${YELLOW}DATABASE COMMANDS:${NC}
     db shell             Open database shell
     db migrate           Run database migrations
     db reset             Reset database (WARNING: deletes all data)
+
+${CYAN}TEST COMMANDS:${NC}
+    test                 Run all tests
+    test [SUITE]         Run specific test suite
+    test -u              Update snapshots
+    test -i              Run integration tests (requires Docker)
+    test -t SUITE        Run specific test by name
+    test -v              Verbose output
+    test -h              Show test help
 
 ${BLUE}SETUP & INITIALIZATION:${NC}
     init                 Interactive project initialization (guided setup)
@@ -258,6 +291,12 @@ ${BLUE}EXAMPLES:${NC}
     kompose setup local                # Switch to local development
     kompose setup prod                 # Switch to production
     kompose setup status               # Check current mode
+
+    ${CYAN}# Testing${NC}
+    kompose test                       # Run all tests
+    kompose test -t basic-commands     # Run specific test suite
+    kompose test -u                    # Update snapshots
+    kompose test -i                    # Run integration tests
 
     ${BLUE}# Utilities${NC}
     kompose validate                   # Validate configuration
@@ -542,6 +581,13 @@ main() {
     if [ "$command" = "setup" ]; then
         shift
         handle_setup_command "$@"
+        return 0
+    fi
+    
+    # Handle test command
+    if [ "$command" = "test" ]; then
+        shift
+        test_run_suite "$@"
         return 0
     fi
     

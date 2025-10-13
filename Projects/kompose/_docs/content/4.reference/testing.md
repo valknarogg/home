@@ -28,7 +28,32 @@ __tests/
 
 ## Quick Start
 
-### Run All Tests
+### Using the Test Command (Recommended)
+
+The easiest way to run tests is using the built-in `test` command:
+
+```bash
+# Run all tests
+./kompose.sh test
+
+# Run specific test suite
+./kompose.sh test -t basic-commands
+./kompose.sh test -t stack-commands
+
+# Update snapshots when outputs change intentionally
+./kompose.sh test -u
+
+# Run integration tests (requires Docker)
+./kompose.sh test -i
+
+# Combine options
+./kompose.sh test -u -i
+./kompose.sh test -v -t api-commands
+```
+
+### Using the Test Runner Directly
+
+You can also run the test runner directly:
 
 ```bash
 cd __tests
@@ -38,14 +63,14 @@ cd __tests
 ### Run Specific Test Suite
 
 ```bash
-# Test basic commands only
+# Using kompose command (recommended)
+./kompose.sh test -t basic-commands
+./kompose.sh test -t stack-commands
+./kompose.sh test -t database-commands
+
+# Using test runner directly
+cd __tests
 ./run-all-tests.sh -t basic-commands
-
-# Test stack management
-./run-all-tests.sh -t stack-commands
-
-# Test database commands
-./run-all-tests.sh -t database-commands
 ```
 
 ### Update Snapshots
@@ -53,6 +78,11 @@ cd __tests
 When you intentionally change command outputs:
 
 ```bash
+# Using kompose command (recommended)
+./kompose.sh test -u
+
+# Using test runner directly
+cd __tests
 ./run-all-tests.sh -u
 ```
 
@@ -61,6 +91,11 @@ When you intentionally change command outputs:
 Requires Docker to be running:
 
 ```bash
+# Using kompose command (recommended)
+./kompose.sh test -i
+
+# Using test runner directly
+cd __tests
 ./run-all-tests.sh -i
 ```
 
@@ -395,21 +430,28 @@ Update all snapshots:
 
 1. **Run all tests**
    ```bash
-   cd __tests
-   ./run-all-tests.sh
+   ./kompose.sh test
    ```
 
 2. **Run integration tests** (if Docker available)
    ```bash
-   ./run-all-tests.sh -i
+   ./kompose.sh test -i
    ```
 
 3. **Update snapshots** (if you changed output)
    ```bash
-   ./run-all-tests.sh -u
+   ./kompose.sh test -u
    ```
 
 4. **Review diffs** carefully before updating snapshots
+
+**Alternative (using test runner directly):**
+```bash
+cd __tests
+./run-all-tests.sh
+./run-all-tests.sh -i
+./run-all-tests.sh -u
+```
 
 ### Adding New Features
 
@@ -418,10 +460,20 @@ Update all snapshots:
 3. **Add to test runner** in `run-all-tests.sh`
 4. **Generate snapshots**
    ```bash
+   # Using kompose command
+   ./kompose.sh test -u -t new-feature
+   
+   # Or directly
+   cd __tests
    UPDATE_SNAPSHOTS=1 ./test-new-feature.sh
    ```
 5. **Verify all tests pass**
    ```bash
+   # Using kompose command (recommended)
+   ./kompose.sh test -i
+   
+   # Or directly
+   cd __tests
    ./run-all-tests.sh -i
    ```
 
@@ -438,7 +490,11 @@ Update all snapshots:
 ### Watch Mode (Manual)
 
 ```bash
-# In one terminal - watch for changes
+# In one terminal - watch for changes using kompose command
+watch -n 5 './kompose.sh test'
+
+# Or watch test runner directly
+cd __tests
 watch -n 5 './run-all-tests.sh'
 
 # Make changes in another terminal
@@ -447,13 +503,19 @@ watch -n 5 './run-all-tests.sh'
 ### Quick Iteration
 
 ```bash
-# Test specific feature you're working on
-./test-stack-commands.sh
+# Test specific feature you're working on (using kompose command)
+./kompose.sh test -t stack-commands
 
 # Update snapshots as you go
-UPDATE_SNAPSHOTS=1 ./test-stack-commands.sh
+./kompose.sh test -u -t stack-commands
 
 # Run full suite before commit
+./kompose.sh test -i
+
+# Alternative: Using test runner directly
+cd __tests
+./test-stack-commands.sh
+UPDATE_SNAPSHOTS=1 ./test-stack-commands.sh
 ./run-all-tests.sh -i
 ```
 

@@ -1036,10 +1036,106 @@ Git: abc123def (main branch)
 | `staging` | Staging |
 | `prod` | Production |
 
+## Test Commands
+
+### test
+
+Run the Kompose test suite.
+
+**Syntax:**
+```bash
+./kompose.sh test [OPTIONS]
+```
+
+**Options:**
+- `-u, --update-snapshots` - Update all test snapshots
+- `-i, --integration` - Run integration tests (requires Docker)
+- `-v, --verbose` - Enable verbose output
+- `-t, --test TEST` - Run specific test file
+- `-h, --help` - Show test help message
+
+**Available Test Suites:**
+- `basic-commands` - Test basic commands (help, version, list)
+- `stack-commands` - Test stack management commands
+- `database-commands` - Test database commands
+- `tag-commands` - Test git tag commands
+- `api-commands` - Test API server commands
+
+**Examples:**
+```bash
+# Run all tests
+./kompose.sh test
+
+# Run specific test suite
+./kompose.sh test -t basic-commands
+./kompose.sh test -t stack-commands
+
+# Update snapshots after intentional changes
+./kompose.sh test -u
+
+# Run integration tests (requires Docker)
+./kompose.sh test -i
+
+# Combine options
+./kompose.sh test -u -i
+./kompose.sh test -v -t api-commands
+```
+
+**What it tests:**
+- Command syntax and options
+- Output format and content
+- Error handling and validation
+- Docker container operations (with -i flag)
+- Database operations
+- API server functionality
+- Git tag deployments
+
+**Output:**
+```
+╔════════════════════════════════════════════════════════════════╗
+║              KOMPOSE TEST SUITE                                ║
+║              Version 1.0.0                                     ║
+╚════════════════════════════════════════════════════════════════╝
+
+═══════════════════════════════════════════════════════════════
+  PRE-FLIGHT CHECKS
+═══════════════════════════════════════════════════════════════
+
+[PASS] kompose.sh found
+[PASS] Docker is available
+[INFO] Docker version: Docker version 24.0.6
+
+═══════════════════════════════════════════════════════════════
+  RUNNING: Basic Commands
+═══════════════════════════════════════════════════════════════
+
+[TEST] Testing 'kompose help' command
+[PASS] Help output contains title
+[PASS] Help command output matches snapshot
+✓ Basic Commands completed successfully
+
+═══════════════════════════════════════════════════════════════
+  FINAL TEST REPORT
+═══════════════════════════════════════════════════════════════
+
+✓ All test suites passed!
+  Test suites run: 5
+```
+
+**Tips:**
+- Run tests before committing changes
+- Use `-u` to update snapshots when output changes intentionally
+- Use `-i` for thorough testing before releases
+- Use `-v` for debugging test failures
+
+**See Also:**
+- [Testing Guide](/reference/testing) - Comprehensive testing documentation
+- [Test Suite README](/__tests/README.md) - Detailed test information
+
 ## Available Databases
 
 | Database | Description |
-|----------|-------------|
+|----------|-------------||
 | `kompose` | Main application database |
 | `n8n` | n8n workflow database |
 | `semaphore` | Semaphore Ansible database |
