@@ -54,6 +54,9 @@ docker-compose.override.yml
 # Stack-specific
 # ===================================================================
 
+# Customer stacks
+/+custom
+
 # Home Assistant
 home/homeassistant/
 

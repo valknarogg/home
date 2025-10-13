@@ -211,6 +211,19 @@ ${YELLOW}DATABASE COMMANDS:${NC}
     db migrate           Run database migrations
     db reset             Reset database (WARNING: deletes all data)
 
+${MAGENTA}PROFILE MANAGEMENT COMMANDS:${NC}
+    profile list         List all available profiles
+    profile create       Create a new profile interactively
+    profile use          Switch to a profile
+    profile show         Show profile details
+    profile edit         Edit a profile
+    profile delete       Delete a profile
+    profile copy         Copy/clone a profile
+    profile export       Export profile to file
+    profile import       Import profile from file
+    profile up           Start stacks defined in current profile
+    profile current      Show current active profile
+
 ${CYAN}TEST COMMANDS:${NC}
     test                 Run all tests
     test [SUITE]         Run specific test suite
@@ -281,6 +294,13 @@ ${BLUE}EXAMPLES:${NC}
     kompose db backup -d postgres      # Backup PostgreSQL
     kompose db restore -f backup.sql   # Restore from file
     kompose db shell -d gitea          # Open gitea database shell
+
+    ${MAGENTA}# Profile Management${NC}
+    kompose profile list               # List all profiles
+    kompose profile create dev         # Create new profile
+    kompose profile use production     # Switch to production profile
+    kompose profile up                 # Start all stacks in current profile
+    kompose profile current            # Show active profile
 
     ${MAGENTA}# REST API Server${NC}
     kompose api start                  # Start API server on default port
@@ -477,6 +497,23 @@ main() {
                 ;;
         esac
         
+        return 0
+    fi
+    
+    # Handle profile subcommands
+    if [ "$command" = "profile" ]; then
+        if [ $# -eq 0 ]; then
+            log_error "Profile subcommand required"
+            echo ""
+            echo "Available profile commands:"
+            echo "  list, create, edit, use, show, delete, copy,"
+            echo "  export, import, up, current"
+            echo ""
+            echo "Example: kompose profile list"
+            exit 1
+        fi
+        
+        handle_profile_command "$@"
         return 0
     fi
     
