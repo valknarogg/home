@@ -283,8 +283,8 @@ test_core_stack_lifecycle() {
     set -e
     
     log_pass "Core stack lifecycle test completed"
-    ((TESTS_RUN++))
-    ((TESTS_PASSED++))
+    TESTS_RUN=$((TESTS_RUN+1))
+    TESTS_RUN=$((TESTS_PASSED+1))
 }
 
 # ============================================================================

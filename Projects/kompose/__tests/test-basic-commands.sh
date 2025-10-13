@@ -148,8 +148,8 @@ test_validate_command() {
     # Validation may fail if compose files have issues, which is OK for testing
     if [ $exit_code -eq 0 ]; then
         log_pass "Validate command succeeded"
-        ((TESTS_RUN++))
-        ((TESTS_PASSED++))
+        TESTS_RUN=$((TESTS_RUN+1))
+        TESTS_RUN=$((TESTS_PASSED+1))
     else
         log_skip "Validate command failed (compose file issues expected in test env)"
         log_info "Exit code: $exit_code"
@@ -183,12 +183,12 @@ test_invalid_command() {
     # Should exit with non-zero code
     if [ $exit_code -ne 0 ]; then
         log_pass "Invalid command exits with non-zero code"
-        ((TESTS_RUN++))
-        ((TESTS_PASSED++))
+        TESTS_RUN=$((TESTS_RUN+1))
+        TESTS_RUN=$((TESTS_PASSED+1))
     else
         log_fail "Invalid command should exit with non-zero code"
-        ((TESTS_RUN++))
-        ((TESTS_FAILED++))
+        TESTS_RUN=$((TESTS_RUN+1))
+        TESTS_RUN=$((TESTS_FAILED+1))
     fi
 }
 

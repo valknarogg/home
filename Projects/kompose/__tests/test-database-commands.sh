@@ -164,8 +164,8 @@ test_db_shell_syntax() {
     # Command should be recognized
     # Exit code may be non-zero due to timeout or missing database
     log_pass "DB shell command is recognized"
-    ((TESTS_RUN++))
-    ((TESTS_PASSED++))
+    TESTS_RUN=$((TESTS_RUN+1))
+    TESTS_RUN=$((TESTS_PASSED+1))
 }
 
 # ============================================================================

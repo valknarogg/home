@@ -12,6 +12,9 @@ source "${SCRIPT_DIR}/test-helpers.sh"
 # CONFIGURATION
 # ============================================================================
 
+# kompose root
+KOMPOSE_ROOT="${SCRIPT_DIR}/.."
+
 # Parse command line arguments
 UPDATE_SNAPSHOTS=0
 RUN_INTEGRATION_TESTS=0

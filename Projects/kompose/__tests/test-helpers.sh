@@ -367,7 +367,7 @@ wait_for_container() {
             return 0
         fi
         sleep 1
-        ((elapsed++))
+        elapsed=$((elapsed+1))
     done
     
     return 1
