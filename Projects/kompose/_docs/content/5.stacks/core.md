@@ -96,11 +96,13 @@ CORE_POSTGRES_SHARED_BUFFERS=256MB
 ```
 
 **Databases Created:**
+All databases required by Kompose stacks are automatically created on first initialization:
 - `kompose` - Main application database
-- `n8n` - Workflow automation data
-- `semaphore` - Ansible automation data
-- `gitea` - Git repositories and CI/CD data
-- `keycloak` - Authentication data
+- `n8n` - Workflow automation data (Chain stack)
+- `semaphore` - Ansible automation data (Chain stack)
+- `gitea` - Git repositories and CI/CD data (Code stack)
+- `keycloak` - Authentication and SSO data (Auth stack)
+- `letterspace` - Newsletter service data (News stack)
 
 ### Redis
 - **Image:** `redis:7-alpine`
@@ -217,12 +219,16 @@ Expected output:
 # List databases
 docker exec core-postgres psql -U valknar -l
 
-# Should show:
-# - kompose
-# - n8n
-# - semaphore
-# - gitea
-# - keycloak
+# Should show all Kompose databases:
+# - kompose (Main application)
+# - n8n (Workflow automation)
+# - semaphore (Ansible automation)
+# - gitea (Git repository)
+# - keycloak (Authentication)
+# - letterspace (Newsletter service)
+
+# Check database status
+./kompose.sh db status
 ```
 
 ## Customizing Configuration
