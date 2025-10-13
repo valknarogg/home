@@ -84,8 +84,6 @@ services:
       - semaphore_data:/var/lib/semaphore
       - semaphore_config:/etc/semaphore
       - semaphore_tmp:/tmp/semaphore
-      # Mount Ansible playbooks and inventory
-      - ../auto/kompose.yml:/home/semaphore/kompose.yml:ro
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000/api/ping"]
       interval: 30s

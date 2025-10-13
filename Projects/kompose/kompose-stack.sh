@@ -11,21 +11,28 @@ stack_exists() {
     local stack=$1
     local stack_dir="${STACKS_ROOT}/${stack}"
     
-    if [ ! -d "$stack_dir" ]; then
-        log_error "Stack directory not found: $stack_dir"
-        return 1
+    # Check built-in stack location
+    if [ -d "$stack_dir" ] && [ -f "${stack_dir}/${COMPOSE_FILE}" ]; then
+        return 0
     fi
     
-    if [ ! -f "${stack_dir}/${COMPOSE_FILE}" ]; then
-        log_error "Compose file not found: ${stack_dir}/${COMPOSE_FILE}"
-        return 1
+    # Check custom stack location
+    local custom_stack_dir="${STACKS_ROOT}/+custom/${stack}"
+    if [ -d "$custom_stack_dir" ] && [ -f "${custom_stack_dir}/${COMPOSE_FILE}" ]; then
+        return 0
     fi
     
-    return 0
+    log_error "Stack not found: $stack"
+    log_info "Searched locations:"
+    log_info "  - ${stack_dir}"
+    log_info "  - ${custom_stack_dir}"
+    return 1
 }
 
 get_all_stacks() {
     local stacks=()
+    
+    # Get built-in stacks
     for dir in "${STACKS_ROOT}"/*; do
         if [ -d "$dir" ] && [ -f "${dir}/${COMPOSE_FILE}" ]; then
             # Skip special directories
@@ -35,6 +42,21 @@ get_all_stacks() {
             fi
         fi
     done
+    
+    # Get custom stacks from +custom directory
+    local custom_dir="${STACKS_ROOT}/+custom"
+    if [ -d "$custom_dir" ]; then
+        for dir in "${custom_dir}"/*; do
+            if [ -d "$dir" ] && [ -f "${dir}/${COMPOSE_FILE}" ]; then
+                local dirname=$(basename "$dir")
+                # Skip README and other non-stack files
+                if [ "$dirname" != "README.md" ] && [ "$dirname" != ".gitkeep" ]; then
+                    stacks+=("$dirname")
+                fi
+            fi
+        done
+    fi
+    
     echo "${stacks[@]}"
 }
 
@@ -43,11 +65,17 @@ run_compose() {
     local stack=$1
     shift
     
+    # Determine stack directory (check built-in first, then custom)
+    local stack_dir="${STACKS_ROOT}/${stack}"
+    if [ ! -d "$stack_dir" ] || [ ! -f "${stack_dir}/${COMPOSE_FILE}" ]; then
+        stack_dir="${STACKS_ROOT}/+custom/${stack}"
+    fi
+    
     # Export environment for this stack
     export_stack_env "$stack"
     
     # Change to stack directory
-    cd "${STACKS_ROOT}/${stack}"
+    cd "${stack_dir}"
     
     # Run docker compose with the generated env file
     if [ -f ".env.generated" ]; then
@@ -186,22 +214,43 @@ list_stacks() {
     log_info "Available stacks:"
     echo ""
     
-    for stack in $(get_all_stacks | tr ' ' '\n' | sort); do
-        if [ -v "STACKS[$stack]" ]; then
-            echo -e "  ${CYAN}${stack}${NC} - ${STACKS[$stack]}"
-        else
-            echo -e "  ${CYAN}${stack}${NC}"
-        fi
-        
+    # List built-in stacks
+    echo -e "${BLUE}Built-in Stacks:${NC}"
+    for stack in $(echo "${!STACKS[@]}" | tr ' ' '\n' | sort); do
         if stack_exists "$stack" 2>/dev/null; then
+            echo -e "  ${CYAN}${stack}${NC} - ${STACKS[$stack]}"
+            
+            # Get stack directory
+            local stack_dir="${STACKS_ROOT}/${stack}"
+            
             export_stack_env "$stack" > /dev/null 2>&1
-            cd "${STACKS_ROOT}/${stack}"
+            cd "${stack_dir}"
             local running=$(docker compose --env-file .env.generated ps -q 2>/dev/null | wc -l)
             local total=$(docker compose --env-file .env.generated config --services 2>/dev/null | wc -l)
             echo -e "    Status: ${running}/${total} containers running"
+            echo ""
         fi
-        echo ""
     done
+    
+    # List custom stacks if any exist
+    if [ ${#CUSTOM_STACKS[@]} -gt 0 ]; then
+        echo -e "${MAGENTA}Custom Stacks:${NC}"
+        for stack in $(echo "${!CUSTOM_STACKS[@]}" | tr ' ' '\n' | sort); do
+            if stack_exists "$stack" 2>/dev/null; then
+                echo -e "  ${CYAN}${stack}${NC} - ${CUSTOM_STACKS[$stack]}"
+                
+                # Get custom stack directory
+                local stack_dir="${STACKS_ROOT}/+custom/${stack}"
+                
+                export_stack_env "$stack" > /dev/null 2>&1
+                cd "${stack_dir}"
+                local running=$(docker compose --env-file .env.generated ps -q 2>/dev/null | wc -l)
+                local total=$(docker compose --env-file .env.generated config --services 2>/dev/null | wc -l)
+                echo -e "    Status: ${running}/${total} containers running"
+                echo ""
+            fi
+        done
+    fi
 }
 
 show_all_containers() {

@@ -32,7 +32,7 @@ API_PIDFILE="${API_PIDFILE:-/tmp/kompose-api.pid}"
 API_LOGFILE="${API_LOGFILE:-/tmp/kompose-api.log}"
 API_SERVER_SCRIPT="${SCRIPT_DIR}/kompose-api-server.sh"
 
-# Available stacks (can be extended dynamically)
+# Built-in stacks with descriptions
 declare -A STACKS=(
     ["core"]="Core services - MQTT, Redis, Postgres"
     ["auth"]="Authentication - Keycloak SSO, OAuth2 Proxy"
@@ -49,6 +49,52 @@ declare -A STACKS=(
     ["vault"]="Password Manager - Vaultwarden"
     ["watch"]="Monitoring & Observability - Uptime Kuma, Grafana"
 )
+
+# Custom stacks (dynamically discovered)
+declare -A CUSTOM_STACKS=()
+
+# ============================================================================
+# CUSTOM STACK DISCOVERY
+# ============================================================================
+
+# Discover custom stacks from +custom directory
+discover_custom_stacks() {
+    local custom_dir="${STACKS_ROOT}/+custom"
+    
+    if [ ! -d "$custom_dir" ]; then
+        return 0
+    fi
+    
+    for stack_dir in "${custom_dir}"/*; do
+        if [ -d "$stack_dir" ]; then
+            local stack_name=$(basename "$stack_dir")
+            
+            # Skip if README or other non-stack files
+            if [ "$stack_name" = "README.md" ] || [ "$stack_name" = ".gitkeep" ]; then
+                continue
+            fi
+            
+            # Check if compose file exists
+            if [ -f "${stack_dir}/${COMPOSE_FILE}" ]; then
+                # Add to custom stacks with auto-generated description
+                local description="Custom stack"
+                
+                # Try to extract description from .env or compose.yaml comments
+                if [ -f "${stack_dir}/.env" ]; then
+                    local env_desc=$(grep -m1 "^# .*Stack" "${stack_dir}/.env" 2>/dev/null | sed 's/^# //' || echo "")
+                    if [ -n "$env_desc" ]; then
+                        description="$env_desc"
+                    fi
+                fi
+                
+                CUSTOM_STACKS["$stack_name"]="$description"
+            fi
+        fi
+    done
+}
+
+# Initialize custom stacks on script load
+discover_custom_stacks
 
 # Service definitions for tagging
 declare -A TAG_SERVICES=(
@@ -288,10 +334,19 @@ ${YELLOW}DATABASE OPTIONS:${NC}
     -t, --timestamp            Add timestamp to backup
     --compress                 Compress backup with gzip
 
-${BLUE}AVAILABLE STACKS:${NC}
+${BLUE}BUILT-IN STACKS:${NC}
 $(for stack in "${!STACKS[@]}"; do
     printf "    ${CYAN}%-15s${NC} - %s\n" "$stack" "${STACKS[$stack]}"
 done | sort)
+
+${MAGENTA}CUSTOM STACKS:${NC}
+$(if [ ${#CUSTOM_STACKS[@]} -gt 0 ]; then
+    for stack in "${!CUSTOM_STACKS[@]}"; do
+        printf "    ${CYAN}%-15s${NC} - %s\n" "$stack" "${CUSTOM_STACKS[$stack]}"
+    done | sort
+else
+    printf "    ${YELLOW}(none discovered - add stacks to +custom/ directory)${NC}\n"
+fi)
 
 ${BLUE}EXAMPLES:${NC}
     ${GREEN}# Stack Management${NC}
@@ -341,6 +396,12 @@ ${BLUE}EXAMPLES:${NC}
     kompose generate list              # List all custom stacks
     kompose generate show myapp        # Show stack information
     kompose generate delete myapp      # Delete custom stack
+
+    ${MAGENTA}# Custom Stack Management${NC}
+    kompose up blog                    # Start custom blog stack
+    kompose status sexy                # Check custom sexy stack status
+    kompose logs myapp -f              # Follow logs for custom stack
+    # Note: Custom stacks in +custom/ are auto-discovered
 
     ${CYAN}# Testing${NC}
     kompose test                       # Run all tests

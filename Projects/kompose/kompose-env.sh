@@ -91,8 +91,14 @@ load_stack_env() {
     local stack=$1
     local stack_upper=$(echo "$stack" | tr '[:lower:]' '[:upper:]')
     
+    # Determine stack directory (check built-in first, then custom)
+    local stack_dir="${STACKS_ROOT}/${stack}"
+    if [ ! -d "$stack_dir" ] || [ ! -f "${stack_dir}/${COMPOSE_FILE:-compose.yaml}" ]; then
+        stack_dir="${STACKS_ROOT}/+custom/${stack}"
+    fi
+    
     # Export the stack directory for docker-compose
-    export KOMPOSE_STACK_DIR="${STACKS_ROOT}/${stack}"
+    export KOMPOSE_STACK_DIR="${stack_dir}"
     export KOMPOSE_STACK_NAME="${stack}"
     
     # Load root .env file
@@ -257,7 +263,14 @@ check_required_vars() {
 generate_stack_env_file() {
     local stack=$1
     local stack_upper=$(echo "$stack" | tr '[:lower:]' '[:upper:]')
-    local env_file="${STACKS_ROOT}/${stack}/.env.generated"
+    
+    # Determine stack directory (check built-in first, then custom)
+    local stack_dir="${STACKS_ROOT}/${stack}"
+    if [ ! -d "$stack_dir" ] || [ ! -f "${stack_dir}/${COMPOSE_FILE:-compose.yaml}" ]; then
+        stack_dir="${STACKS_ROOT}/+custom/${stack}"
+    fi
+    
+    local env_file="${stack_dir}/.env.generated"
     
     log_info "Generating .env file for stack: $stack"
     
@@ -350,8 +363,14 @@ export_stack_env() {
     # This ensures docker-compose can access all variables
     generate_stack_env_file "$stack"
     
+    # Determine stack directory for COMPOSE_ENV_FILE
+    local stack_dir="${STACKS_ROOT}/${stack}"
+    if [ ! -d "$stack_dir" ] || [ ! -f "${stack_dir}/${COMPOSE_FILE:-compose.yaml}" ]; then
+        stack_dir="${STACKS_ROOT}/+custom/${stack}"
+    fi
+    
     # Set the env file path for docker-compose
-    export COMPOSE_ENV_FILE="${STACKS_ROOT}/${stack}/.env.generated"
+    export COMPOSE_ENV_FILE="${stack_dir}/.env.generated"
 }
 
 # ============================================================================
