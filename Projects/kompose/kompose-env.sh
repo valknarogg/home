@@ -281,6 +281,10 @@ generate_stack_env_file() {
     local stack_dir="${STACKS_ROOT}/${stack}"
     if [ ! -d "$stack_dir" ] || [ ! -f "${stack_dir}/${COMPOSE_FILE:-compose.yaml}" ]; then
         stack_dir="${STACKS_ROOT}/+custom/${stack}"
+        
+        # Skip generating .env files for custom stacks
+        log_info "Skipping .env generation for custom stack: $stack"
+        return 0
     fi
     
     local env_file="${stack_dir}/.env.generated"
