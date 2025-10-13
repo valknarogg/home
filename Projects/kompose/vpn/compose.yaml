@@ -2,15 +2,15 @@ name: vpn
 
 services:
   wg-easy:
-    image: ${DOCKER_IMAGE}
+    image: ${VPN_DOCKER_IMAGE}
     container_name: ${COMPOSE_PROJECT_NAME}_app
     restart: unless-stopped
     volumes:
       - etc_wireguard:/etc/wireguard
       - /lib/modules:/lib/modules:ro
     ports:
-      - "${WG_PORT}:51820/udp"
-      - "${APP_PORT}:51821/tcp"
+      - "${VPN_WG_PORT}:51820/udp"
+      - "${VPN_APP_PORT}:51821/tcp"
     cap_add:
       - NET_ADMIN
       - SYS_MODULE
@@ -22,14 +22,14 @@ services:
       # - net.ipv6.conf.default.forwarding=1
     environment:
       TZ: ${TIMEZONE:-Europe/Amsterdam}
-      WG_HOST: ${WG_HOST}
-      WG_PORT: ${WG_PORT}
-      PORT: ${APP_PORT}
+      WG_HOST: ${VPN_WG_HOST}
+      WG_PORT: ${VPN_WG_PORT}
+      PORT: ${VPN_APP_PORT}
       WG_DEVICE: eth0
       # PASSWORD_HASH: ${PASSWORD_HASH}
-      LANG: ${LANG:-en}
-      UI_TRAFFIC_STATS: ${UI_TRAFFIC_STATS:-true}
-      UI_CHART_TYPE: ${UI_CHART_TYPE:-0}
+      LANG: ${VPN_LANG:-en}
+      UI_TRAFFIC_STATS: ${VPN_UI_TRAFFIC_STATS:-true}
+      UI_CHART_TYPE: ${VPN_UI_CHART_TYPE:-0}
       WG_ALLOWED_IPS: 0.0.0.0/0, 1.1.1.1/32
       WG_DEFAULT_ADDRESS: 10.42.0.x
       WG_DEFAULT_DNS: 1.1.1.1
@@ -41,16 +41,16 @@ services:
       kompose_network:
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.middlewares.$COMPOSE_PROJECT_NAME-redirect-web-secure.redirectscheme.scheme=https'
-      - 'traefik.http.routers.$COMPOSE_PROJECT_NAME-web.middlewares=$COMPOSE_PROJECT_NAME-redirect-web-secure'
-      - 'traefik.http.routers.$COMPOSE_PROJECT_NAME-web.rule=Host(`$TRAEFIK_HOST`)'
-      - 'traefik.http.routers.$COMPOSE_PROJECT_NAME-web.entrypoints=web'
-      - 'traefik.http.routers.$COMPOSE_PROJECT_NAME-web-secure.rule=Host(`$TRAEFIK_HOST`)'
-      - 'traefik.http.routers.$COMPOSE_PROJECT_NAME-web-secure.tls.certresolver=resolver'
-      - 'traefik.http.routers.$COMPOSE_PROJECT_NAME-web-secure.entrypoints=web-secure'
-      - 'traefik.http.middlewares.$COMPOSE_PROJECT_NAME-web-secure-compress.compress=true'
-      - 'traefik.http.routers.$COMPOSE_PROJECT_NAME-web-secure.middlewares=$COMPOSE_PROJECT_NAME-web-secure-compress'
-      - 'traefik.http.services.$COMPOSE_PROJECT_NAME-web-secure.loadbalancer.server.port=51821'
+      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-redirect-web-secure.redirectscheme.scheme=https'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.middlewares=${COMPOSE_PROJECT_NAME}-redirect-web-secure'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.rule=Host(`${VPN_TRAEFIK_HOST}`)'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.entrypoints=web'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.rule=Host(`${VPN_TRAEFIK_HOST}`)'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.tls.certresolver=resolver'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.entrypoints=web-secure'
+      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-web-secure-compress.compress=true'
+      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.middlewares=${COMPOSE_PROJECT_NAME}-web-secure-compress'
+      - 'traefik.http.services.${COMPOSE_PROJECT_NAME}-web-secure.loadbalancer.server.port=51821'
       - 'traefik.docker.network=kompose_network'
 
 volumes:

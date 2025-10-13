@@ -2,15 +2,15 @@ name: messaging
 
 services:
   gotify:
-    image: ${GOTIFY_IMAGE}
+    image: ${MESSAGING_GOTIFY_IMAGE}
     container_name: ${COMPOSE_PROJECT_NAME}_gotify
     restart: unless-stopped
     volumes:
       - gotify_data:/app/data
     environment:
       TZ: ${TIMEZONE:-Europe/Amsterdam}
-      GOTIFY_DEFAULTUSER_NAME: ${GOTIFY_DEFAULTUSER_NAME}
-      GOTIFY_DEFAULTUSER_PASS: ${GOTIFY_DEFAULTUSER_PASS}
+      GOTIFY_DEFAULTUSER_NAME: ${MESSAGING_GOTIFY_DEFAULTUSER_NAME}
+      GOTIFY_DEFAULTUSER_PASS: ${MESSAGING_GOTIFY_DEFAULTUSER_PASS}
       # Connect Gotify to Mailhog for outgoing notifications
       GOTIFY_SERVER_SMTP_HOST: mailhog
       GOTIFY_SERVER_SMTP_PORT: 1025
@@ -30,11 +30,11 @@ services:
       - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_gotify-web-secure.entrypoints=web-secure'
       - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_gotify-web-secure-compress.compress=true'
       - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_gotify-web-secure.middlewares=${COMPOSE_PROJECT_NAME}_gotify-web-secure-compress'
-      - 'traefik.http.services.${COMPOSE_PROJECT_NAME}_gotify-web-secure.loadbalancer.server.port=${GOTIFY_PORT}'
+      - 'traefik.http.services.${COMPOSE_PROJECT_NAME}_gotify-web-secure.loadbalancer.server.port=${MESSAGING_GOTIFY_PORT}'
       - 'traefik.docker.network=${NETWORK_NAME:-kompose}'
 
   mailhog:
-    image: ${MAILHOG_IMAGE}
+    image: ${MESSAGING_MAILHOG_IMAGE}
     container_name: ${COMPOSE_PROJECT_NAME}_mailhog
     restart: unless-stopped
     environment:
@@ -43,7 +43,7 @@ services:
       MH_SMTP_BIND_ADDR: 0.0.0.0:1025
       MH_UI_BIND_ADDR: 0.0.0.0:8025
       MH_API_BIND_ADDR: 0.0.0.0:8025
-      MH_OUTGOING_SMTP: ${MAILHOG_OUTGOING_SMTP_ENABLED:-false}
+      MH_OUTGOING_SMTP: ${MESSAGING_MAILHOG_OUTGOING_SMTP_ENABLED:-false}
       MH_SMTP_SERVER: ${EMAIL_SMTP_HOST}
       MH_SMTP_PORT: ${EMAIL_SMTP_PORT}
       MH_SMTP_USER: ${EMAIL_SMTP_USER}
@@ -61,7 +61,7 @@ services:
       - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_mailhog-web-secure.entrypoints=web-secure'
       - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_mailhog-web-secure-compress.compress=true'
       - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_mailhog-web-secure.middlewares=${COMPOSE_PROJECT_NAME}_mailhog-web-secure-compress'
-      - 'traefik.http.services.${COMPOSE_PROJECT_NAME}_mailhog-web-secure.loadbalancer.server.port=${MAILHOG_PORT}'
+      - 'traefik.http.services.${COMPOSE_PROJECT_NAME}_mailhog-web-secure.loadbalancer.server.port=${MESSAGING_MAILHOG_PORT}'
       - 'traefik.docker.network=${NETWORK_NAME:-kompose}'
 
 volumes:

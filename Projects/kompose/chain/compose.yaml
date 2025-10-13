@@ -3,23 +3,23 @@ name: chain
 services:
   # n8n - Workflow Automation Engine
   n8n:
-    image: ${N8N_IMAGE:-n8nio/n8n:latest}
+    image: ${CHAIN_N8N_IMAGE:-n8nio/n8n:latest}
     container_name: ${COMPOSE_PROJECT_NAME}_n8n
     restart: unless-stopped
     environment:
       TZ: ${TIMEZONE:-Europe/Amsterdam}
       DB_TYPE: postgresdb
-      DB_POSTGRESDB_HOST: ${DB_HOST}
+      DB_POSTGRESDB_HOST: ${CORE_DB_HOST}
       DB_POSTGRESDB_PORT: 5432
-      DB_POSTGRESDB_DATABASE: ${N8N_DB_NAME:-n8n}
-      DB_POSTGRESDB_USER: ${DB_USER}
+      DB_POSTGRESDB_DATABASE: ${CHAIN_N8N_DB_NAME:-n8n}
+      DB_POSTGRESDB_USER: ${CORE_DB_USER}
       DB_POSTGRESDB_PASSWORD: ${DB_PASSWORD}
-      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+      N8N_ENCRYPTION_KEY: ${CHAIN_N8N_ENCRYPTION_KEY}
       WEBHOOK_URL: https://${N8N_TRAEFIK_HOST}/
       GENERIC_TIMEZONE: ${TZ:-Europe/Amsterdam}
-      N8N_BASIC_AUTH_ACTIVE: ${N8N_BASIC_AUTH_ACTIVE:-true}
-      N8N_BASIC_AUTH_USER: ${N8N_BASIC_AUTH_USER:-admin}
-      N8N_BASIC_AUTH_PASSWORD: ${N8N_BASIC_AUTH_PASSWORD}
+      N8N_BASIC_AUTH_ACTIVE: ${CHAIN_N8N_BASIC_AUTH_ACTIVE:-true}
+      N8N_BASIC_AUTH_USER: ${CHAIN_N8N_BASIC_AUTH_USER:-admin}
+      N8N_BASIC_AUTH_PASSWORD: ${CHAIN_N8N_BASIC_AUTH_PASSWORD}
       EXECUTIONS_DATA_SAVE_ON_ERROR: all
       EXECUTIONS_DATA_SAVE_ON_SUCCESS: all
       EXECUTIONS_DATA_SAVE_MANUAL_EXECUTIONS: true
@@ -32,13 +32,13 @@ services:
     volumes:
       - n8n_data:/home/node/.n8n
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider -q http://localhost:${N8N_PORT:-5678}/healthz || exit 1"]
+      test: ["CMD-SHELL", "wget --spider -q http://localhost:${CHAIN_N8N_PORT:-5678}/healthz || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 45s
     ports:
-      - "${N8N_PORT:-5678}:5678"
+      - "${CHAIN_N8N_PORT:-5678}:5678"
     networks:
       - kompose_network
     labels:
@@ -57,7 +57,7 @@ services:
 
   # Semaphore - Ansible UI & Task Runner
   semaphore:
-    image: ${SEMAPHORE_IMAGE:-semaphoreui/semaphore:v2.16.18}
+    image: ${CHAIN_SEMAPHORE_IMAGE:-semaphoreui/semaphore:latest}
     container_name: ${COMPOSE_PROJECT_NAME}_semaphore
     restart: unless-stopped
     extra_hosts:
@@ -65,13 +65,13 @@ services:
     environment:
       TZ: ${TIMEZONE:-Europe/Amsterdam}
       SEMAPHORE_DB_DIALECT: postgres
-      SEMAPHORE_DB_HOST: ${DB_HOST}
-      SEMAPHORE_DB_NAME: ${SEMAPHORE_DB_NAME:-semaphore}
-      SEMAPHORE_DB_USER: ${DB_USER}
+      SEMAPHORE_DB_HOST: ${CORE_DB_HOST}
+      SEMAPHORE_DB_NAME: ${CHAIN_SEMAPHORE_DB_NAME:-semaphore}
+      SEMAPHORE_DB_USER: ${CORE_DB_USER}
       SEMAPHORE_DB_PASS: ${DB_PASSWORD}
-      SEMAPHORE_ADMIN: ${SEMAPHORE_ADMIN:-admin}
-      SEMAPHORE_ADMIN_PASSWORD: ${SEMAPHORE_ADMIN_PASSWORD}
-      SEMAPHORE_ADMIN_NAME: ${SEMAPHORE_ADMIN_NAME:-Admin}
+      SEMAPHORE_ADMIN: ${CHAIN_SEMAPHORE_ADMIN_USERNAME:-admin}
+      SEMAPHORE_ADMIN_PASSWORD: ${CHAIN_SEMAPHORE_ADMIN_PASSWORD}
+      SEMAPHORE_ADMIN_NAME: ${CHAIN_SEMAPHORE_ADMIN_NAME:-Admin}
       SEMAPHORE_ADMIN_EMAIL: ${ADMIN_EMAIL}
       SEMAPHORE_EMAIL_ALERT: "True"
       SEMAPHORE_EMAIL_SENDER: ${EMAIL_FROM}
@@ -91,7 +91,7 @@ services:
       retries: 3
       start_period: 40s
     ports:
-      - "${SEMAPHORE_PORT:-3000}:3000"
+      - "${CHAIN_SEMAPHORE_PORT:-3000}:3000"
     networks:
       - kompose_network
     labels:
@@ -110,14 +110,14 @@ services:
 
   # Semaphore Runner - Task Executor
   semaphore-runner:
-    image: ${SEMAPHORE_RUNNER_IMAGE:-public.ecr.aws/semaphore/pro/runner:v2.16.18}
+    image: ${CHAIN_SEMAPHORE_RUNNER_IMAGE:-public.ecr.aws/semaphore/pro/runner:latest}
     container_name: ${COMPOSE_PROJECT_NAME}_semaphore_runner
     restart: unless-stopped
     environment:
       TZ: ${TIMEZONE:-Europe/Amsterdam}
       SEMAPHORE_RUNNER_PRIVATE_KEY_FILE: /var/lib/semaphore/runner.key
       SEMAPHORE_WEB_ROOT: http://semaphore:3000
-      SEMAPHORE_RUNNER_REGISTRATION_TOKEN: ${SEMAPHORE_RUNNER_TOKEN}
+      SEMAPHORE_RUNNER_REGISTRATION_TOKEN: ${CHAIN_SEMAPHORE_RUNNER_TOKEN}
     volumes:
       - semaphore_data:/var/lib/semaphore
       - semaphore_config:/etc/semaphore

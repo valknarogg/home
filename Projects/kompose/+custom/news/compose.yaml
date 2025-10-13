@@ -22,10 +22,10 @@ services:
       TZ: ${TIMEZONE:-Europe/Amsterdam}
       
       # Database Configuration
-      DATABASE_URL: "postgresql://${DB_USER}:${DB_PASSWORD}@core-postgres:5432/${DB_NAME}?schema=public"
+      DATABASE_URL: "postgresql://${CORE_DB_USER}:${DB_PASSWORD}@core-postgres:5432/${NEWS_DB_NAME}?schema=public"
       
       # Authentication
-      JWT_SECRET: ${JWT_SECRET}
+      JWT_SECRET: ${NEWS_JWT_SECRET}
       
       # Redis Integration
       REDIS_URL: redis://core-redis:6379

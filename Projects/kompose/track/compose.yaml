@@ -13,18 +13,18 @@ name: track
 
 services:
   umami:
-    image: ${DOCKER_IMAGE}
+    image: ${TRACK_DOCKER_IMAGE}
     container_name: ${COMPOSE_PROJECT_NAME}_app
     restart: unless-stopped
     environment:
       TZ: ${TIMEZONE:-Europe/Amsterdam}
       
       # Database Configuration
-      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@core-postgres:${DB_PORT}/${DB_NAME}
+      DATABASE_URL: postgresql://${CORE_DB_USER}:${DB_PASSWORD}@core-postgres:${DB_PORT}/${TRACK_DB_NAME}
       DATABASE_TYPE: postgresql
       
       # Application Secret
-      APP_SECRET: ${APP_SECRET}
+      APP_SECRET: ${TRACK_APP_SECRET}
       
       # Redis Cache Integration
       REDIS_URL: redis://core-redis:6379

@@ -13,7 +13,7 @@ name: vault
 
 services:
   vaultwarden:
-    image: ${DOCKER_IMAGE}
+    image: ${VAULT_DOCKER_IMAGE}
     container_name: ${COMPOSE_PROJECT_NAME}_app
     restart: unless-stopped
     volumes:
@@ -23,16 +23,16 @@ services:
       TZ: ${TIMEZONE:-Europe/Amsterdam}
       
       # Admin Configuration
-      ADMIN_TOKEN: ${JWT_TOKEN}
+      ADMIN_TOKEN: ${VAULT_ADMIN_TOKEN}
       
       # Database Configuration (Optional: Migrate to PostgreSQL)
       # Uncomment to use PostgreSQL instead of SQLite
       # DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@core-postgres:5432/${DB_NAME}
       
       # Application Settings
-      WEBSOCKET_ENABLED: ${WEBSOCKET_ENABLED}
-      SIGNUPS_ALLOWED: ${SIGNUPS_ALLOWED}
-      DOMAIN: ${DOMAIN}
+      WEBSOCKET_ENABLED: ${VAULT_WEBSOCKET_ENABLED}
+      SIGNUPS_ALLOWED: ${VAULT_SIGNUPS_ALLOWED}
+      DOMAIN: ${VAULT_TRAEFIK_HOST}
       
       # Email Configuration (via Mailhog)
       SMTP_HOST: messaging_mailhog
@@ -44,7 +44,7 @@ services:
       SMTP_TIMEOUT: 15
       
       # Security Event Publishing via MQTT
-      MQTT_ENABLED: ${MQTT_ENABLED:-true}
+      MQTT_ENABLED: ${VAULT_MQTT_ENABLED:-true}
       MQTT_BROKER: core-mqtt
       MQTT_PORT: 1883
       MQTT_TOPIC_PREFIX: kompose/vault/security
@@ -60,7 +60,7 @@ services:
       LOG_FILE: /data/vaultwarden.log
       
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:${APP_PORT}/alive || exit 1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:${VAULT_APP_PORT}/alive || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -84,12 +84,12 @@ services:
       - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.tls.certresolver=resolver'
       - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.entrypoints=web-secure'
       - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.middlewares=sso-secure'
-      - 'traefik.http.services.${COMPOSE_PROJECT_NAME}-web-secure.loadbalancer.server.port=${APP_PORT}'
+      - 'traefik.http.services.${COMPOSE_PROJECT_NAME}-web-secure.loadbalancer.server.port=${VAULT_APP_PORT}'
       - 'traefik.docker.network=${NETWORK_NAME:-kompose}'
       
       # Monitoring Labels
       - 'prometheus.scrape=true'
-      - 'prometheus.port=${APP_PORT}'
+      - 'prometheus.port=${VAULT_APP_PORT}'
       - 'prometheus.path=/metrics'
       
       # Rate Limiting for security
