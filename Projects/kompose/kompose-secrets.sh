@@ -426,7 +426,7 @@ secrets_generate_single() {
     echo ""
     log_info "Generated value for ${CYAN}${secret_name}${NC}:"
     echo ""
-    echo "  ${GREEN}${value}${NC}"
+    echo -e "  ${GREEN}${value}${NC}"
     echo ""
     log_info "Description: ${SECRET_DESCRIPTIONS[$secret_name]}"
     echo ""

@@ -10,11 +10,11 @@
 # Get current configuration mode
 get_current_mode() {
     if [ -f ".env" ] && grep -q "localhost" ".env" 2>/dev/null; then
-        echo "local"
+        echo -e "local"
     elif [ -f ".env" ]; then
-        echo "production"
+        echo -e "production"
     else
-        echo "none"
+        echo -e "none"
     fi
 }
 
@@ -40,7 +40,7 @@ backup_config() {
         log_success "Backed up secrets.env"
     fi
     
-    echo "$backup_dir"
+    echo -e "$backup_dir"
 }
 
 # Switch to local mode
@@ -51,18 +51,18 @@ switch_to_local() {
     log_info "Creating backup of current configuration..."
     backup_dir=$(backup_config)
     log_success "Backup created: $backup_dir"
-    echo ""
+    echo -e ""
     
     # Check if local configs exist
     if [ ! -f ".env.local" ]; then
         log_error ".env.local not found!"
-        echo "Please ensure .env.local exists in the project root."
+        echo -e "Please ensure .env.local exists in the project root."
         exit 1
     fi
     
     if [ ! -f "domain.env.local" ]; then
         log_error "domain.env.local not found!"
-        echo "Please ensure domain.env.local exists in the project root."
+        echo -e "Please ensure domain.env.local exists in the project root."
         exit 1
     fi
     
@@ -71,7 +71,7 @@ switch_to_local() {
     cp ".env.local" ".env"
     cp "domain.env.local" "domain.env"
     log_success "Local configuration activated"
-    echo ""
+    echo -e ""
     
     # Create local secrets if needed
     if [ ! -f "secrets.env" ]; then
@@ -82,9 +82,9 @@ switch_to_local() {
         fi
     fi
     
-    echo ""
+    echo -e ""
     log_success "Switched to LOCAL mode"
-    echo ""
+    echo -e ""
     show_local_info
 }
 
@@ -96,14 +96,14 @@ switch_to_production() {
     log_info "Creating backup of current configuration..."
     backup_dir=$(backup_config)
     log_success "Backup created: $backup_dir"
-    echo ""
+    echo -e ""
     
     # Check if production configs exist
     if [ ! -f ".env.production" ] && [ ! -f "$backup_dir/.env" ]; then
         log_error "No production configuration found!"
-        echo "Please ensure you have either:"
-        echo "  1. .env.production file, or"
-        echo "  2. A backup of your production .env"
+        echo -e "Please ensure you have either:"
+        echo -e "  1. .env.production file, or"
+        echo -e "  2. A backup of your production .env"
         exit 1
     fi
     
@@ -123,9 +123,9 @@ switch_to_production() {
         log_warning "No domain.env.production found, keeping current domain.env"
     fi
     
-    echo ""
+    echo -e ""
     log_success "Switched to PRODUCTION mode"
-    echo ""
+    echo -e ""
     show_production_info
 }
 
@@ -133,30 +133,30 @@ switch_to_production() {
 show_setup_status() {
     local mode=$(get_current_mode)
     
-    echo ""
+    echo -e ""
     log_info "═══════════════════════════════════════"
     log_info "      Configuration Status"
     log_info "═══════════════════════════════════════"
-    echo ""
+    echo -e ""
     
     case $mode in
         local)
             log_success "Current Mode: LOCAL DEVELOPMENT"
-            echo ""
+            echo -e ""
             show_local_info
             ;;
         production)
             log_success "Current Mode: PRODUCTION"
-            echo ""
+            echo -e ""
             show_production_info
             ;;
         none)
             log_warning "No configuration detected"
-            echo ""
-            echo "Run one of:"
-            echo "  ./kompose.sh setup local    - Switch to local mode"
-            echo "  ./kompose.sh setup prod     - Switch to production mode"
-            echo "  ./kompose.sh init           - Initialize project"
+            echo -e ""
+            echo -e "Run one of:"
+            echo -e "  ./kompose.sh setup local    - Switch to local mode"
+            echo -e "  ./kompose.sh setup prod     - Switch to production mode"
+            echo -e "  ./kompose.sh init           - Initialize project"
             ;;
     esac
 }
@@ -164,25 +164,25 @@ show_setup_status() {
 # Show local development info
 show_local_info() {
     log_info "Local Development Services:"
-    echo ""
-    echo "  Core Services:"
-    echo "    PostgreSQL:      localhost:5432"
-    echo "    Redis:           localhost:6379"
-    echo "    MQTT:            localhost:1883"
-    echo ""
-    echo "  Main Applications:"
-    echo "    Keycloak:        http://localhost:8180"
-    echo "    KMPS:            http://localhost:3100"
-    echo "    Gitea:           http://localhost:3001"
-    echo "    n8n:             http://localhost:5678"
-    echo "    Home Assistant:  http://localhost:8123"
-    echo "    Directus:        http://localhost:8055"
-    echo ""
-    echo "  Start services:"
-    echo "    ./kompose.sh up core      # Start core services"
-    echo "    ./kompose.sh up auth      # Start Keycloak"
-    echo "    ./kompose.sh up kmps      # Start KMPS"
-    echo ""
+    echo -e ""
+    echo -e "  Core Services:"
+    echo -e "    PostgreSQL:      localhost:5432"
+    echo -e "    Redis:           localhost:6379"
+    echo -e "    MQTT:            localhost:1883"
+    echo -e ""
+    echo -e "  Main Applications:"
+    echo -e "    Keycloak:        http://localhost:8180"
+    echo -e "    KMPS:            http://localhost:3100"
+    echo -e "    Gitea:           http://localhost:3001"
+    echo -e "    n8n:             http://localhost:5678"
+    echo -e "    Home Assistant:  http://localhost:8123"
+    echo -e "    Directus:        http://localhost:8055"
+    echo -e ""
+    echo -e "  Start services:"
+    echo -e "    ./kompose.sh up core      # Start core services"
+    echo -e "    ./kompose.sh up auth      # Start Keycloak"
+    echo -e "    ./kompose.sh up kmps      # Start KMPS"
+    echo -e ""
 }
 
 # Show production info
@@ -194,26 +194,26 @@ show_production_info() {
     fi
     
     log_info "Production Services (${domain}):"
-    echo ""
-    echo "  Main Applications:"
-    echo "    Keycloak:        https://auth.${domain}"
-    echo "    KMPS:            https://manage.${domain}"
-    echo "    Gitea:           https://code.${domain}"
-    echo "    n8n:             https://chain.${domain}"
-    echo "    Home Assistant:  https://home.${domain}"
-    echo ""
-    echo "  Start services:"
-    echo "    ./kompose.sh up core      # Start core services"
-    echo "    ./kompose.sh up proxy     # Start Traefik"
-    echo "    ./kompose.sh up auth      # Start Keycloak"
-    echo "    ./kompose.sh up kmps      # Start KMPS"
-    echo ""
+    echo -e ""
+    echo -e "  Main Applications:"
+    echo -e "    Keycloak:        https://auth.${domain}"
+    echo -e "    KMPS:            https://manage.${domain}"
+    echo -e "    Gitea:           https://code.${domain}"
+    echo -e "    n8n:             https://chain.${domain}"
+    echo -e "    Home Assistant:  https://home.${domain}"
+    echo -e ""
+    echo -e "  Start services:"
+    echo -e "    ./kompose.sh up core      # Start core services"
+    echo -e "    ./kompose.sh up proxy     # Start Traefik"
+    echo -e "    ./kompose.sh up auth      # Start Keycloak"
+    echo -e "    ./kompose.sh up kmps      # Start KMPS"
+    echo -e ""
 }
 
 # Save current config as production
 save_as_production() {
     log_info "Saving Current Configuration as Production"
-    echo ""
+    echo -e ""
     
     if [ -f ".env" ]; then
         cp ".env" ".env.production"
@@ -225,7 +225,7 @@ save_as_production() {
         log_success "Saved domain.env as domain.env.production"
     fi
     
-    echo ""
+    echo -e ""
     log_success "Production configuration saved"
 }
 
@@ -254,7 +254,7 @@ check_dependency() {
             log_warning "$name: NOT FOUND (optional)"
         fi
         if [ -n "$install_hint" ]; then
-            echo "  Install with: $install_hint"
+            echo -e "  Install with: $install_hint"
         fi
         return 1
     fi
@@ -265,7 +265,7 @@ check_all_dependencies() {
     local mode=${1:-"full"}
     
     log_info "Checking dependencies..."
-    echo ""
+    echo -e ""
     
     # Required dependencies
     log_info "Required dependencies:"
@@ -276,7 +276,7 @@ check_all_dependencies() {
     if ! check_dependency "docker-compose" "Docker Compose" "Included with Docker Desktop" "true"; then
         # Try docker compose (newer version)
         if docker compose version &> /dev/null; then
-            log_success "Docker Compose: $(docker compose version --short 2>&1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -n1 || echo 'installed')"
+            log_success "Docker Compose: $(docker compose version --short 2>&1 | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -n1 || echo -e 'installed')"
         else
             all_ok=false
         fi
@@ -288,7 +288,7 @@ check_all_dependencies() {
     
     # Optional but recommended for development
     if [ "$mode" = "full" ]; then
-        echo ""
+        echo -e ""
         log_info "Optional development dependencies:"
         
         # Check Node.js
@@ -299,7 +299,7 @@ check_all_dependencies() {
         # Check pnpm
         if ! check_dependency "pnpm" "pnpm" "npm install -g pnpm" "false"; then
             log_warning "pnpm is required for installing project dependencies"
-            echo "  Install: npm install -g pnpm"
+            echo -e "  Install: npm install -g pnpm"
         fi
         
         # Check Python 3
@@ -308,7 +308,7 @@ check_all_dependencies() {
         fi
     fi
     
-    echo ""
+    echo -e ""
     
     if [ "$all_ok" = false ]; then
         log_error "Some required dependencies are missing!"
@@ -331,51 +331,51 @@ init_project() {
     log_info "═══════════════════════════════════════════════════════════"
     log_info "       Kompose Project Initialization"
     log_info "═══════════════════════════════════════════════════════════"
-    echo ""
+    echo -e ""
     log_info "Welcome to Kompose! This wizard will guide you through"
     log_info "setting up your local development or production environment."
-    echo ""
+    echo -e ""
     
     # Check dependencies
-    echo ""
+    echo -e ""
     log_info "Step 1: Checking system dependencies"
     log_info "────────────────────────────────────────────────────────────"
     if ! check_all_dependencies "full"; then
-        echo ""
+        echo -e ""
         log_error "Cannot continue without required dependencies"
         log_info "Please install the missing dependencies and run: ./kompose.sh init"
         exit 1
     fi
     
-    echo ""
+    echo -e ""
     log_info "═══════════════════════════════════════════════════════════"
     
     # Ask about setup mode
-    echo ""
+    echo -e ""
     log_info "Step 2: Choose your environment"
     log_info "────────────────────────────────────────────────────────────"
-    echo ""
+    echo -e ""
     echo -e "  ${GREEN}1) Local Development${NC} ${BLUE}(recommended for first-time setup)${NC}"
-    echo "     ✓ No domain names needed"
-    echo "     ✓ Services on localhost:PORT"
-    echo "     ✓ Fast setup (~5 minutes)"
-    echo "     ✓ Perfect for testing and development"
-    echo ""
+    echo -e "     ✓ No domain names needed"
+    echo -e "     ✓ Services on localhost:PORT"
+    echo -e "     ✓ Fast setup (~5 minutes)"
+    echo -e "     ✓ Perfect for testing and development"
+    echo -e ""
     echo -e "  ${YELLOW}2) Production${NC}"
-    echo "     ✓ Requires domain and DNS configuration"
-    echo "     ✓ SSL certificates via Let's Encrypt"
-    echo "     ✓ Full featured setup (~30 minutes)"
-    echo "     ✓ Ready for public deployment"
-    echo ""
+    echo -e "     ✓ Requires domain and DNS configuration"
+    echo -e "     ✓ SSL certificates via Let's Encrypt"
+    echo -e "     ✓ Full featured setup (~30 minutes)"
+    echo -e "     ✓ Ready for public deployment"
+    echo -e ""
     echo -e "  ${CYAN}3) Both${NC} ${BLUE}(local for development, production for deployment)${NC}"
-    echo "     ✓ Best of both worlds"
-    echo "     ✓ Easily switch between environments"
-    echo ""
+    echo -e "     ✓ Best of both worlds"
+    echo -e "     ✓ Easily switch between environments"
+    echo -e ""
     
     read -p "Choose (1/2/3) [1]: " -r setup_choice
     setup_choice=${setup_choice:-1}
     
-    echo ""
+    echo -e ""
     case $setup_choice in
         1)
             setup_local_environment
@@ -385,9 +385,9 @@ init_project() {
             ;;
         3)
             setup_local_environment
-            echo ""
+            echo -e ""
             log_info "Now setting up production environment..."
-            echo ""
+            echo -e ""
             setup_production_environment
             ;;
         *)
@@ -397,19 +397,19 @@ init_project() {
     esac
     
     # Make scripts executable
-    echo ""
+    echo -e ""
     log_info "Step 3: Setting up project scripts"
     log_info "────────────────────────────────────────────────────────────"
     make_scripts_executable
     
     # Install project dependencies
-    echo ""
+    echo -e ""
     log_info "Step 4: Installing project dependencies"
     log_info "────────────────────────────────────────────────────────────"
     install_project_dependencies
     
     # Create Docker network
-    echo ""
+    echo -e ""
     log_info "Step 5: Setting up Docker network"
     log_info "────────────────────────────────────────────────────────────"
     if ! docker network inspect kompose &>/dev/null; then
@@ -420,91 +420,91 @@ init_project() {
     fi
     
     # Create necessary directories
-    echo ""
+    echo -e ""
     log_info "Step 6: Creating project directories"
     log_info "────────────────────────────────────────────────────────────"
     mkdir -p backups/database backups/config
     log_success "Project directories created"
     
     # Final summary
-    echo ""
+    echo -e ""
     log_success "═══════════════════════════════════════════════════════════"
     log_success "       🎉 Initialization Complete!"
     log_success "═══════════════════════════════════════════════════════════"
-    echo ""
+    echo -e ""
     
     local mode=$(get_current_mode)
     if [ "$mode" = "local" ]; then
         log_info "${GREEN}✓${NC} Local development environment is ready!"
-        echo ""
-        echo "${BLUE}Next steps:${NC}"
-        echo ""
-        echo "  ${YELLOW}1.${NC} Generate or review secrets (IMPORTANT!)"
-        echo "     ${CYAN}./kompose.sh secrets generate${NC}      # Generate all secrets"
-        echo "     ${CYAN}./kompose.sh secrets validate${NC}      # Check configuration"
-        echo "     ${CYAN}./kompose.sh secrets list${NC}          # View all secrets"
-        echo ""
-        echo "  ${YELLOW}2.${NC} Start core services (PostgreSQL, Redis, MQTT)"
-        echo "     ${CYAN}./kompose.sh up core${NC}"
-        echo ""
-        echo "  ${YELLOW}3.${NC} Start authentication services (Keycloak)"
-        echo "     ${CYAN}./kompose.sh up auth${NC}"
-        echo ""
-        echo "  ${YELLOW}4.${NC} Configure Keycloak SSO"
-        echo "     ${CYAN}http://localhost:8180${NC}"
-        echo "     Login: admin / (check secrets.env)"
-        echo ""
-        echo "  ${YELLOW}5.${NC} Start KMPS Management Portal"
-        echo "     ${CYAN}./kompose.sh up kmps${NC}"
-        echo ""
-        echo "  ${YELLOW}6.${NC} Access KMPS at"
-        echo "     ${CYAN}http://localhost:3100${NC}"
+        echo -e ""
+        echo -e "${BLUE}Next steps:${NC}"
+        echo -e ""
+        echo -e "  ${YELLOW}1.${NC} Generate or review secrets (IMPORTANT!)"
+        echo -e "     ${CYAN}./kompose.sh secrets generate${NC}      # Generate all secrets"
+        echo -e "     ${CYAN}./kompose.sh secrets validate${NC}      # Check configuration"
+        echo -e "     ${CYAN}./kompose.sh secrets list${NC}          # View all secrets"
+        echo -e ""
+        echo -e "  ${YELLOW}2.${NC} Start core services (PostgreSQL, Redis, MQTT)"
+        echo -e "     ${CYAN}./kompose.sh up core${NC}"
+        echo -e ""
+        echo -e "  ${YELLOW}3.${NC} Start authentication services (Keycloak)"
+        echo -e "     ${CYAN}./kompose.sh up auth${NC}"
+        echo -e ""
+        echo -e "  ${YELLOW}4.${NC} Configure Keycloak SSO"
+        echo -e "     ${CYAN}http://localhost:8180${NC}"
+        echo -e "     Login: admin / (check secrets.env)"
+        echo -e ""
+        echo -e "  ${YELLOW}5.${NC} Start KMPS Management Portal"
+        echo -e "     ${CYAN}./kompose.sh up kmps${NC}"
+        echo -e ""
+        echo -e "  ${YELLOW}6.${NC} Access KMPS at"
+        echo -e "     ${CYAN}http://localhost:3100${NC}"
     else
         log_info "${YELLOW}⚠${NC}  Production environment configured"
-        echo ""
-        echo "${BLUE}Next steps:${NC}"
-        echo ""
-        echo "  ${YELLOW}1.${NC} Configure DNS for your domain"
-        echo "     Create A records pointing to your server IP"
-        echo ""
-        echo "  ${YELLOW}2.${NC} Review and update secrets.env with ${RED}STRONG${NC} passwords"
-        echo "     ${CYAN}nano secrets.env${NC}"
-        echo ""
-        echo "  ${YELLOW}3.${NC} Start Traefik reverse proxy"
-        echo "     ${CYAN}./kompose.sh up proxy${NC}"
-        echo ""
-        echo "  ${YELLOW}4.${NC} Start core services"
-        echo "     ${CYAN}./kompose.sh up core${NC}"
-        echo ""
-        echo "  ${YELLOW}5.${NC} Start authentication services"
-        echo "     ${CYAN}./kompose.sh up auth${NC}"
-        echo ""
-        echo "  ${YELLOW}6.${NC} Configure Keycloak"
-        echo ""
-        echo "  ${YELLOW}7.${NC} Start KMPS"
-        echo "     ${CYAN}./kompose.sh up kmps${NC}"
+        echo -e ""
+        echo -e "${BLUE}Next steps:${NC}"
+        echo -e ""
+        echo -e "  ${YELLOW}1.${NC} Configure DNS for your domain"
+        echo -e "     Create A records pointing to your server IP"
+        echo -e ""
+        echo -e "  ${YELLOW}2.${NC} Review and update secrets.env with ${RED}STRONG${NC} passwords"
+        echo -e "     ${CYAN}nano secrets.env${NC}"
+        echo -e ""
+        echo -e "  ${YELLOW}3.${NC} Start Traefik reverse proxy"
+        echo -e "     ${CYAN}./kompose.sh up proxy${NC}"
+        echo -e ""
+        echo -e "  ${YELLOW}4.${NC} Start core services"
+        echo -e "     ${CYAN}./kompose.sh up core${NC}"
+        echo -e ""
+        echo -e "  ${YELLOW}5.${NC} Start authentication services"
+        echo -e "     ${CYAN}./kompose.sh up auth${NC}"
+        echo -e ""
+        echo -e "  ${YELLOW}6.${NC} Configure Keycloak"
+        echo -e ""
+        echo -e "  ${YELLOW}7.${NC} Start KMPS"
+        echo -e "     ${CYAN}./kompose.sh up kmps${NC}"
     fi
     
-    echo ""
+    echo -e ""
     log_info "${BLUE}📚 Documentation:${NC}"
-    echo "  • Quick Reference:       ${CYAN}QUICK_REFERENCE.md${NC}"
-    echo "  • Local Development:     ${CYAN}LOCAL_DEVELOPMENT.md${NC}"
-    echo "  • KMPS Guide:            ${CYAN}kmps/QUICK_START.md${NC}"
-    echo "  • Online Documentation:  ${CYAN}http://localhost:3000${NC} (after starting _docs)"
-    echo ""
+    echo -e "  • Quick Reference:       ${CYAN}QUICK_REFERENCE.md${NC}"
+    echo -e "  • Local Development:     ${CYAN}LOCAL_DEVELOPMENT.md${NC}"
+    echo -e "  • KMPS Guide:            ${CYAN}kmps/QUICK_START.md${NC}"
+    echo -e "  • Online Documentation:  ${CYAN}http://localhost:3000${NC} (after starting _docs)"
+    echo -e ""
     log_info "${BLUE}💡 Helpful commands:${NC}"
-    echo "  • List all stacks:       ${CYAN}./kompose.sh list${NC}"
-    echo "  • Check status:          ${CYAN}./kompose.sh status${NC}"
-    echo "  • View logs:             ${CYAN}./kompose.sh logs <stack> -f${NC}"
-    echo "  • Get help:              ${CYAN}./kompose.sh help${NC}"
-    echo ""
+    echo -e "  • List all stacks:       ${CYAN}./kompose.sh list${NC}"
+    echo -e "  • Check status:          ${CYAN}./kompose.sh status${NC}"
+    echo -e "  • View logs:             ${CYAN}./kompose.sh logs <stack> -f${NC}"
+    echo -e "  • Get help:              ${CYAN}./kompose.sh help${NC}"
+    echo -e ""
     log_success "Happy stacking! 🚀"
-    echo ""
+    echo -e ""
 }
 
 setup_local_environment() {
     log_info "Setting up Local Development Environment..."
-    echo ""
+    echo -e ""
     
     # Check if configs exist, create if not
     if [ ! -f ".env.local" ]; then
@@ -540,7 +540,7 @@ setup_local_environment() {
 
 setup_production_environment() {
     log_info "Setting up Production Environment..."
-    echo ""
+    echo -e ""
     
     # Get domain
     local domain
@@ -638,14 +638,14 @@ OAUTH2_CLIENT_SECRET=dev_oauth2_secret
 EOF
         
         # Generate random secrets for sensitive items
-        echo "OAUTH2_COOKIE_SECRET=$(openssl rand -base64 32)" >> secrets.env
-        echo "AUTH_OAUTH2_CLIENT_SECRET=dev_oauth2_secret" >> secrets.env
-        echo "AUTH_OAUTH2_COOKIE_SECRET=$(openssl rand -base64 32)" >> secrets.env
-        echo "" >> secrets.env
+        echo -e "OAUTH2_COOKIE_SECRET=$(openssl rand -base64 32)" >> secrets.env
+        echo -e "AUTH_OAUTH2_CLIENT_SECRET=dev_oauth2_secret" >> secrets.env
+        echo -e "AUTH_OAUTH2_COOKIE_SECRET=$(openssl rand -base64 32)" >> secrets.env
+        echo -e "" >> secrets.env
         
-        echo "# KMPS (update after Keycloak setup)" >> secrets.env
-        echo "KMPS_CLIENT_SECRET=UPDATE_AFTER_KEYCLOAK_SETUP" >> secrets.env
-        echo "KMPS_NEXTAUTH_SECRET=$(openssl rand -base64 32)" >> secrets.env
+        echo -e "# KMPS (update after Keycloak setup)" >> secrets.env
+        echo -e "KMPS_CLIENT_SECRET=UPDATE_AFTER_KEYCLOAK_SETUP" >> secrets.env
+        echo -e "KMPS_NEXTAUTH_SECRET=$(openssl rand -base64 32)" >> secrets.env
         
         log_success "Created secrets.env with development defaults"
         log_warning "Update KMPS_CLIENT_SECRET after creating Keycloak client"
@@ -665,19 +665,19 @@ EOF
 
 install_project_dependencies() {
     log_info "Installing project dependencies..."
-    echo ""
+    echo -e ""
     
     # Check if pnpm is available
     if ! command -v pnpm &> /dev/null; then
         log_warning "pnpm not found - skipping Node.js dependency installation"
-        echo ""
-        echo "  To install pnpm later, run:"
-        echo "    ${CYAN}npm install -g pnpm${NC}"
-        echo ""
-        echo "  Then install dependencies with:"
-        echo "    ${CYAN}cd _docs && pnpm install${NC}"
-        echo "    ${CYAN}cd ../kmps && pnpm install${NC}"
-        echo ""
+        echo -e ""
+        echo -e "  To install pnpm later, run:"
+        echo -e "    ${CYAN}npm install -g pnpm${NC}"
+        echo -e ""
+        echo -e "  Then install dependencies with:"
+        echo -e "    ${CYAN}cd _docs && pnpm install${NC}"
+        echo -e "    ${CYAN}cd ../kmps && pnpm install${NC}"
+        echo -e ""
         return
     fi
     
@@ -726,16 +726,16 @@ install_project_dependencies() {
         cd ..
     fi
     
-    echo ""
+    echo -e ""
     
     if [ -n "$failed_installs" ]; then
         log_warning "Some dependencies failed to install: $failed_installs"
         log_info "Check the logs in /tmp/pnpm-*-install.log for details"
         log_info "You can manually install them later by running:"
         for proj in $failed_installs; do
-            echo "  ${CYAN}cd $proj && pnpm install${NC}"
+            echo -e "  ${CYAN}cd $proj && pnpm install${NC}"
         done
-        echo ""
+        echo -e ""
     elif [ "$deps_installed" = false ]; then
         log_info "No Node.js projects found to install dependencies"
     else
@@ -751,7 +751,7 @@ make_scripts_executable() {
     for script in kompose*.sh; do
         if [ -f "$script" ]; then
             chmod +x "$script"
-            ((script_count++))
+            script_count=$((script_count+1))
         fi
     done
     
@@ -811,8 +811,8 @@ EOF
             ;;
         *)
             log_error "Unknown setup command: $subcmd"
-            echo ""
-            echo "Available commands: local, prod, status, save-prod, backup, help"
+            echo -e ""
+            echo -e "Available commands: local, prod, status, save-prod, backup, help"
             exit 1
             ;;
     esac

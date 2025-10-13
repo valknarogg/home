@@ -793,7 +793,7 @@ handle_profile_command() {
             ;;
         current)
             local current=$(get_current_profile)
-            echo "Current profile: ${GREEN}$current${NC}"
+            echo -e "Current profile: ${GREEN}$current${NC}"
             show_profile "$current"
             ;;
         help|-h|--help)
