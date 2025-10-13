@@ -1,10 +1,10 @@
-name: watch
+name: ${WATCH_COMPOSE_PROJECT_NAME}
 
 services:
   # Prometheus - Metrics Collection & Storage
   prometheus:
     image: ${WATCH_PROMETHEUS_IMAGE:-prom/prometheus:latest}
-    container_name: ${COMPOSE_PROJECT_NAME}_prometheus
+    container_name: ${WATCH_COMPOSE_PROJECT_NAME}_prometheus
     restart: unless-stopped
     user: root
     environment:
@@ -32,23 +32,23 @@ services:
       - "${WATCH_PROMETHEUS_PORT:-9090}:9090"
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_prometheus-redirect-web-secure.redirectscheme.scheme=https'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_prometheus-web.middlewares=${COMPOSE_PROJECT_NAME}_prometheus-redirect-web-secure'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_prometheus-web.rule=Host(`${WATCH_TRAEFIK_HOST_PROMETHEUS}`)'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_prometheus-web.entrypoints=web'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_prometheus-web-secure.rule=Host(`${WATCH_TRAEFIK_HOST_PROMETHEUS}`)'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_prometheus-web-secure.tls.certresolver=resolver'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_prometheus-web-secure.entrypoints=web-secure'
-      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_prometheus-web-secure-compress.compress=true'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_prometheus-web-secure.middlewares=${COMPOSE_PROJECT_NAME}_prometheus-web-secure-compress,${COMPOSE_PROJECT_NAME}_prometheus-auth'
-      - 'traefik.http.services.${COMPOSE_PROJECT_NAME}_prometheus-web-secure.loadbalancer.server.port=9090'
-      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_prometheus-auth.basicauth.users=${WATCH_PROMETHEUS_AUTH}'
+      - 'traefik.http.middlewares.${WATCH_COMPOSE_PROJECT_NAME}-prometheus-redirect-web-secure.redirectscheme.scheme=https'
+      - 'traefik.http.routers.${WATCH_COMPOSE_PROJECT_NAME}-prometheus-web.middlewares=${WATCH_COMPOSE_PROJECT_NAME}-prometheus-redirect-web-secure'
+      - 'traefik.http.routers.${WATCH_COMPOSE_PROJECT_NAME}-prometheus-web.rule=Host(`${TRAEFIK_HOST_PROMETHEUS}`)'
+      - 'traefik.http.routers.${WATCH_COMPOSE_PROJECT_NAME}-prometheus-web.entrypoints=web'
+      - 'traefik.http.routers.${WATCH_COMPOSE_PROJECT_NAME}-prometheus-web-secure.rule=Host(`${TRAEFIK_HOST_PROMETHEUS}`)'
+      - 'traefik.http.routers.${WATCH_COMPOSE_PROJECT_NAME}-prometheus-web-secure.tls.certresolver=resolver'
+      - 'traefik.http.routers.${WATCH_COMPOSE_PROJECT_NAME}-prometheus-web-secure.entrypoints=web-secure'
+      - 'traefik.http.middlewares.${WATCH_COMPOSE_PROJECT_NAME}-prometheus-web-secure-compress.compress=true'
+      - 'traefik.http.routers.${WATCH_COMPOSE_PROJECT_NAME}-prometheus-web-secure.middlewares=${WATCH_COMPOSE_PROJECT_NAME}-prometheus-web-secure-compress,${WATCH_COMPOSE_PROJECT_NAME}-prometheus-auth'
+      - 'traefik.http.services.${WATCH_COMPOSE_PROJECT_NAME}-prometheus-web-secure.loadbalancer.server.port=9090'
+      - 'traefik.http.middlewares.${WATCH_COMPOSE_PROJECT_NAME}-prometheus-auth.basicauth.users=${WATCH_PROMETHEUS_AUTH}'
       - 'traefik.docker.network=${NETWORK_NAME:-kompose}'
 
   # Grafana - Metrics Visualization
   grafana:
     image: ${WATCH_GRAFANA_IMAGE:-grafana/grafana:latest}
-    container_name: ${COMPOSE_PROJECT_NAME}_grafana
+    container_name: ${WATCH_COMPOSE_PROJECT_NAME}_grafana
     restart: unless-stopped
     user: root
     environment:
@@ -57,9 +57,9 @@ services:
       GF_SECURITY_ADMIN_PASSWORD: ${WATCH_GRAFANA_ADMIN_PASSWORD}
       GF_INSTALL_PLUGINS: ${WATCH_GRAFANA_PLUGINS:-grafana-clock-panel,grafana-simple-json-datasource,grafana-piechart-panel,grafana-worldmap-panel}
       GF_USERS_ALLOW_SIGN_UP: false
-      GF_SERVER_ROOT_URL: https://${WATCH_TRAEFIK_HOST_GRAFANA}
+      GF_SERVER_ROOT_URL: https://${TRAEFIK_HOST_GRAFANA}
       GF_DATABASE_TYPE: postgres
-      GF_DATABASE_HOST: core-postgres:5432
+      GF_DATABASE_HOST: ${CORE_DB_HOST}:${CORE_DB_PORT}
       GF_DATABASE_NAME: ${WATCH_GRAFANA_DB_NAME:-grafana}
       GF_DATABASE_USER: ${WATCH_GRAFANA_DB_USER:-grafana}
       GF_DATABASE_PASSWORD: ${WATCH_GRAFANA_DB_PASSWORD}
@@ -85,22 +85,22 @@ services:
         condition: service_healthy
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_grafana-redirect-web-secure.redirectscheme.scheme=https'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_grafana-web.middlewares=${COMPOSE_PROJECT_NAME}_grafana-redirect-web-secure'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_grafana-web.rule=Host(`${WATCH_TRAEFIK_HOST_GRAFANA}`)'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_grafana-web.entrypoints=web'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_grafana-web-secure.rule=Host(`${WATCH_TRAEFIK_HOST_GRAFANA}`)'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_grafana-web-secure.tls.certresolver=resolver'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_grafana-web-secure.entrypoints=web-secure'
-      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_grafana-web-secure-compress.compress=true'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_grafana-web-secure.middlewares=${COMPOSE_PROJECT_NAME}_grafana-web-secure-compress'
-      - 'traefik.http.services.${COMPOSE_PROJECT_NAME}_grafana-web-secure.loadbalancer.server.port=3000'
+      - 'traefik.http.middlewares.${WATCH_COMPOSE_PROJECT_NAME}-grafana-redirect-web-secure.redirectscheme.scheme=https'
+      - 'traefik.http.routers.${WATCH_COMPOSE_PROJECT_NAME}-grafana-web.middlewares=${WATCH_COMPOSE_PROJECT_NAME}-grafana-redirect-web-secure'
+      - 'traefik.http.routers.${WATCH_COMPOSE_PROJECT_NAME}-grafana-web.rule=Host(`${TRAEFIK_HOST_GRAFANA}`)'
+      - 'traefik.http.routers.${WATCH_COMPOSE_PROJECT_NAME}-grafana-web.entrypoints=web'
+      - 'traefik.http.routers.${WATCH_COMPOSE_PROJECT_NAME}-grafana-web-secure.rule=Host(`${TRAEFIK_HOST_GRAFANA}`)'
+      - 'traefik.http.routers.${WATCH_COMPOSE_PROJECT_NAME}-grafana-web-secure.tls.certresolver=resolver'
+      - 'traefik.http.routers.${WATCH_COMPOSE_PROJECT_NAME}-grafana-web-secure.entrypoints=web-secure'
+      - 'traefik.http.middlewares.${WATCH_COMPOSE_PROJECT_NAME}-grafana-web-secure-compress.compress=true'
+      - 'traefik.http.routers.${WATCH_COMPOSE_PROJECT_NAME}-grafana-web-secure.middlewares=${WATCH_COMPOSE_PROJECT_NAME}-grafana-web-secure-compress'
+      - 'traefik.http.services.${WATCH_COMPOSE_PROJECT_NAME}-grafana-web-secure.loadbalancer.server.port=3000'
       - 'traefik.docker.network=${NETWORK_NAME:-kompose}'
 
   # OpenTelemetry Collector - Telemetry Pipeline
   otel-collector:
     image: ${WATCH_OTEL_IMAGE:-otel/opentelemetry-collector-contrib:latest}
-    container_name: ${COMPOSE_PROJECT_NAME}_otel
+    container_name: ${WATCH_COMPOSE_PROJECT_NAME}_otel
     restart: unless-stopped
     environment:
       TZ: ${TIMEZONE:-Europe/Amsterdam}
@@ -127,11 +127,11 @@ services:
   # PostgreSQL Exporter - Core Database Metrics
   postgres-exporter:
     image: ${WATCH_POSTGRES_EXPORTER_IMAGE:-prometheuscommunity/postgres-exporter:latest}
-    container_name: ${COMPOSE_PROJECT_NAME}_postgres_exporter
+    container_name: ${WATCH_COMPOSE_PROJECT_NAME}_postgres_exporter
     restart: unless-stopped
     environment:
       TZ: ${TIMEZONE:-Europe/Amsterdam}
-      DATA_SOURCE_NAME: postgresql://${WATCH_POSTGRES_EXPORTER_USER:-kompose}:${WATCH_POSTGRES_EXPORTER_PASSWORD}@core-postgres:5432/${WATCH_POSTGRES_EXPORTER_DB:-kompose}?sslmode=disable
+      DATA_SOURCE_NAME: postgresql://${WATCH_POSTGRES_EXPORTER_USER:-kompose}:${WATCH_POSTGRES_EXPORTER_PASSWORD}@${CORE_DB_HOST}:${CORE_DB_PORT}/${WATCH_POSTGRES_EXPORTER_DB:-kompose}?sslmode=disable
       PG_EXPORTER_EXTEND_QUERY_PATH: /etc/postgres_exporter/queries.yaml
     volumes:
       - ./postgres-exporter/queries.yaml:/etc/postgres_exporter/queries.yaml:ro
@@ -149,11 +149,11 @@ services:
   # Redis Exporter - Core Cache Metrics
   redis-exporter:
     image: ${WATCH_REDIS_EXPORTER_IMAGE:-oliver006/redis_exporter:latest}
-    container_name: ${COMPOSE_PROJECT_NAME}_redis_exporter
+    container_name: ${WATCH_COMPOSE_PROJECT_NAME}_redis_exporter
     restart: unless-stopped
     environment:
       TZ: ${TIMEZONE:-Europe/Amsterdam}
-      REDIS_ADDR: redis://core-redis:6379
+      REDIS_ADDR: redis://${CORE_REDIS_HOST}:${CORE_REDIS_PORT}
       REDIS_PASSWORD: ${WATCH_REDIS_EXPORTER_PASSWORD}
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:9121/metrics"]
@@ -169,12 +169,12 @@ services:
   # MQTT Exporter - Core MQTT Broker Metrics
   mqtt-exporter:
     image: ${WATCH_MQTT_EXPORTER_IMAGE:-kpetrem/mqtt-exporter:latest}
-    container_name: ${COMPOSE_PROJECT_NAME}_mqtt_exporter
+    container_name: ${WATCH_COMPOSE_PROJECT_NAME}_mqtt_exporter
     restart: unless-stopped
     environment:
       TZ: ${TIMEZONE:-Europe/Amsterdam}
-      MQTT_ADDRESS: core-mqtt
-      MQTT_PORT: 1883
+      MQTT_ADDRESS: core_mqtt
+      MQTT_PORT: ${CORE_MQTT_PORT}
       MQTT_TOPIC: ${WATCH_MQTT_EXPORTER_TOPIC:-#}
       MQTT_V5_PROTOCOL: ${WATCH_MQTT_V5_PROTOCOL:-False}
       PROMETHEUS_PORT: 9000
@@ -194,7 +194,7 @@ services:
   # cAdvisor - Container Metrics
   cadvisor:
     image: ${WATCH_CADVISOR_IMAGE:-gcr.io/cadvisor/cadvisor:latest}
-    container_name: ${COMPOSE_PROJECT_NAME}_cadvisor
+    container_name: ${WATCH_COMPOSE_PROJECT_NAME}_cadvisor
     restart: unless-stopped
     privileged: true
     environment:
@@ -221,7 +221,7 @@ services:
   # Node Exporter - Host System Metrics
   node-exporter:
     image: ${WATCH_NODE_EXPORTER_IMAGE:-prom/node-exporter:latest}
-    container_name: ${COMPOSE_PROJECT_NAME}_node_exporter
+    container_name: ${WATCH_COMPOSE_PROJECT_NAME}_node_exporter
     restart: unless-stopped
     environment:
       TZ: ${TIMEZONE:-Europe/Amsterdam}
@@ -245,7 +245,7 @@ services:
   # Blackbox Exporter - Endpoint Monitoring
   blackbox-exporter:
     image: ${WATCH_BLACKBOX_EXPORTER_IMAGE:-prom/blackbox-exporter:latest}
-    container_name: ${COMPOSE_PROJECT_NAME}_blackbox_exporter
+    container_name: ${WATCH_COMPOSE_PROJECT_NAME}_blackbox_exporter
     restart: unless-stopped
     environment:
       TZ: ${TIMEZONE:-Europe/Amsterdam}
@@ -267,7 +267,7 @@ services:
   # Loki - Log Aggregation
   loki:
     image: ${WATCH_LOKI_IMAGE:-grafana/loki:latest}
-    container_name: ${COMPOSE_PROJECT_NAME}_loki
+    container_name: ${WATCH_COMPOSE_PROJECT_NAME}_loki
     restart: unless-stopped
     user: root
     environment:
@@ -289,23 +289,23 @@ services:
       - "${WATCH_LOKI_PORT:-3100}:3100"
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_loki-redirect-web-secure.redirectscheme.scheme=https'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_loki-web.middlewares=${COMPOSE_PROJECT_NAME}_loki-redirect-web-secure'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_loki-web.rule=Host(`${WATCH_TRAEFIK_HOST_LOKI}`)'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_loki-web.entrypoints=web'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_loki-web-secure.rule=Host(`${WATCH_TRAEFIK_HOST_LOKI}`)'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_loki-web-secure.tls.certresolver=resolver'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_loki-web-secure.entrypoints=web-secure'
-      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_loki-web-secure-compress.compress=true'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_loki-web-secure.middlewares=${COMPOSE_PROJECT_NAME}_loki-web-secure-compress,${COMPOSE_PROJECT_NAME}_loki-auth'
-      - 'traefik.http.services.${COMPOSE_PROJECT_NAME}_loki-web-secure.loadbalancer.server.port=3100'
-      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_loki-auth.basicauth.users=${WATCH_LOKI_AUTH}'
+      - 'traefik.http.middlewares.${WATCH_COMPOSE_PROJECT_NAME}-loki-redirect-web-secure.redirectscheme.scheme=https'
+      - 'traefik.http.routers.${WATCH_COMPOSE_PROJECT_NAME}-loki-web.middlewares=${WATCH_COMPOSE_PROJECT_NAME}-loki-redirect-web-secure'
+      - 'traefik.http.routers.${WATCH_COMPOSE_PROJECT_NAME}-loki-web.rule=Host(`${TRAEFIK_HOST_LOKI}`)'
+      - 'traefik.http.routers.${WATCH_COMPOSE_PROJECT_NAME}-loki-web.entrypoints=web'
+      - 'traefik.http.routers.${WATCH_COMPOSE_PROJECT_NAME}-loki-web-secure.rule=Host(`${TRAEFIK_HOST_LOKI}`)'
+      - 'traefik.http.routers.${WATCH_COMPOSE_PROJECT_NAME}-loki-web-secure.tls.certresolver=resolver'
+      - 'traefik.http.routers.${WATCH_COMPOSE_PROJECT_NAME}-loki-web-secure.entrypoints=web-secure'
+      - 'traefik.http.middlewares.${WATCH_COMPOSE_PROJECT_NAME}-loki-web-secure-compress.compress=true'
+      - 'traefik.http.routers.${WATCH_COMPOSE_PROJECT_NAME}-loki-web-secure.middlewares=${WATCH_COMPOSE_PROJECT_NAME}-loki-web-secure-compress,${WATCH_COMPOSE_PROJECT_NAME}-loki-auth'
+      - 'traefik.http.services.${WATCH_COMPOSE_PROJECT_NAME}-loki-web-secure.loadbalancer.server.port=3100'
+      - 'traefik.http.middlewares.${WATCH_COMPOSE_PROJECT_NAME}-loki-auth.basicauth.users=${WATCH_LOKI_AUTH}'
       - 'traefik.docker.network=${NETWORK_NAME:-kompose}'
 
   # Promtail - Log Collector
   promtail:
     image: ${WATCH_PROMTAIL_IMAGE:-grafana/promtail:latest}
-    container_name: ${COMPOSE_PROJECT_NAME}_promtail
+    container_name: ${WATCH_COMPOSE_PROJECT_NAME}_promtail
     restart: unless-stopped
     environment:
       TZ: ${TIMEZONE:-Europe/Amsterdam}
@@ -332,7 +332,7 @@ services:
   # Alertmanager - Alert Management
   alertmanager:
     image: ${WATCH_ALERTMANAGER_IMAGE:-prom/alertmanager:latest}
-    container_name: ${COMPOSE_PROJECT_NAME}_alertmanager
+    container_name: ${WATCH_COMPOSE_PROJECT_NAME}_alertmanager
     restart: unless-stopped
     environment:
       TZ: ${TIMEZONE:-Europe/Amsterdam}
@@ -354,28 +354,28 @@ services:
       - "${WATCH_ALERTMANAGER_PORT:-9093}:9093"
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_alertmanager-redirect-web-secure.redirectscheme.scheme=https'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_alertmanager-web.middlewares=${COMPOSE_PROJECT_NAME}_alertmanager-redirect-web-secure'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_alertmanager-web.rule=Host(`${WATCH_TRAEFIK_HOST_ALERTMANAGER}`)'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_alertmanager-web.entrypoints=web'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_alertmanager-web-secure.rule=Host(`${WATCH_TRAEFIK_HOST_ALERTMANAGER}`)'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_alertmanager-web-secure.tls.certresolver=resolver'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_alertmanager-web-secure.entrypoints=web-secure'
-      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_alertmanager-web-secure-compress.compress=true'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_alertmanager-web-secure.middlewares=${COMPOSE_PROJECT_NAME}_alertmanager-web-secure-compress,${COMPOSE_PROJECT_NAME}_alertmanager-auth'
-      - 'traefik.http.services.${COMPOSE_PROJECT_NAME}_alertmanager-web-secure.loadbalancer.server.port=9093'
-      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_alertmanager-auth.basicauth.users=${WATCH_ALERTMANAGER_AUTH}'
+      - 'traefik.http.middlewares.${WATCH_COMPOSE_PROJECT_NAME}-alertmanager-redirect-web-secure.redirectscheme.scheme=https'
+      - 'traefik.http.routers.${WATCH_COMPOSE_PROJECT_NAME}-alertmanager-web.middlewares=${WATCH_COMPOSE_PROJECT_NAME}-alertmanager-redirect-web-secure'
+      - 'traefik.http.routers.${WATCH_COMPOSE_PROJECT_NAME}-alertmanager-web.rule=Host(`${TRAEFIK_HOST_ALERTMANAGER}`)'
+      - 'traefik.http.routers.${WATCH_COMPOSE_PROJECT_NAME}-alertmanager-web.entrypoints=web'
+      - 'traefik.http.routers.${WATCH_COMPOSE_PROJECT_NAME}-alertmanager-web-secure.rule=Host(`${TRAEFIK_HOST_ALERTMANAGER}`)'
+      - 'traefik.http.routers.${WATCH_COMPOSE_PROJECT_NAME}-alertmanager-web-secure.tls.certresolver=resolver'
+      - 'traefik.http.routers.${WATCH_COMPOSE_PROJECT_NAME}-alertmanager-web-secure.entrypoints=web-secure'
+      - 'traefik.http.middlewares.${WATCH_COMPOSE_PROJECT_NAME}-alertmanager-web-secure-compress.compress=true'
+      - 'traefik.http.routers.${WATCH_COMPOSE_PROJECT_NAME}-alertmanager-web-secure.middlewares=${WATCH_COMPOSE_PROJECT_NAME}-alertmanager-web-secure-compress,${WATCH_COMPOSE_PROJECT_NAME}-alertmanager-auth'
+      - 'traefik.http.services.${WATCH_COMPOSE_PROJECT_NAME}-alertmanager-web-secure.loadbalancer.server.port=9093'
+      - 'traefik.http.middlewares.${WATCH_COMPOSE_PROJECT_NAME}-alertmanager-auth.basicauth.users=${WATCH_ALERTMANAGER_AUTH}'
       - 'traefik.docker.network=${NETWORK_NAME:-kompose}'
 
 volumes:
   prometheus_data:
-    name: ${COMPOSE_PROJECT_NAME}_prometheus_data
+    name: ${WATCH_COMPOSE_PROJECT_NAME}_prometheus_data
   grafana_data:
-    name: ${COMPOSE_PROJECT_NAME}_grafana_data
+    name: ${WATCH_COMPOSE_PROJECT_NAME}_grafana_data
   alertmanager_data:
-    name: ${COMPOSE_PROJECT_NAME}_alertmanager_data
+    name: ${WATCH_COMPOSE_PROJECT_NAME}_alertmanager_data
   loki_data:
-    name: ${COMPOSE_PROJECT_NAME}_loki_data
+    name: ${WATCH_COMPOSE_PROJECT_NAME}_loki_data
 
 networks:
   kompose_network:

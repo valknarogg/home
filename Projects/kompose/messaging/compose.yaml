@@ -1,9 +1,9 @@
-name: messaging
+name: ${MESSAGING_COMPOSE_PROJECT_NAME}
 
 services:
   gotify:
     image: ${MESSAGING_GOTIFY_IMAGE}
-    container_name: ${COMPOSE_PROJECT_NAME}_gotify
+    container_name: ${MESSAGING_COMPOSE_PROJECT_NAME}_gotify
     restart: unless-stopped
     volumes:
       - gotify_data:/app/data
@@ -12,30 +12,32 @@ services:
       GOTIFY_DEFAULTUSER_NAME: ${MESSAGING_GOTIFY_DEFAULTUSER_NAME}
       GOTIFY_DEFAULTUSER_PASS: ${MESSAGING_GOTIFY_DEFAULTUSER_PASS}
       # Connect Gotify to Mailhog for outgoing notifications
-      GOTIFY_SERVER_SMTP_HOST: mailhog
+      GOTIFY_SERVER_SMTP_HOST: ${MESSAGING_COMPOSE_PROJECT_NAME}_mailhog
       GOTIFY_SERVER_SMTP_PORT: 1025
       GOTIFY_SERVER_SMTP_FROM: ${EMAIL_FROM}
     depends_on:
       - mailhog
+    ports:
+      - "${MESSAGING_GOTIFY_PORT:-8085}:80"
     networks:
       - kompose_network
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_gotify-redirect-web-secure.redirectscheme.scheme=https'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_gotify-web.middlewares=${COMPOSE_PROJECT_NAME}_gotify-redirect-web-secure'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_gotify-web.rule=Host(`${TRAEFIK_HOST_CHAT}`)'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_gotify-web.entrypoints=web'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_gotify-web-secure.rule=Host(`${TRAEFIK_HOST_CHAT}`)'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_gotify-web-secure.tls.certresolver=resolver'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_gotify-web-secure.entrypoints=web-secure'
-      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_gotify-web-secure-compress.compress=true'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_gotify-web-secure.middlewares=${COMPOSE_PROJECT_NAME}_gotify-web-secure-compress'
-      - 'traefik.http.services.${COMPOSE_PROJECT_NAME}_gotify-web-secure.loadbalancer.server.port=${MESSAGING_GOTIFY_PORT}'
+      - 'traefik.http.middlewares.${MESSAGING_COMPOSE_PROJECT_NAME}-gotify-redirect-web-secure.redirectscheme.scheme=https'
+      - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-gotify-web.middlewares=${MESSAGING_COMPOSE_PROJECT_NAME}-gotify-redirect-web-secure'
+      - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-gotify-web.rule=Host(`${TRAEFIK_HOST_CHAT}`)'
+      - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-gotify-web.entrypoints=web'
+      - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-gotify-web-secure.rule=Host(`${TRAEFIK_HOST_CHAT}`)'
+      - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-gotify-web-secure.tls.certresolver=resolver'
+      - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-gotify-web-secure.entrypoints=web-secure'
+      - 'traefik.http.middlewares.${MESSAGING_COMPOSE_PROJECT_NAME}-gotify-web-secure-compress.compress=true'
+      - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-gotify-web-secure.middlewares=${MESSAGING_COMPOSE_PROJECT_NAME}-gotify-web-secure-compress'
+      - 'traefik.http.services.${MESSAGING_COMPOSE_PROJECT_NAME}-gotify-web-secure.loadbalancer.server.port=80'
       - 'traefik.docker.network=${NETWORK_NAME:-kompose}'
 
   mailhog:
     image: ${MESSAGING_MAILHOG_IMAGE}
-    container_name: ${COMPOSE_PROJECT_NAME}_mailhog
+    container_name: ${MESSAGING_COMPOSE_PROJECT_NAME}_mailhog
     restart: unless-stopped
     environment:
       TZ: ${TIMEZONE:-Europe/Amsterdam}
@@ -48,24 +50,28 @@ services:
       MH_SMTP_PORT: ${EMAIL_SMTP_PORT}
       MH_SMTP_USER: ${EMAIL_SMTP_USER}
       MH_SMTP_PASS: ${EMAIL_SMTP_PASSWORD}
+    ports:
+      - "${MESSAGING_MAILHOG_PORT:-8025}:8025"
+      - "1025:1025"
     networks:
       - kompose_network
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_mailhog-redirect-web-secure.redirectscheme.scheme=https'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_mailhog-web.middlewares=${COMPOSE_PROJECT_NAME}_mailhog-redirect-web-secure'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_mailhog-web.rule=Host(`${TRAEFIK_HOST_MAIL}`)'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_mailhog-web.entrypoints=web'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_mailhog-web-secure.rule=Host(`${TRAEFIK_HOST_MAIL}`)'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_mailhog-web-secure.tls.certresolver=resolver'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_mailhog-web-secure.entrypoints=web-secure'
-      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_mailhog-web-secure-compress.compress=true'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_mailhog-web-secure.middlewares=${COMPOSE_PROJECT_NAME}_mailhog-web-secure-compress'
-      - 'traefik.http.services.${COMPOSE_PROJECT_NAME}_mailhog-web-secure.loadbalancer.server.port=${MESSAGING_MAILHOG_PORT}'
+      - 'traefik.http.middlewares.${MESSAGING_COMPOSE_PROJECT_NAME}-mailhog-redirect-web-secure.redirectscheme.scheme=https'
+      - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-mailhog-web.middlewares=${MESSAGING_COMPOSE_PROJECT_NAME}-mailhog-redirect-web-secure'
+      - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-mailhog-web.rule=Host(`${TRAEFIK_HOST_MAIL}`)'
+      - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-mailhog-web.entrypoints=web'
+      - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-mailhog-web-secure.rule=Host(`${TRAEFIK_HOST_MAIL}`)'
+      - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-mailhog-web-secure.tls.certresolver=resolver'
+      - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-mailhog-web-secure.entrypoints=web-secure'
+      - 'traefik.http.middlewares.${MESSAGING_COMPOSE_PROJECT_NAME}-mailhog-web-secure-compress.compress=true'
+      - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-mailhog-web-secure.middlewares=${MESSAGING_COMPOSE_PROJECT_NAME}-mailhog-web-secure-compress'
+      - 'traefik.http.services.${MESSAGING_COMPOSE_PROJECT_NAME}-mailhog-web-secure.loadbalancer.server.port=8025'
       - 'traefik.docker.network=${NETWORK_NAME:-kompose}'
 
 volumes:
   gotify_data:
+    name: ${MESSAGING_COMPOSE_PROJECT_NAME}_gotify_data
 
 networks:
   kompose_network:

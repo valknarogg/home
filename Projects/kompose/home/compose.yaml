@@ -1,10 +1,10 @@
-name: home
+name: ${HOME_COMPOSE_PROJECT_NAME}
 
 services:
   # Home Assistant - Smart Home Hub
   homeassistant:
-    image: ${HOMEASSISTANT_IMAGE:-ghcr.io/home-assistant/home-assistant:stable}
-    container_name: ${COMPOSE_PROJECT_NAME}_homeassistant
+    image: ${HOME_HOMEASSISTANT_IMAGE:-ghcr.io/home-assistant/home-assistant:stable}
+    container_name: ${HOME_COMPOSE_PROJECT_NAME}_homeassistant
     restart: unless-stopped
     privileged: true
     environment:
@@ -28,27 +28,27 @@ services:
     networks:
       - kompose_network
     ports:
-      - "${HOMEASSISTANT_PORT:-8123}:8123"
+      - "${HOME_HOMEASSISTANT_PORT:-8123}:8123"
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_homeassistant-redirect-web-secure.redirectscheme.scheme=https'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_homeassistant-web.middlewares=${COMPOSE_PROJECT_NAME}_homeassistant-redirect-web-secure'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_homeassistant-web.rule=Host(`${TRAEFIK_HOST_HOME}`)'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_homeassistant-web.entrypoints=web'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_homeassistant-web-secure.rule=Host(`${TRAEFIK_HOST_HOME}`)'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_homeassistant-web-secure.tls.certresolver=resolver'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_homeassistant-web-secure.entrypoints=web-secure'
-      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_homeassistant-web-secure-compress.compress=true'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_homeassistant-web-secure.middlewares=${COMPOSE_PROJECT_NAME}_homeassistant-web-secure-compress'
-      - 'traefik.http.services.${COMPOSE_PROJECT_NAME}_homeassistant-web-secure.loadbalancer.server.port=8123'
+      - 'traefik.http.middlewares.${HOME_COMPOSE_PROJECT_NAME}-homeassistant-redirect-web-secure.redirectscheme.scheme=https'
+      - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-homeassistant-web.middlewares=${HOME_COMPOSE_PROJECT_NAME}-homeassistant-redirect-web-secure'
+      - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-homeassistant-web.rule=Host(`${TRAEFIK_HOST_HOME}`)'
+      - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-homeassistant-web.entrypoints=web'
+      - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-homeassistant-web-secure.rule=Host(`${TRAEFIK_HOST_HOME}`)'
+      - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-homeassistant-web-secure.tls.certresolver=resolver'
+      - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-homeassistant-web-secure.entrypoints=web-secure'
+      - 'traefik.http.middlewares.${HOME_COMPOSE_PROJECT_NAME}-homeassistant-web-secure-compress.compress=true'
+      - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-homeassistant-web-secure.middlewares=${HOME_COMPOSE_PROJECT_NAME}-homeassistant-web-secure-compress'
+      - 'traefik.http.services.${HOME_COMPOSE_PROJECT_NAME}-homeassistant-web-secure.loadbalancer.server.port=8123'
       - 'traefik.docker.network=${NETWORK_NAME:-kompose}'
     depends_on:
       - matter-server
 
   # Matter Server - Matter Protocol Support
   matter-server:
-    image: ${MATTER_SERVER_IMAGE:-ghcr.io/home-assistant-libs/python-matter-server:stable}
-    container_name: ${COMPOSE_PROJECT_NAME}_matter
+    image: ${HOME_MATTER_SERVER_IMAGE:-ghcr.io/home-assistant-libs/python-matter-server:stable}
+    container_name: ${HOME_COMPOSE_PROJECT_NAME}_matter
     restart: unless-stopped
     security_opt:
       - apparmor:unconfined
@@ -64,14 +64,14 @@ services:
   # MQTT Bridge - Connects to core MQTT (Mosquitto)
   # Note: Using external MQTT from core stack, no separate MQTT needed
   # MQTT connection details:
-  # Host: core-mqtt (container name from core stack)
+  # Host: core_mqtt (container name from core stack)
   # Port: 1883
   # Configure in Home Assistant MQTT integration
 
   # Zigbee2MQTT (Optional - enable if using Zigbee devices)
   zigbee2mqtt:
-    image: ${ZIGBEE2MQTT_IMAGE:-koenkk/zigbee2mqtt:latest}
-    container_name: ${COMPOSE_PROJECT_NAME}_zigbee2mqtt
+    image: ${HOME_ZIGBEE2MQTT_IMAGE:-koenkk/zigbee2mqtt:latest}
+    container_name: ${HOME_COMPOSE_PROJECT_NAME}_zigbee2mqtt
     restart: unless-stopped
     environment:
       TZ: ${TIMEZONE:-Europe/Amsterdam}
@@ -84,27 +84,27 @@ services:
     networks:
       - kompose_network
     ports:
-      - "${ZIGBEE2MQTT_PORT:-8080}:8080"
+      - "${HOME_ZIGBEE2MQTT_PORT:-8080}:8080"
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_zigbee2mqtt-redirect-web-secure.redirectscheme.scheme=https'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_zigbee2mqtt-web.middlewares=${COMPOSE_PROJECT_NAME}_zigbee2mqtt-redirect-web-secure'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_zigbee2mqtt-web.rule=Host(`${TRAEFIK_HOST_ZIGBEE}`)'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_zigbee2mqtt-web.entrypoints=web'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_zigbee2mqtt-web-secure.rule=Host(`${TRAEFIK_HOST_ZIGBEE}`)'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_zigbee2mqtt-web-secure.tls.certresolver=resolver'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_zigbee2mqtt-web-secure.entrypoints=web-secure'
-      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}_zigbee2mqtt-web-secure-compress.compress=true'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}_zigbee2mqtt-web-secure.middlewares=${COMPOSE_PROJECT_NAME}_zigbee2mqtt-web-secure-compress'
-      - 'traefik.http.services.${COMPOSE_PROJECT_NAME}_zigbee2mqtt-web-secure.loadbalancer.server.port=8080'
-      - 'traefik.docker.network=${NETWORK_NAME:-kompose}'
+      - 'traefik.http.middlewares.${HOME_COMPOSE_PROJECT_NAME}-zigbee2mqtt-redirect-web-secure.redirectscheme.scheme=https'
+      - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-zigbee2mqtt-web.middlewares=${HOME_COMPOSE_PROJECT_NAME}-zigbee2mqtt-redirect-web-secure'
+      - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-zigbee2mqtt-web.rule=Host(`${TRAEFIK_HOST_ZIGBEE}`)'
+      - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-zigbee2mqtt-web.entrypoints=web'
+      - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-zigbee2mqtt-web-secure.rule=Host(`${TRAEFIK_HOST_ZIGBEE}`)'
+      - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-zigbee2mqtt-web-secure.tls.certresolver=resolver'
+      - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-zigbee2mqtt-web-secure.entrypoints=web-secure'
+      - 'traefik.http.middlewares.${HOME_COMPOSE_PROJECT_NAME}-zigbee2mqtt-web-secure-compress.compress=true'
+      - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-zigbee2mqtt-web-secure.middlewares=${HOME_COMPOSE_PROJECT_NAME}-zigbee2mqtt-web-secure-compress'
+      - 'traefik.http.services.${HOME_COMPOSE_PROJECT_NAME}-zigbee2mqtt-web-secure.loadbalancer.server.port=8080'
+      - 'traefik.http.docker.network=${NETWORK_NAME:-kompose}'
     profiles:
       - zigbee
 
   # ESPHome (Optional - for ESP8266/ESP32 devices)
   esphome:
-    image: ${ESPHOME_IMAGE:-ghcr.io/esphome/esphome:stable}
-    container_name: ${COMPOSE_PROJECT_NAME}_esphome
+    image: ${HOME_ESPHOME_IMAGE:-ghcr.io/esphome/esphome:stable}
+    container_name: ${HOME_COMPOSE_PROJECT_NAME}_esphome
     restart: unless-stopped
     privileged: true
     environment:
@@ -118,13 +118,13 @@ services:
 
 volumes:
   homeassistant_config:
-    name: ${COMPOSE_PROJECT_NAME}_homeassistant_config
+    name: ${HOME_COMPOSE_PROJECT_NAME}_homeassistant_config
   matter_data:
-    name: ${COMPOSE_PROJECT_NAME}_matter_data
+    name: ${HOME_COMPOSE_PROJECT_NAME}_matter_data
   zigbee2mqtt_data:
-    name: ${COMPOSE_PROJECT_NAME}_zigbee2mqtt_data
+    name: ${HOME_COMPOSE_PROJECT_NAME}_zigbee2mqtt_data
   esphome_config:
-    name: ${COMPOSE_PROJECT_NAME}_esphome_config
+    name: ${HOME_COMPOSE_PROJECT_NAME}_esphome_config
 
 networks:
   kompose_network:

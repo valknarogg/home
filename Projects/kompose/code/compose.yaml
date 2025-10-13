@@ -1,10 +1,10 @@
-name: code
+name: ${CODE_COMPOSE_PROJECT_NAME}
 
 services:
   # Gitea - Self-hosted Git Service
   gitea:
     image: ${CODE_GITEA_IMAGE:-gitea/gitea:latest}
-    container_name: ${COMPOSE_PROJECT_NAME}_gitea
+    container_name: ${CODE_COMPOSE_PROJECT_NAME}_gitea
     restart: unless-stopped
     environment:
       TZ: ${TIMEZONE:-Europe/Amsterdam}
@@ -12,9 +12,9 @@ services:
       USER_GID: ${CODE_GITEA_GID:-1000}
       
       # Application Configuration
-      GITEA__server__DOMAIN: ${CODE_GITEA_TRAEFIK_HOST}
-      GITEA__server__SSH_DOMAIN: ${CODE_GITEA_TRAEFIK_HOST}
-      GITEA__server__ROOT_URL: https://${CODE_GITEA_TRAEFIK_HOST}/
+      GITEA__server__DOMAIN: ${TRAEFIK_HOST_CODE}
+      GITEA__server__SSH_DOMAIN: ${TRAEFIK_HOST_CODE}
+      GITEA__server__ROOT_URL: https://${TRAEFIK_HOST_CODE}/
       GITEA__server__HTTP_PORT: 3000
       GITEA__server__SSH_PORT: 2222
       GITEA__server__START_SSH_SERVER: true
@@ -23,7 +23,7 @@ services:
       
       # Database Configuration (PostgreSQL from core stack)
       GITEA__database__DB_TYPE: postgres
-      GITEA__database__HOST: ${CORE_DB_HOST}:5432
+      GITEA__database__HOST: ${CORE_DB_HOST}:${CORE_DB_PORT}
       GITEA__database__NAME: ${CODE_GITEA_DB_NAME:-gitea}
       GITEA__database__USER: ${DB_USER}
       GITEA__database__PASSWD: ${DB_PASSWORD}
@@ -33,15 +33,15 @@ services:
       # Cache Configuration (Redis from core stack)
       GITEA__cache__ENABLED: true
       GITEA__cache__ADAPTER: redis
-      GITEA__cache__HOST: redis://${CORE_REDIS_HOST}:6379/1?password=${REDIS_PASSWORD}
+      GITEA__cache__HOST: redis://${CORE_REDIS_HOST}:${CORE_REDIS_PORT}/1?password=${REDIS_PASSWORD}
       
       # Session Configuration (Redis from core stack)
       GITEA__session__PROVIDER: redis
-      GITEA__session__PROVIDER_CONFIG: redis://${CORE_REDIS_HOST}:6379/2?password=${REDIS_PASSWORD}
+      GITEA__session__PROVIDER_CONFIG: redis://${CORE_REDIS_HOST}:${CORE_REDIS_PORT}/2?password=${REDIS_PASSWORD}
       
       # Queue Configuration (Redis from core stack)
       GITEA__queue__TYPE: redis
-      GITEA__queue__CONN_STR: redis://${CORE_REDIS_HOST}:6379/3?password=${REDIS_PASSWORD}
+      GITEA__queue__CONN_STR: redis://${CORE_REDIS_HOST}:${CORE_REDIS_PORT}/3?password=${REDIS_PASSWORD}
       
       # Security Configuration
       GITEA__security__INSTALL_LOCK: true
@@ -125,31 +125,32 @@ services:
       - 'traefik.enable=true'
       
       # HTTP to HTTPS redirect
-      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-gitea-redirect-web-secure.redirectscheme.scheme=https'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-gitea-web.middlewares=${COMPOSE_PROJECT_NAME}-gitea-redirect-web-secure'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-gitea-web.rule=Host(`${CODE_GITEA_TRAEFIK_HOST}`)'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-gitea-web.entrypoints=web'
+      - 'traefik.http.middlewares.${CODE_COMPOSE_PROJECT_NAME}-gitea-redirect-web-secure.redirectscheme.scheme=https'
+      - 'traefik.http.routers.${CODE_COMPOSE_PROJECT_NAME}-gitea-web.middlewares=${CODE_COMPOSE_PROJECT_NAME}-gitea-redirect-web-secure'
+      - 'traefik.http.routers.${CODE_COMPOSE_PROJECT_NAME}-gitea-web.rule=Host(`${TRAEFIK_HOST_CODE}`)'
+      - 'traefik.http.routers.${CODE_COMPOSE_PROJECT_NAME}-gitea-web.entrypoints=web'
       
       # HTTPS configuration
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-gitea-web-secure.rule=Host(`${CODE_GITEA_TRAEFIK_HOST}`)'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-gitea-web-secure.tls.certresolver=resolver'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-gitea-web-secure.entrypoints=web-secure'
+      - 'traefik.http.routers.${CODE_COMPOSE_PROJECT_NAME}-gitea-web-secure.rule=Host(`${TRAEFIK_HOST_CODE}`)'
+      - 'traefik.http.routers.${CODE_COMPOSE_PROJECT_NAME}-gitea-web-secure.tls.certresolver=resolver'
+      - 'traefik.http.routers.${CODE_COMPOSE_PROJECT_NAME}-gitea-web-secure.entrypoints=web-secure'
       
       # Compression middleware
-      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-gitea-web-secure-compress.compress=true'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-gitea-web-secure.middlewares=${COMPOSE_PROJECT_NAME}-gitea-web-secure-compress'
+      - 'traefik.http.middlewares.${CODE_COMPOSE_PROJECT_NAME}-gitea-web-secure-compress.compress=true'
+      - 'traefik.http.routers.${CODE_COMPOSE_PROJECT_NAME}-gitea-web-secure.middlewares=${CODE_COMPOSE_PROJECT_NAME}-gitea-web-secure-compress'
       
       # Load balancer configuration
-      - 'traefik.http.services.${COMPOSE_PROJECT_NAME}-gitea-web-secure.loadbalancer.server.port=3000'
+      - 'traefik.http.services.${CODE_COMPOSE_PROJECT_NAME}-gitea-web-secure.loadbalancer.server.port=3000'
       - 'traefik.docker.network=${NETWORK_NAME}'
 
   # Database initialization service
   gitea-init:
     image: postgres:16-alpine
-    container_name: ${COMPOSE_PROJECT_NAME}_gitea_init
+    container_name: ${CODE_COMPOSE_PROJECT_NAME}_gitea_init
     restart: "no"
     environment:
       PGPASSWORD: ${DB_PASSWORD}
+      GITEA_DB_NAME: ${CODE_GITEA_DB_NAME:-gitea}
     networks:
       - kompose_network
     entrypoint: >
@@ -160,9 +161,9 @@ services:
         done;
         echo 'PostgreSQL is ready!';
         
-        if ! psql -h ${CORE_DB_HOST} -U ${DB_USER} -lqt | cut -d \| -f 1 | grep -qw ${GITEA_DB_NAME}; then
+        if ! psql -h ${CORE_DB_HOST} -U ${DB_USER} -lqt | cut -d \| -f 1 | grep -qw $${GITEA_DB_NAME}; then
           echo 'Creating gitea database...';
-          psql -h ${CORE_DB_HOST} -U ${DB_USER} -c 'CREATE DATABASE ${GITEA_DB_NAME};';
+          psql -h ${CORE_DB_HOST} -U ${DB_USER} -c 'CREATE DATABASE $${GITEA_DB_NAME};';
           echo 'Database created successfully!';
         else
           echo 'Database already exists.';
@@ -172,11 +173,11 @@ services:
   # Gitea Actions Runner
   gitea-runner:
     image: ${CODE_GITEA_RUNNER_IMAGE:-gitea/act_runner:latest}
-    container_name: ${COMPOSE_PROJECT_NAME}_gitea_runner
+    container_name: ${CODE_COMPOSE_PROJECT_NAME}_gitea_runner
     restart: unless-stopped
     environment:
       TZ: ${TIMEZONE:-Europe/Amsterdam}
-      GITEA_INSTANCE_URL: https://${CODE_GITEA_TRAEFIK_HOST}
+      GITEA_INSTANCE_URL: https://${TRAEFIK_HOST_CODE}
       GITEA_RUNNER_REGISTRATION_TOKEN: ${CODE_GITEA_RUNNER_TOKEN}
       GITEA_RUNNER_NAME: ${CODE_GITEA_RUNNER_NAME:-kompose-runner-1}
       GITEA_RUNNER_LABELS: ${CODE_GITEA_RUNNER_LABELS:-ubuntu-latest:docker://node:16-bullseye}
@@ -191,11 +192,11 @@ services:
 
 volumes:
   gitea_data:
-    name: ${COMPOSE_PROJECT_NAME}_gitea_data
+    name: ${CODE_COMPOSE_PROJECT_NAME}_gitea_data
   gitea_config:
-    name: ${COMPOSE_PROJECT_NAME}_gitea_config
+    name: ${CODE_COMPOSE_PROJECT_NAME}_gitea_config
   gitea_runner_data:
-    name: ${COMPOSE_PROJECT_NAME}_gitea_runner_data
+    name: ${CODE_COMPOSE_PROJECT_NAME}_gitea_runner_data
 
 networks:
   kompose_network:

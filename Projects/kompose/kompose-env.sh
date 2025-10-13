@@ -181,8 +181,13 @@ map_stack_variables() {
         export "${var}"="${!var}"
     done
     
-    # Also export common shared variables
-    export COMPOSE_PROJECT_NAME="${prefix,,}"
+    # Export COMPOSE_PROJECT_NAME using the dedicated stack variable
+    # Each stack should have a <STACKNAME>_COMPOSE_PROJECT_NAME variable in root .env
+    # Example: CORE_COMPOSE_PROJECT_NAME=core
+    local compose_project_var="${prefix}_COMPOSE_PROJECT_NAME"
+    export COMPOSE_PROJECT_NAME="${!compose_project_var:-${prefix,,}}"
+    
+    # Export common shared variables
     export NETWORK_NAME="${NETWORK_NAME:-kompose}"
     export TIMEZONE="${TIMEZONE:-Europe/Amsterdam}"
     

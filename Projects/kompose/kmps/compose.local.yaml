@@ -4,7 +4,7 @@ services:
   # Kompose API Server
   kompose-api:
     image: ${DOCKER_IMAGE:-python:3.11-alpine}
-    container_name: ${COMPOSE_PROJECT_NAME}_api
+    container_name: ${KMPS_COMPOSE_PROJECT_NAME}_api
     restart: unless-stopped
     working_dir: /kompose
     command: sh -c "python3 /kompose/kompose-api-server.sh"
@@ -32,7 +32,7 @@ services:
   # Kompose Management Portal & SSO Administration
   kmps-app:
     image: ${DOCKER_IMAGE:-node:20-alpine}
-    container_name: ${COMPOSE_PROJECT_NAME}_app
+    container_name: ${KMPS_COMPOSE_PROJECT_NAME}_app
     restart: unless-stopped
     working_dir: /app
     command: sh -c "npm install && npm run dev"
@@ -87,7 +87,7 @@ services:
 
 volumes:
   kmps_node_modules:
-    name: ${COMPOSE_PROJECT_NAME}_node_modules
+    name: ${KMPS_COMPOSE_PROJECT_NAME}_node_modules
 
 networks:
   kompose_network:

@@ -1,9 +1,9 @@
-name: proxy
+name: ${PROXY_COMPOSE_PROJECT_NAME}
 
 services:
   traefik:
-    image: ${DOCKER_IMAGE}
-    container_name: ${COMPOSE_PROJECT_NAME}_app
+    image: ${PROXY_DOCKER_IMAGE}
+    container_name: ${PROXY_COMPOSE_PROJECT_NAME}_app
     restart: unless-stopped
     command:
       # API & Dashboard
@@ -11,7 +11,7 @@ services:
       - '--api.insecure=false'
       
       # Logging
-      - '--log.level=${LOG_LEVEL:-INFO}'
+      - '--log.level=${PROXY_LOG_LEVEL:-INFO}'
       - '--accesslog=true'
       
       # Global
@@ -28,8 +28,8 @@ services:
       - '--providers.file.watch=true'
       
       # Entrypoints
-      - '--entrypoints.web.address=:80'
-      - '--entrypoints.web-secure.address=:443'
+      - '--entrypoints.web.address=:${PROXY_PORT_HTTP:-80}'
+      - '--entrypoints.web-secure.address=:${PROXY_PORT_HTTPS:-443}'
       
       # Global HTTP to HTTPS redirect
       - '--entrypoints.web.http.redirections.entryPoint.to=web-secure'
@@ -54,10 +54,10 @@ services:
       - kompose_network
     
     ports:
-      - "80:80"
-      - "443:443"
+      - "${PROXY_PORT_HTTP:-80}:80"
+      - "${PROXY_PORT_HTTPS:-443}:443"
       # Dashboard only accessible from localhost
-      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:${PROXY_PORT_DASHBOARD:-8080}:8080"
     
     volumes:
       - /var/local/data/traefik/letsencrypt:/letsencrypt
@@ -79,7 +79,7 @@ services:
       - 'traefik.http.routers.dashboard.middlewares=internal-only,dashboard-auth,security-headers'
       
       # Basic Auth for Dashboard
-      - 'traefik.http.middlewares.dashboard-auth.basicauth.users=${TRAEFIK_DASHBOARD_AUTH}'
+      - 'traefik.http.middlewares.dashboard-auth.basicauth.users=${PROXY_DASHBOARD_AUTH}'
 
 networks:
   kompose_network:

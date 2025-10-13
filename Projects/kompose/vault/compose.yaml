@@ -9,12 +9,12 @@
 # - Enhanced email notifications
 # =================================================================
 
-name: vault
+name: ${VAULT_COMPOSE_PROJECT_NAME}
 
 services:
   vaultwarden:
     image: ${VAULT_DOCKER_IMAGE}
-    container_name: ${COMPOSE_PROJECT_NAME}_app
+    container_name: ${VAULT_COMPOSE_PROJECT_NAME}_app
     restart: unless-stopped
     volumes:
       - ./bitwarden:/data:rw
@@ -27,12 +27,12 @@ services:
       
       # Database Configuration (Optional: Migrate to PostgreSQL)
       # Uncomment to use PostgreSQL instead of SQLite
-      # DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@core-postgres:5432/${DB_NAME}
+      # DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@${CORE_DB_HOST}:${CORE_DB_PORT}/${VAULT_DB_NAME}
       
       # Application Settings
       WEBSOCKET_ENABLED: ${VAULT_WEBSOCKET_ENABLED}
       SIGNUPS_ALLOWED: ${VAULT_SIGNUPS_ALLOWED}
-      DOMAIN: ${VAULT_TRAEFIK_HOST}
+      DOMAIN: ${TRAEFIK_HOST_VAULT}
       
       # Email Configuration (via Mailhog)
       SMTP_HOST: messaging_mailhog
@@ -45,8 +45,8 @@ services:
       
       # Security Event Publishing via MQTT
       MQTT_ENABLED: ${VAULT_MQTT_ENABLED:-true}
-      MQTT_BROKER: core-mqtt
-      MQTT_PORT: 1883
+      MQTT_BROKER: core_mqtt
+      MQTT_PORT: ${CORE_MQTT_PORT}
       MQTT_TOPIC_PREFIX: kompose/vault/security
       
       # Security Settings
@@ -73,18 +73,18 @@ services:
       - 'traefik.enable=true'
       
       # HTTP to HTTPS redirect
-      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-redirect-web-secure.redirectscheme.scheme=https'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.middlewares=${COMPOSE_PROJECT_NAME}-redirect-web-secure'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.rule=Host(`${TRAEFIK_HOST}`)'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.entrypoints=web'
+      - 'traefik.http.middlewares.${VAULT_COMPOSE_PROJECT_NAME}-redirect-web-secure.redirectscheme.scheme=https'
+      - 'traefik.http.routers.${VAULT_COMPOSE_PROJECT_NAME}-web.middlewares=${VAULT_COMPOSE_PROJECT_NAME}-redirect-web-secure'
+      - 'traefik.http.routers.${VAULT_COMPOSE_PROJECT_NAME}-web.rule=Host(`${TRAEFIK_HOST_VAULT}`)'
+      - 'traefik.http.routers.${VAULT_COMPOSE_PROJECT_NAME}-web.entrypoints=web'
       
       # HTTPS with Dual Authentication
       # Note: SSO provides access control, Vaultwarden handles vault unlocking
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.rule=Host(`${TRAEFIK_HOST}`)'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.tls.certresolver=resolver'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.entrypoints=web-secure'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.middlewares=sso-secure'
-      - 'traefik.http.services.${COMPOSE_PROJECT_NAME}-web-secure.loadbalancer.server.port=${VAULT_APP_PORT}'
+      - 'traefik.http.routers.${VAULT_COMPOSE_PROJECT_NAME}-web-secure.rule=Host(`${TRAEFIK_HOST_VAULT}`)'
+      - 'traefik.http.routers.${VAULT_COMPOSE_PROJECT_NAME}-web-secure.tls.certresolver=resolver'
+      - 'traefik.http.routers.${VAULT_COMPOSE_PROJECT_NAME}-web-secure.entrypoints=web-secure'
+      - 'traefik.http.routers.${VAULT_COMPOSE_PROJECT_NAME}-web-secure.middlewares=sso-secure'
+      - 'traefik.http.services.${VAULT_COMPOSE_PROJECT_NAME}-web-secure.loadbalancer.server.port=${VAULT_APP_PORT}'
       - 'traefik.docker.network=${NETWORK_NAME:-kompose}'
       
       # Monitoring Labels
@@ -95,19 +95,6 @@ services:
       # Rate Limiting for security
       - 'traefik.http.middlewares.vault-ratelimit.ratelimit.average=10'
       - 'traefik.http.middlewares.vault-ratelimit.ratelimit.burst=20'
-
-  # Security Event Monitor (sidecar)
-  vault-monitor:
-    image: alpine:latest
-    container_name: ${COMPOSE_PROJECT_NAME}_monitor
-    restart: unless-stopped
-    command: tail -f /data/vaultwarden.log
-    volumes:
-      - ./bitwarden:/data:ro
-    networks:
-      - kompose_network
-    labels:
-      - 'prometheus.scrape=false'
 
 networks:
   kompose_network:

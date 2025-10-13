@@ -1,9 +1,9 @@
-name: auth
+name: ${AUTH_COMPOSE_PROJECT_NAME}
 
 services:
   keycloak:
     image: ${AUTH_DOCKER_IMAGE}
-    container_name: ${COMPOSE_PROJECT_NAME}_keycloak
+    container_name: ${AUTH_COMPOSE_PROJECT_NAME}_keycloak
     restart: unless-stopped
     environment:
       TZ: ${TIMEZONE:-Europe/Amsterdam}
@@ -12,7 +12,7 @@ services:
       KC_DB_USERNAME: ${DB_USER}
       KC_DB_PASSWORD: ${DB_PASSWORD}
       KC_DB_SCHEMA: public
-      KC_HOSTNAME: https://${TRAEFIK_HOST}
+      KC_HOSTNAME: https://${TRAEFIK_HOST_AUTH}
       KC_HTTP_ENABLED: true
       HTTP_ADDRESS_FORWARDING: true
       KC_BOOTSTRAP_ADMIN_USERNAME: ${AUTH_KEYCLOAK_ADMIN_USERNAME}
@@ -20,32 +20,32 @@ services:
       KC_PROXY: edge
       KC_FEATURES: docker
     command: start
-    # healthcheck:
-    #   test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-    #   interval: 30s
-    #   timeout: 5s
-    #   retries: 3
-    #   start_period: 60s
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
     networks:
       - kompose_network
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-redirect-web-secure.redirectscheme.scheme=https'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.middlewares=${COMPOSE_PROJECT_NAME}-redirect-web-secure'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.rule=Host(`${TRAEFIK_HOST}`)'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.entrypoints=web'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.rule=Host(`${TRAEFIK_HOST}`)'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.tls.certresolver=resolver'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.entrypoints=web-secure'
-      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-web-secure-compress.compress=true'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web-secure.middlewares=${COMPOSE_PROJECT_NAME}-web-secure-compress'
-      - 'traefik.http.services.${COMPOSE_PROJECT_NAME}-web-secure.loadbalancer.server.port=8080'
+      - 'traefik.http.middlewares.${AUTH_COMPOSE_PROJECT_NAME}-redirect-web-secure.redirectscheme.scheme=https'
+      - 'traefik.http.routers.${AUTH_COMPOSE_PROJECT_NAME}-web.middlewares=${AUTH_COMPOSE_PROJECT_NAME}-redirect-web-secure'
+      - 'traefik.http.routers.${AUTH_COMPOSE_PROJECT_NAME}-web.rule=Host(`${TRAEFIK_HOST_AUTH}`)'
+      - 'traefik.http.routers.${AUTH_COMPOSE_PROJECT_NAME}-web.entrypoints=web'
+      - 'traefik.http.routers.${AUTH_COMPOSE_PROJECT_NAME}-web-secure.rule=Host(`${TRAEFIK_HOST_AUTH}`)'
+      - 'traefik.http.routers.${AUTH_COMPOSE_PROJECT_NAME}-web-secure.tls.certresolver=resolver'
+      - 'traefik.http.routers.${AUTH_COMPOSE_PROJECT_NAME}-web-secure.entrypoints=web-secure'
+      - 'traefik.http.middlewares.${AUTH_COMPOSE_PROJECT_NAME}-web-secure-compress.compress=true'
+      - 'traefik.http.routers.${AUTH_COMPOSE_PROJECT_NAME}-web-secure.middlewares=${AUTH_COMPOSE_PROJECT_NAME}-web-secure-compress'
+      - 'traefik.http.services.${AUTH_COMPOSE_PROJECT_NAME}-web-secure.loadbalancer.server.port=8080'
       - 'traefik.docker.network=${NETWORK_NAME:-kompose}'
 
   # OAuth2 Proxy - SSO Forward Authentication
   oauth2-proxy:
     image: quay.io/oauth2-proxy/oauth2-proxy:latest
-    container_name: ${COMPOSE_PROJECT_NAME}_oauth2_proxy
+    container_name: ${AUTH_COMPOSE_PROJECT_NAME}_oauth2_proxy
     restart: unless-stopped
     environment:
       TZ: ${TIMEZONE:-Europe/Amsterdam}
@@ -55,8 +55,8 @@ services:
       OAUTH2_PROXY_PROVIDER_DISPLAY_NAME: "Kompose SSO"
       OAUTH2_PROXY_CLIENT_ID: ${AUTH_OAUTH2_CLIENT_ID:-kompose-sso}
       OAUTH2_PROXY_CLIENT_SECRET: ${AUTH_OAUTH2_CLIENT_SECRET}
-      OAUTH2_PROXY_OIDC_ISSUER_URL: https://${TRAEFIK_HOST}/realms/kompose
-      OAUTH2_PROXY_REDIRECT_URL: https://${AUTH_OAUTH2_PROXY_HOST}/oauth2/callback
+      OAUTH2_PROXY_OIDC_ISSUER_URL: https://${TRAEFIK_HOST_AUTH}/realms/kompose
+      OAUTH2_PROXY_REDIRECT_URL: https://${TRAEFIK_HOST_OAUTH2}/oauth2/callback
       
       # Cookie Settings
       OAUTH2_PROXY_COOKIE_SECRET: ${AUTH_OAUTH2_COOKIE_SECRET}
@@ -70,7 +70,7 @@ services:
       
       # Session Settings
       OAUTH2_PROXY_SESSION_STORE_TYPE: redis
-      OAUTH2_PROXY_REDIS_CONNECTION_URL: redis://core_redis:6379
+      OAUTH2_PROXY_REDIS_CONNECTION_URL: redis://${CORE_REDIS_HOST}:${CORE_REDIS_PORT}
       
       # Upstream Settings
       OAUTH2_PROXY_UPSTREAMS: static://202
@@ -107,17 +107,17 @@ services:
       - keycloak
     labels:
       - 'traefik.enable=true'
-      - 'traefik.http.middlewares.${COMPOSE_PROJECT_NAME}-oauth2-redirect-web-secure.redirectscheme.scheme=https'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-oauth2-web.middlewares=${COMPOSE_PROJECT_NAME}-oauth2-redirect-web-secure'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-oauth2-web.rule=Host(`${AUTH_OAUTH2_PROXY_HOST}`)'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-oauth2-web.entrypoints=web'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-oauth2-web-secure.rule=Host(`${AUTH_OAUTH2_PROXY_HOST}`)'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-oauth2-web-secure.tls.certresolver=resolver'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-oauth2-web-secure.entrypoints=web-secure'
-      - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-oauth2-web-secure.middlewares=compression'
-      - 'traefik.http.services.${COMPOSE_PROJECT_NAME}-oauth2-web-secure.loadbalancer.server.port=4180'
+      - 'traefik.http.middlewares.${AUTH_COMPOSE_PROJECT_NAME}-oauth2-redirect-web-secure.redirectscheme.scheme=https'
+      - 'traefik.http.routers.${AUTH_COMPOSE_PROJECT_NAME}-oauth2-web.middlewares=${AUTH_COMPOSE_PROJECT_NAME}-oauth2-redirect-web-secure'
+      - 'traefik.http.routers.${AUTH_COMPOSE_PROJECT_NAME}-oauth2-web.rule=Host(`${TRAEFIK_HOST_OAUTH2}`)'
+      - 'traefik.http.routers.${AUTH_COMPOSE_PROJECT_NAME}-oauth2-web.entrypoints=web'
+      - 'traefik.http.routers.${AUTH_COMPOSE_PROJECT_NAME}-oauth2-web-secure.rule=Host(`${TRAEFIK_HOST_OAUTH2}`)'
+      - 'traefik.http.routers.${AUTH_COMPOSE_PROJECT_NAME}-oauth2-web-secure.tls.certresolver=resolver'
+      - 'traefik.http.routers.${AUTH_COMPOSE_PROJECT_NAME}-oauth2-web-secure.entrypoints=web-secure'
+      - 'traefik.http.routers.${AUTH_COMPOSE_PROJECT_NAME}-oauth2-web-secure.middlewares=compression'
+      - 'traefik.http.services.${AUTH_COMPOSE_PROJECT_NAME}-oauth2-web-secure.loadbalancer.server.port=4180'
       - 'traefik.docker.network=${NETWORK_NAME:-kompose}'
-      - 'traefik.http.middlewares.kompose-sso.forwardAuth.address=http://auth_oauth2_proxy:4180/oauth2/auth'
+      - 'traefik.http.middlewares.kompose-sso.forwardAuth.address=http://${AUTH_COMPOSE_PROJECT_NAME}_oauth2_proxy:4180/oauth2/auth'
       - 'traefik.http.middlewares.kompose-sso.forwardAuth.trustForwardHeader=true'
       - 'traefik.http.middlewares.kompose-sso.forwardAuth.authResponseHeaders=X-Auth-Request-User,X-Auth-Request-Email,X-Auth-Request-Access-Token,X-Auth-Request-Groups'
 
