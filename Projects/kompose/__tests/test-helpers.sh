@@ -260,7 +260,6 @@ compare_snapshot() {
 # ============================================================================
 
 run_kompose() {
-    local cmd="$*"
     local output
     local exit_code
     
@@ -268,7 +267,7 @@ run_kompose() {
     cd "${KOMPOSE_ROOT}" || exit 1
     
     set +e
-    output=$(bash kompose.sh $cmd 2>&1)
+    output=$(bash kompose.sh "$@" 2>&1)
     exit_code=$?
     set -e
     
@@ -278,10 +277,8 @@ run_kompose() {
 }
 
 run_kompose_quiet() {
-    local cmd="$*"
-    
     cd "${KOMPOSE_ROOT}" || exit 1
-    bash kompose.sh $cmd >/dev/null 2>&1
+    bash kompose.sh "$@" >/dev/null 2>&1
     return $?
 }
 
