@@ -159,7 +159,8 @@ map_stack_variables() {
     export TIMEZONE="${TIMEZONE:-Europe/Amsterdam}"
     
     # Export database connection variables for easy access
-    export DB_HOST="${CORE_DB_HOST:-core-postgres}"
+    # CRITICAL: DB_HOST must always be set to the container name for inter-container communication
+    export DB_HOST="core-postgres"  # Container name from core stack
     export DB_PORT="${CORE_DB_PORT:-5432}"
     export DB_USER="${CORE_DB_USER:-kompose}"
     export DB_PASSWORD="${CORE_DB_PASSWORD:-${DB_PASSWORD}}"
@@ -300,8 +301,9 @@ COMPOSE_PROJECT_NAME=${stack}
 NETWORK_NAME=${NETWORK_NAME:-kompose}
 TIMEZONE=${TIMEZONE:-Europe/Amsterdam}
 
-# Database connection
-DB_HOST=${CORE_DB_HOST:-core-postgres}
+# Database connection (container-to-container)
+# CRITICAL: DB_HOST must be the container name for inter-container communication
+DB_HOST=core-postgres
 DB_PORT=${CORE_DB_PORT:-5432}
 DB_USER=${CORE_DB_USER:-kompose}
 DB_PASSWORD=${CORE_DB_PASSWORD}
