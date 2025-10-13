@@ -44,11 +44,10 @@ declare -A STACKS=(
     ["code"]="Git Repository & CI/CD - Gitea with Actions runner"
     ["proxy"]="Reverse Proxy - Traefik with SSL"
     ["link"]="Link Management - Linkwarden bookmark manager"
-    ["news"]="News Aggregation - FreshRSS feed reader"
+    ["news"]="Newsletter - Letterspace app"
     ["track"]="Activity Tracking - Umami analytics"
     ["vault"]="Password Manager - Vaultwarden"
-    ["watch"]="Media Server - Jellyfin or similar"
-    ["trace"]="Monitoring & Observability - Uptime Kuma, Grafana"
+    ["watch"]="Monitoring & Observability - Uptime Kuma, Grafana"
 )
 
 # Service definitions for tagging

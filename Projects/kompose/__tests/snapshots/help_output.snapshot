@@ -1,7 +1,8 @@
-KOMPOSE - Docker Compose Stack Manager
-Modular Edition 2.0
-
-STACK MANAGEMENT COMMANDS:
+\033[0;36m╔════════════════════════════════════════════════════════════════╗\033[0m
+\033[0;36m║              KOMPOSE - Docker Compose Stack Manager            ║\033[0m
+\033[0;36m║                      Modular Edition 2.0                       ║\033[0m
+\033[0;36m╚════════════════════════════════════════════════════════════════╝\033[0m
+\033[0;34mSTACK MANAGEMENT COMMANDS:\033[0m
     up [STACK]           Start a stack (or all if no stack specified)
     down [STACK]         Stop a stack (or all if no stack specified)
     restart [STACK]      Restart a stack
@@ -14,14 +15,12 @@ STACK MANAGEMENT COMMANDS:
     validate [STACK]     Validate compose file(s)
     exec [STACK] [CMD]   Execute command in stack container
     ps                   Show all running containers
-
-REST API SERVER COMMANDS:
+\033[0;35mREST API SERVER COMMANDS:\033[0m
     api start [PORT]     Start REST API server (default: http://127.0.0.1:8080)
     api stop             Stop REST API server
     api status           Check API server status
     api logs             View API server logs
-
-GIT TAG DEPLOYMENT COMMANDS:
+\033[0;35mGIT TAG DEPLOYMENT COMMANDS:\033[0m
     tag create           Create and push a new deployment tag
     tag move             Move an existing tag to a new commit
     tag delete           Delete a tag (local and remote)
@@ -29,8 +28,7 @@ GIT TAG DEPLOYMENT COMMANDS:
     tag deploy           Create tag and trigger deployment
     tag rollback         Rollback to a previous tag
     tag status           Show deployment status
-
-DATABASE COMMANDS:
+\033[1;33mDATABASE COMMANDS:\033[0m
     db backup            Create database backup
     db restore           Restore database from backup
     db list              List available backups
@@ -39,21 +37,68 @@ DATABASE COMMANDS:
     db shell             Open database shell
     db migrate           Run database migrations
     db reset             Reset database (WARNING: deletes all data)
-
-UTILITY COMMANDS:
+\033[0;34mUTILITY COMMANDS:\033[0m
     init                 Initialize kompose environment
     cleanup              Clean up backup and temporary files
     validate             Validate entire configuration
     version              Show version information
     help                 Show this help message
-
-AVAILABLE STACKS:
+\033[0;34mSTACK OPTIONS:\033[0m
+    -d, --detach        Run in detached mode
+    -f, --force         Force operation (remove volumes, etc.)
+    --no-cache          Build without cache
+    --scale SERVICE=N   Scale service to N replicas
+    -v, --verbose       Verbose output
+\033[0;35mTAG OPTIONS:\033[0m
+    -s, --service SERVICE       Service name (frontend|backend|api|worker)
+    -e, --env ENV              Environment (dev|staging|prod)
+    -v, --version VERSION      Version number (e.g., 1.2.3)
+    -c, --commit COMMIT        Git commit hash (default: HEAD)
+    -m, --message MESSAGE      Tag message
+    -f, --force               Force operation
+    -d, --dry-run             Show what would be done
+\033[1;33mDATABASE OPTIONS:\033[0m
+    -d, --database NAME         Database name (default: all)
+    -f, --file FILE            Backup file path
+    -t, --timestamp            Add timestamp to backup
+    --compress                 Compress backup with gzip
+\033[0;34mAVAILABLE STACKS:\033[0m
     auth            - Authentication - Keycloak SSO, OAuth2 Proxy
     chain           - Automation Platform - n8n workflows, Semaphore/Ansible tasks
     code            - Git Repository & CI/CD - Gitea with Actions runner
     core            - Core services - MQTT, Redis, Postgres
     home            - Smart Home - Home Assistant, Matter, Zigbee, ESPHome
     kmps            - Management Portal - User & SSO Administration
-    messaging       - Communication - Gotify notifications
+    link            - Link Management - Linkwarden bookmark manager
+    messaging       - Communication - Gotify notifications, Mailhog
+    news            - News Aggregation - FreshRSS feed reader
     proxy           - Reverse Proxy - Traefik with SSL
+    trace           - Monitoring & Observability - Uptime Kuma, Grafana
+    track           - Activity Tracking - Umami analytics
+    vault           - Password Manager - Vaultwarden
     vpn             - VPN - WireGuard remote access (wg-easy)
+    watch           - Media Server - Jellyfin or similar
+\033[0;34mEXAMPLES:\033[0m
+    \033[0;32m# Stack Management\033[0m
+    kompose up home                    # Start home stack
+    kompose up                          # Start all stacks
+    kompose down frontend              # Stop frontend stack
+    kompose logs chain -f              # Follow logs for chain stack
+    kompose deploy backend 1.2.3       # Deploy backend version 1.2.3
+    kompose restart api                # Restart api stack
+    kompose status                     # Show status of all stacks
+    \033[0;35m# Git Tag Deployments\033[0m
+    kompose tag create -s frontend -e dev -v 1.2.3
+    kompose tag deploy -s backend -e staging -v 2.0.0
+    kompose tag list -s frontend
+    \033[1;33m# Database Management\033[0m
+    kompose db backup -d postgres      # Backup PostgreSQL
+    kompose db restore -f backup.sql   # Restore from file
+    kompose db shell -d gitea          # Open gitea database shell
+    \033[0;35m# REST API Server\033[0m
+    kompose api start                  # Start API server on default port
+    kompose api status                 # Check API server status
+    \033[0;34m# Utilities\033[0m
+    kompose init                       # Initialize environment
+    kompose validate                   # Validate configuration
+    kompose cleanup                    # Clean up project

@@ -1,0 +1,6 @@
+[INFO] Validating kompose configuration...
+[SUCCESS] domain.env exists
+[SUCCESS] domain.env is valid
+[SUCCESS] ROOT_DOMAIN is configured: pivoine.art
+[SUCCESS] .env exists
+[WARNING] secrets.env not found (using template)

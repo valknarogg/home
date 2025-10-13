@@ -152,20 +152,21 @@ test_db_status_syntax() {
 test_db_shell_syntax() {
     log_test "Testing 'kompose db shell' command recognition"
     
-    local output
-    local exit_code
+    # This test just verifies the command is recognized in kompose.sh
+    # We don't actually try to connect since the container may not exist
+    # and the command is interactive
     
-    set +e
-    # Use timeout to prevent hanging on interactive command
-    timeout 2 bash -c "cd ${KOMPOSE_ROOT} && bash kompose.sh db shell" 2>&1 || true
-    exit_code=$?
-    set -e
-    
-    # Command should be recognized
-    # Exit code may be non-zero due to timeout or missing database
-    log_pass "DB shell command is recognized"
-    TESTS_RUN=$((TESTS_RUN+1))
-    TESTS_RUN=$((TESTS_PASSED+1))
+    # Check if 'shell' is a valid db subcommand by checking source code
+    if grep -q "shell)" "${KOMPOSE_ROOT}/kompose.sh" || \
+       grep -q "shell)" "${KOMPOSE_ROOT}"/kompose-*.sh 2>/dev/null; then
+        log_pass "DB shell command is defined"
+        ((TESTS_RUN++))
+        ((TESTS_PASSED++))
+    else
+        log_fail "DB shell command not found in source"
+        ((TESTS_RUN++))
+        ((TESTS_FAILED++))
+    fi
 }
 
 # ============================================================================
