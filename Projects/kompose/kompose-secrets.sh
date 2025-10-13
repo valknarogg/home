@@ -190,48 +190,48 @@ prompt_for_password() {
     local password=""
     local password_confirm=""
     
-    # Display context and requirements
-    echo "═══════════════════════════════════════════════════════"
-    echo -e "${CYAN}Password Configuration Required${NC}"
-    echo "═══════════════════════════════════════════════════════"
-    echo ""
+    # Display context and requirements (to stderr so it's visible during command substitution)
+    echo "═══════════════════════════════════════════════════════" >&2
+    echo -e "${CYAN}Password Configuration Required${NC}" >&2
+    echo "═══════════════════════════════════════════════════════" >&2
+    echo "" >&2
     
     if [ -n "$hint" ]; then
-        echo -e "${YELLOW}Context:${NC}"
-        echo "$hint"
-        echo ""
+        echo -e "${YELLOW}Context:${NC}" >&2
+        echo -e "$hint" >&2
+        echo "" >&2
     fi
     
-    echo -e "${YELLOW}Password Requirements:${NC}"
-    echo "• Minimum length: 8 characters"
-    echo "• Recommended: Use a mix of letters, numbers, and special characters"
-    echo "• This password will be stored securely in secrets.env"
-    echo ""
+    echo -e "${YELLOW}Password Requirements:${NC}" >&2
+    echo "• Minimum length: 8 characters" >&2
+    echo "• Recommended: Use a mix of letters, numbers, and special characters" >&2
+    echo "• This password will be stored securely in secrets.env" >&2
+    echo "" >&2
     
     while true; do
-        # Prompt for password
-        read -s -p "${prompt_text}: " password
-        echo ""
+        # Prompt for password (to stderr)
+        read -s -p "${prompt_text}: " password <&2
+        echo "" >&2
         
         # Check minimum length
         if [ ${#password} -lt 8 ]; then
-            log_warning "Password must be at least 8 characters long. Please try again."
-            echo ""
+            log_warning "Password must be at least 8 characters long. Please try again." >&2
+            echo "" >&2
             continue
         fi
         
-        # Prompt for confirmation
-        read -s -p "Confirm password: " password_confirm
-        echo ""
+        # Prompt for confirmation (to stderr)
+        read -s -p "Confirm password: " password_confirm <&2
+        echo "" >&2
         
         # Check if passwords match
         if [ "$password" = "$password_confirm" ]; then
-            log_success "Password set successfully"
+            log_success "Password set successfully" >&2
             echo "$password"
             return 0
         else
-            log_warning "Passwords do not match. Please try again."
-            echo ""
+            log_warning "Passwords do not match. Please try again." >&2
+            echo "" >&2
         fi
     done
 }
@@ -264,10 +264,10 @@ generate_secret_value() {
             # Provide context-specific hints based on secret name
             case $secret_name in
                 DB_PASSWORD)
-                    hint="This is the master password for PostgreSQL database access.\nAll stacks that need database access will use this password.\n\nServices using this password:\n• Core stack (PostgreSQL)\n• Auth stack (Keycloak)\n• Chain stack (n8n workflows)\n• Code stack (Gitea)\n• KMPS management stack\n\nUse Case: Protects all your application data stored in the central PostgreSQL database.\n\nSecurity Note: This is a critical password. Use a strong, unique password."
+                    hint="DATABASE PASSWORD - PostgreSQL Master Credential\n\nThis password secures access to the central PostgreSQL database that stores\nall persistent application data across the Kompose platform.\n\nScope of Access:\n  • Core Stack: PostgreSQL database instance\n  • Auth Stack: Keycloak user and configuration data\n  • Chain Stack: n8n workflow definitions and credentials\n  • Code Stack: Gitea repositories and project data\n  • KMPS Stack: Management interface configurations\n\nConnection Details:\n  • Database User: kompose (default)\n  • Database Host: core-postgres (container name)\n  • Database Port: 5432 (internal)\n\nSecurity Considerations:\n  This is a critical infrastructure password. Database compromise would expose\n  all application data. Choose a strong, unique password with high entropy.\n  Consider using a password manager to generate and store this credential.\n\nRecommended Password Strength:\n  • Minimum: 16 characters\n  • Include: uppercase, lowercase, numbers, and special characters\n  • Avoid: dictionary words, personal information, common patterns"
                     ;;
                 ADMIN_PASSWORD)
-                    hint="This is the primary admin password used across multiple services.\nAll services that require admin authentication will use this password for consistency.\n\nServices using this password:\n• Redis cache (REDIS_PASSWORD)\n• Redis Commander web UI (REDIS_API_PASSWORD)\n• Keycloak admin console (KC_ADMIN_PASSWORD)\n• n8n workflow automation (N8N_BASIC_AUTH_PASSWORD)\n• Semaphore CI/CD (SEMAPHORE_ADMIN_PASSWORD)\n\nUsername: admin (for most services)\n\nUse Case: Provides a unified admin credential across all Kompose services.\nThis simplifies management by using one password for all admin access.\n\nSecurity Note: Since this password is used across multiple services, protect it carefully."
+                    hint="ADMIN PASSWORD - Unified Service Administrator Credential\n\nThis password provides administrative access to all Kompose service interfaces.\nRather than managing multiple passwords, this unified credential simplifies\nadministration while maintaining security across the platform.\n\nServices Using This Password:\n  • Redis Cache: Database caching layer authentication\n  • Redis Commander: Web-based Redis management interface\n  • Keycloak Admin: Identity and access management console\n  • n8n Workflows: Automation workflow designer interface\n  • Semaphore CI/CD: Deployment automation platform\n\nAccess Pattern:\n  • Default Username: admin (for most services)\n  • Access Method: Web interface basic authentication\n  • Session Management: Varies by service\n\nUse Cases:\n  • Service Configuration: Modify system settings and parameters\n  • User Management: Create and manage application users (Keycloak)\n  • Workflow Development: Design and deploy automation workflows (n8n)\n  • Deployment Control: Manage CI/CD pipelines (Semaphore)\n  • Cache Monitoring: View and manage cached data (Redis Commander)\n\nSecurity Considerations:\n  This password has broad access across multiple services. While it simplifies\n  management, compromise would affect multiple systems. Choose a strong password\n  and consider enabling additional security measures where available.\n\nRecommended Password Strength:\n  • Minimum: 12 characters\n  • Include: mix of character types for complexity\n  • Memorability: Balance security with practical usability"
                     ;;
                 *)
                     hint="$prompt_desc"
