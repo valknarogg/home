@@ -14,11 +14,11 @@ Local development mode allows you to:
 
 ## 🚀 Quick Start
 
-### Option 1: Automated Setup (Recommended)
+### Automated Setup (Recommended)
 
 ```bash
 # Switch to local development mode
-./kompose-local.sh local
+./kompose.sh setup local
 
 # Start core services
 ./kompose.sh up core
@@ -28,19 +28,10 @@ Local development mode allows you to:
 
 # Start KMPS
 ./kompose.sh up kmps
-```
 
-### Option 2: Manual Setup
-
-```bash
-# Copy local configurations
-cp .env.local .env
-cp domain.env.local domain.env
-
-# Start services
-./kompose.sh up core
-./kompose.sh up auth
-./kompose.sh up kmps
+# Access services
+open http://localhost:8180  # Keycloak
+open http://localhost:3100  # KMPS
 ```
 
 ## 📋 Prerequisites
@@ -51,40 +42,7 @@ cp domain.env.local domain.env
 - At least 4GB free RAM
 - Ports available: 3100, 5432, 6379, 8180, etc.
 
-## 🔧 Configuration Files
-
-### Local Configuration Files
-
-```
-kompose/
-├── .env.local              # Local environment config
-├── domain.env.local        # Local domain/port config
-├── secrets.env             # Secrets (shared)
-└── kompose-local.sh        # Mode switcher script
-```
-
-### Configuration Management
-
-The `kompose-local.sh` script manages configuration modes:
-
-```bash
-# Show current mode
-./kompose-local.sh status
-
-# Switch to local mode
-./kompose-local.sh local
-
-# Switch to production mode
-./kompose-local.sh prod
-
-# Save current config as production default
-./kompose-local.sh save-prod
-
-# Create backup
-./kompose-local.sh backup
-```
-
-## 🌐 Service URLs (Local Mode)
+## 🌐 Local Service URLs
 
 ### Core Services
 - **PostgreSQL**: `localhost:5432`
@@ -92,11 +50,8 @@ The `kompose-local.sh` script manages configuration modes:
 - **MQTT**: `localhost:1883`
 - **Redis Commander**: `http://localhost:8081`
 
-### Authentication
-- **Keycloak**: `http://localhost:8180`
-- **OAuth2 Proxy**: `http://localhost:4180` (optional)
-
 ### Main Applications
+- **Keycloak**: `http://localhost:8180`
 - **KMPS**: `http://localhost:3100`
 - **Gitea**: `http://localhost:3001`
 - **n8n**: `http://localhost:5678`
@@ -108,6 +63,7 @@ The `kompose-local.sh` script manages configuration modes:
 ### Communication & Tools
 - **Gotify**: `http://localhost:8085`
 - **Mailhog**: `http://localhost:8025`
+- **Uptime Kuma**: `http://localhost:3001`
 
 ## 🔐 Local Secrets Configuration
 
@@ -175,19 +131,6 @@ EOF
 ```bash
 # Start all stacks at once
 ./kompose.sh up core auth kmps code chain home
-```
-
-### Using Docker Compose Directly
-
-If you need more control:
-
-```bash
-# Use local compose file
-cd kmps
-docker-compose -f compose.local.yaml up
-
-# Or with the standard file in local mode
-docker-compose up
 ```
 
 ## 🛠️ Development Workflow
@@ -393,13 +336,10 @@ docker network create kompose
 ### Local → Production
 
 ```bash
-# 1. Save current local changes (if needed)
-./kompose-local.sh backup
+# 1. Switch to production
+./kompose.sh setup prod
 
-# 2. Switch to production
-./kompose-local.sh prod
-
-# 3. Restart services
+# 2. Restart services
 ./kompose.sh down
 ./kompose.sh up proxy  # Start Traefik first
 ./kompose.sh up core auth kmps
@@ -408,13 +348,10 @@ docker network create kompose
 ### Production → Local
 
 ```bash
-# 1. Backup production config
-./kompose-local.sh save-prod
+# 1. Switch to local
+./kompose.sh setup local
 
-# 2. Switch to local
-./kompose-local.sh local
-
-# 3. Restart services
+# 2. Restart services
 ./kompose.sh down
 ./kompose.sh up core auth kmps
 ```
@@ -422,7 +359,7 @@ docker network create kompose
 ### Verify Current Mode
 
 ```bash
-./kompose-local.sh status
+./kompose.sh setup status
 ```
 
 ## 📊 Performance Tips
@@ -489,7 +426,7 @@ npm run test:integration
 
 ### Do's ✅
 
-- Use the `kompose-local.sh` script for mode switching
+- Use the `kompose.sh setup` command for mode switching
 - Keep `secrets.env` in `.gitignore`
 - Use simple passwords for local development
 - Test features locally before deploying
@@ -514,52 +451,28 @@ npm run test:integration
 ## 📚 Additional Documentation
 
 - **KMPS Development**: `kmps/DEVELOPMENT.md`
-- **Quick Start**: `kmps/QUICK_START.md`
 - **Stack Documentation**: `_docs/content/5.stacks/kmps.md`
-- **Setup Complete**: `kmps/SETUP_COMPLETE.md`
+- **Quick Reference**: `_docs/content/3.guide/quick-reference.md`
+- **Environment Setup**: `_docs/content/3.guide/environment-setup.md`
 
 ## 🆘 Getting Help
 
 If you encounter issues:
 
 1. Check logs: `docker logs <container_name>`
-2. Verify configuration: `./kompose-local.sh status`
+2. Verify configuration: `./kompose.sh setup status`
 3. Check port availability: `lsof -i :<port>`
 4. Review this guide's troubleshooting section
 5. Check Docker resources and restart if needed
 
-## 🎉 Quick Reference
+## 🎉 Summary
 
-```bash
-# Mode Management
-./kompose-local.sh status              # Check current mode
-./kompose-local.sh local               # Switch to local
-./kompose-local.sh prod                # Switch to production
-./kompose-local.sh backup              # Backup config
+Local development mode provides:
+- ✅ Fast setup (5 minutes)
+- ✅ No domain configuration
+- ✅ Direct port access
+- ✅ Simple debugging
+- ✅ Hot reload support
+- ✅ Easy testing
 
-# Service Management
-./kompose.sh up core                   # Start core services
-./kompose.sh up auth                   # Start Keycloak
-./kompose.sh up kmps                   # Start KMPS
-./kompose.sh status                    # Check all services
-./kompose.sh logs kmps -f              # Follow KMPS logs
-./kompose.sh down                      # Stop all services
-
-# Local URLs
-http://localhost:8180                  # Keycloak
-http://localhost:3100                  # KMPS
-http://localhost:5432                  # PostgreSQL
-http://localhost:6379                  # Redis
-
-# Database Access
-docker exec -it core_postgres psql -U kompose -d kompose
-docker exec -it core_redis redis-cli
-
-# Development
-cd kmps && npm run dev                 # KMPS local dev
-docker logs -f kmps_app                # Watch KMPS logs
-```
-
----
-
-**Happy Local Development! 🚀**
+**Ready to develop!** 🚀
