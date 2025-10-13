@@ -34,8 +34,11 @@ declare -A REQUIRED_SECRETS=(
     # Chain stack (n8n + Semaphore)
     ["N8N_ENCRYPTION_KEY"]="base64:32"
     ["AUTO_ENCRYPTION_KEY"]="alias:N8N_ENCRYPTION_KEY"
-    ["N8N_BASIC_AUTH_PASSWORD"]="password:32"
-    ["SEMAPHORE_ADMIN_PASSWORD"]="password:32"
+    ["CHAIN_N8N_ENCRYPTION_KEY"]="alias:N8N_ENCRYPTION_KEY"
+    ["N8N_BASIC_AUTH_PASSWORD"]="prompt"
+    ["CHAIN_N8N_BASIC_AUTH_PASSWORD"]="prompt"
+    ["SEMAPHORE_ADMIN_PASSWORD"]="prompt"
+    ["CHAIN_SEMAPHORE_ADMIN_PASSWORD"]="prompt"
     ["SEMAPHORE_RUNNER_TOKEN"]="base64:32"
     
     # KMPS stack
@@ -81,8 +84,11 @@ declare -A SECRET_STACK_MAP=(
     
     ["N8N_ENCRYPTION_KEY"]="chain"
     ["AUTO_ENCRYPTION_KEY"]="chain"
+    ["CHAIN_N8N_ENCRYPTION_KEY"]="chain"
     ["N8N_BASIC_AUTH_PASSWORD"]="chain"
+    ["CHAIN_N8N_BASIC_AUTH_PASSWORD"]="chain"
     ["SEMAPHORE_ADMIN_PASSWORD"]="chain"
+    ["CHAIN_SEMAPHORE_ADMIN_PASSWORD"]="chain"
     ["SEMAPHORE_RUNNER_TOKEN"]="chain"
     
     ["KMPS_CLIENT_SECRET"]="kmps"
@@ -114,8 +120,11 @@ declare -A SECRET_DESCRIPTIONS=(
     ["CODE_RUNNER_TOKEN"]="Gitea Actions runner registration token"
     
     ["N8N_ENCRYPTION_KEY"]="n8n workflow credentials encryption key"
+    ["CHAIN_N8N_ENCRYPTION_KEY"]="n8n workflow credentials encryption key (chain stack)"
     ["N8N_BASIC_AUTH_PASSWORD"]="n8n basic auth password"
+    ["CHAIN_N8N_BASIC_AUTH_PASSWORD"]="n8n basic auth password (chain stack)"
     ["SEMAPHORE_ADMIN_PASSWORD"]="Semaphore admin password"
+    ["CHAIN_SEMAPHORE_ADMIN_PASSWORD"]="Semaphore admin password (chain stack)"
     ["SEMAPHORE_RUNNER_TOKEN"]="Semaphore runner token"
     
     ["KMPS_CLIENT_SECRET"]="KMPS Keycloak client secret"
@@ -174,9 +183,41 @@ generate_htpasswd() {
     fi
 }
 
+prompt_for_password() {
+    local prompt_text="${1:-Enter password}"
+    local secret_name="${2:-}"
+    local password=""
+    local password_confirm=""
+    
+    while true; do
+        # Prompt for password
+        read -s -p "${prompt_text}: " password
+        echo ""
+        
+        # Check minimum length
+        if [ ${#password} -lt 8 ]; then
+            log_warning "Password must be at least 8 characters long"
+            continue
+        fi
+        
+        # Prompt for confirmation
+        read -s -p "Confirm password: " password_confirm
+        echo ""
+        
+        # Check if passwords match
+        if [ "$password" = "$password_confirm" ]; then
+            echo "$password"
+            return 0
+        else
+            log_warning "Passwords do not match. Please try again."
+        fi
+    done
+}
+
 generate_secret_value() {
     local method=$1
     local param=$2
+    local secret_name=$3
     
     case $method in
         password)
@@ -193,6 +234,14 @@ generate_secret_value() {
             ;;
         htpasswd)
             generate_htpasswd "admin"
+            ;;
+        prompt)
+            local prompt_desc="${SECRET_DESCRIPTIONS[$secret_name]}"
+            log_info "Setting password for: ${CYAN}${secret_name}${NC}"
+            if [ -n "$prompt_desc" ]; then
+                log_info "$prompt_desc"
+            fi
+            prompt_for_password "Enter password" "$secret_name"
             ;;
         manual)
             echo "CHANGE_ME_MANUALLY"
@@ -303,6 +352,7 @@ EOF
     # Generate each secret
     local generated_count=0
     local manual_count=0
+    local prompt_count=0
     
     # Group secrets by category
     log_info "Generating shared secrets..."
@@ -314,7 +364,7 @@ EOF
             echo "${secret}=CHANGE_ME_MANUALLY" >> "$secrets_file"
             manual_count=$((manual_count+1))
         else
-            local value=$(generate_secret_value "$method" "$param")
+            local value=$(generate_secret_value "$method" "$param" "$secret")
             echo "${secret}=${value}" >> "$secrets_file"
             generated_count=$((generated_count+1))
         fi
@@ -327,7 +377,7 @@ EOF
         local method=$(echo "${REQUIRED_SECRETS[$secret]}" | cut -d: -f1)
         local param=$(echo "${REQUIRED_SECRETS[$secret]}" | cut -d: -f2)
         
-        local value=$(generate_secret_value "$method" "$param")
+        local value=$(generate_secret_value "$method" "$param" "$secret")
         echo "${secret}=${value}" >> "$secrets_file"
         generated_count=$((generated_count+1))
     done
@@ -343,7 +393,7 @@ EOF
             echo "${secret}=GENERATE_IN_GITEA_UI" >> "$secrets_file"
             manual_count=$((manual_count+1))
         else
-            local value=$(generate_secret_value "$method" "$param")
+            local value=$(generate_secret_value "$method" "$param" "$secret")
             echo "${secret}=${value}" >> "$secrets_file"
             generated_count=$((generated_count+1))
         fi
@@ -351,14 +401,23 @@ EOF
     echo "" >> "$secrets_file"
     
     log_info "Generating chain stack secrets..."
+    echo ""
     echo "# Chain Stack Secrets" >> "$secrets_file"
-    for secret in N8N_ENCRYPTION_KEY AUTO_ENCRYPTION_KEY N8N_BASIC_AUTH_PASSWORD SEMAPHORE_ADMIN_PASSWORD SEMAPHORE_RUNNER_TOKEN; do
+    for secret in N8N_ENCRYPTION_KEY AUTO_ENCRYPTION_KEY CHAIN_N8N_ENCRYPTION_KEY N8N_BASIC_AUTH_PASSWORD CHAIN_N8N_BASIC_AUTH_PASSWORD SEMAPHORE_ADMIN_PASSWORD CHAIN_SEMAPHORE_ADMIN_PASSWORD SEMAPHORE_RUNNER_TOKEN; do
         local method=$(echo "${REQUIRED_SECRETS[$secret]}" | cut -d: -f1)
         local param=$(echo "${REQUIRED_SECRETS[$secret]}" | cut -d: -f2)
         
-        local value=$(generate_secret_value "$method" "$param")
-        echo "${secret}=${value}" >> "$secrets_file"
-        generated_count=$((generated_count+1))
+        if [ "$method" = "prompt" ]; then
+            echo ""
+            local value=$(generate_secret_value "$method" "$param" "$secret")
+            echo "${secret}=${value}" >> "$secrets_file"
+            prompt_count=$((prompt_count+1))
+            echo ""
+        else
+            local value=$(generate_secret_value "$method" "$param" "$secret")
+            echo "${secret}=${value}" >> "$secrets_file"
+            generated_count=$((generated_count+1))
+        fi
     done
     echo "" >> "$secrets_file"
     
@@ -372,7 +431,7 @@ EOF
             echo "${secret}=CHANGE_ME_MANUALLY" >> "$secrets_file"
             manual_count=$((manual_count+1))
         else
-            local value=$(generate_secret_value "$method" "$param")
+            local value=$(generate_secret_value "$method" "$param" "$secret")
             echo "${secret}=${value}" >> "$secrets_file"
             generated_count=$((generated_count+1))
         fi
@@ -380,6 +439,10 @@ EOF
     
     echo ""
     log_success "Generated ${generated_count} secrets automatically"
+    
+    if [ $prompt_count -gt 0 ]; then
+        log_success "Set ${prompt_count} secrets via interactive prompts"
+    fi
     
     if [ $manual_count -gt 0 ]; then
         log_warning "${manual_count} secrets require manual configuration:"
@@ -420,13 +483,17 @@ secrets_generate_single() {
         return 1
     fi
     
-    local value=$(generate_secret_value "$method" "$param")
+    echo ""
+    local value=$(generate_secret_value "$method" "$param" "$secret_name")
     
-    echo ""
-    log_info "Generated value for ${CYAN}${secret_name}${NC}:"
-    echo ""
-    echo -e "  ${GREEN}${value}${NC}"
-    echo ""
+    if [ "$method" != "prompt" ]; then
+        echo ""
+        log_info "Generated value for ${CYAN}${secret_name}${NC}:"
+        echo ""
+        echo -e "  ${GREEN}${value}${NC}"
+        echo ""
+    fi
+    
     log_info "Description: ${SECRET_DESCRIPTIONS[$secret_name]}"
     echo ""
     
