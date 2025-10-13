@@ -13,6 +13,9 @@ declare -A REQUIRED_SECRETS=(
     ["DB_PASSWORD"]="prompt"
     ["ADMIN_PASSWORD"]="prompt"
     ["EMAIL_SMTP_PASSWORD"]="manual"
+
+    # Core stack
+    ["CORE_REDIS_API_PASSWORD"]="alias:ADMIN_PASSWORD"
     
     # Auth stack
     ["AUTH_KEYCLOAK_ADMIN_PASSWORD"]="alias:ADMIN_PASSWORD"
@@ -59,12 +62,11 @@ declare -A REQUIRED_SECRETS=(
 # Map secrets to stacks for better organization
 declare -A SECRET_STACK_MAP=(
     ["DB_PASSWORD"]="core,auth,chain,code,kmps"
-    ["REDIS_PASSWORD"]="core,auth"
-    ["REDIS_API_PASSWORD"]="core"
     ["ADMIN_PASSWORD"]="shared"
     ["EMAIL_SMTP_PASSWORD"]="shared"
     
-    ["KC_ADMIN_PASSWORD"]="auth"
+    ["CORE_REDIS_API_PASSWORD"]="core"
+    
     ["AUTH_KEYCLOAK_ADMIN_PASSWORD"]="auth"
     ["AUTH_OAUTH2_CLIENT_SECRET"]="auth"
     ["AUTH_OAUTH2_COOKIE_SECRET"]="auth"
