@@ -7,6 +7,81 @@
 # It filters and maps variables from the root .env to each stack
 
 # ============================================================================
+# DOMAIN CONFIGURATION
+# ============================================================================
+
+# Generate TRAEFIK_HOST variables from domain.env subdomains
+# This creates consistent host variables for all services
+generate_traefik_hosts() {
+    # Only generate if ROOT_DOMAIN is set
+    if [ -z "${ROOT_DOMAIN}" ]; then
+        log_warning "ROOT_DOMAIN not set, skipping TRAEFIK_HOST generation"
+        return 0
+    fi
+    
+    # Check if we're in local mode (localhost)
+    if [[ "${BASE_DOMAIN}" == "localhost" ]] || [[ "${ROOT_DOMAIN}" == "localhost" ]]; then
+        # Local mode: use subdomain directly (e.g., localhost:8080)
+        export TRAEFIK_HOST_PROXY="${SUBDOMAIN_PROXY:-localhost:8080}"
+        export TRAEFIK_HOST_AUTH="${SUBDOMAIN_AUTH:-localhost:8180}"
+        export TRAEFIK_HOST_CODE="${SUBDOMAIN_CODE:-localhost:3001}"
+        export TRAEFIK_HOST_CHAIN="${SUBDOMAIN_CHAIN:-localhost:5678}"
+        export TRAEFIK_HOST_AUTO="${SUBDOMAIN_AUTO:-localhost:3000}"
+        export TRAEFIK_HOST_BLOG="${SUBDOMAIN_BLOG:-localhost:3002}"
+        export TRAEFIK_HOST_DOCS="${SUBDOMAIN_DOCS:-localhost:3003}"
+        export TRAEFIK_HOST_NEWS="${SUBDOMAIN_NEWS:-localhost:3004}"
+        export TRAEFIK_HOST_CHAT="${SUBDOMAIN_CHAT:-localhost:8085}"
+        export TRAEFIK_HOST_MAIL="${SUBDOMAIN_MAIL:-localhost:8025}"
+        export TRAEFIK_HOST_DATA="${SUBDOMAIN_DATA:-localhost:3005}"
+        export TRAEFIK_HOST_DASH="${SUBDOMAIN_DASH:-localhost:3006}"
+        export TRAEFIK_HOST_TRACK="${SUBDOMAIN_TRACK:-localhost:3007}"
+        export TRAEFIK_HOST_TRACE="${SUBDOMAIN_TRACE:-localhost:3008}"
+        export TRAEFIK_HOST_HOME="${SUBDOMAIN_HOME:-localhost:8123}"
+        export TRAEFIK_HOST_SEXY="${SUBDOMAIN_SEXY:-localhost:8055}"
+        export TRAEFIK_HOST_VAULT="${SUBDOMAIN_VAULT:-localhost:8081}"
+        export TRAEFIK_HOST_LINK="${SUBDOMAIN_LINK:-localhost:3009}"
+        export TRAEFIK_HOST_DOCK="${SUBDOMAIN_DOCK:-localhost:5000}"
+        export TRAEFIK_HOST_MANAGE="${SUBDOMAIN_MANAGE:-localhost:3100}"
+        export TRAEFIK_HOST_VPN="${SUBDOMAIN_VPN:-localhost:51821}"
+        export TRAEFIK_HOST_OAUTH2="${SUBDOMAIN_OAUTH2:-localhost:4180}"
+        export TRAEFIK_HOST_ZIGBEE="${SUBDOMAIN_ZIGBEE:-localhost:8080}"
+    else
+        # Production mode: combine subdomain with root domain
+        export TRAEFIK_HOST_PROXY="${SUBDOMAIN_PROXY}.${ROOT_DOMAIN}"
+        export TRAEFIK_HOST_AUTH="${SUBDOMAIN_AUTH}.${ROOT_DOMAIN}"
+        export TRAEFIK_HOST_CODE="${SUBDOMAIN_CODE}.${ROOT_DOMAIN}"
+        export TRAEFIK_HOST_CHAIN="${SUBDOMAIN_CHAIN}.${ROOT_DOMAIN}"
+        export TRAEFIK_HOST_AUTO="${SUBDOMAIN_AUTO}.${ROOT_DOMAIN}"
+        export TRAEFIK_HOST_BLOG="${SUBDOMAIN_BLOG}.${ROOT_DOMAIN}"
+        export TRAEFIK_HOST_DOCS="${SUBDOMAIN_DOCS}.${ROOT_DOMAIN}"
+        export TRAEFIK_HOST_NEWS="${SUBDOMAIN_NEWS}.${ROOT_DOMAIN}"
+        export TRAEFIK_HOST_CHAT="${SUBDOMAIN_CHAT}.${ROOT_DOMAIN}"
+        export TRAEFIK_HOST_MAIL="${SUBDOMAIN_MAIL}.${ROOT_DOMAIN}"
+        export TRAEFIK_HOST_DATA="${SUBDOMAIN_DATA}.${ROOT_DOMAIN}"
+        export TRAEFIK_HOST_DASH="${SUBDOMAIN_DASH}.${ROOT_DOMAIN}"
+        export TRAEFIK_HOST_TRACK="${SUBDOMAIN_TRACK}.${ROOT_DOMAIN}"
+        export TRAEFIK_HOST_TRACE="${SUBDOMAIN_TRACE}.${ROOT_DOMAIN}"
+        export TRAEFIK_HOST_HOME="${SUBDOMAIN_HOME}.${ROOT_DOMAIN}"
+        export TRAEFIK_HOST_SEXY="${SUBDOMAIN_SEXY}.${ROOT_DOMAIN}"
+        export TRAEFIK_HOST_VAULT="${SUBDOMAIN_VAULT}.${ROOT_DOMAIN}"
+        export TRAEFIK_HOST_LINK="${SUBDOMAIN_LINK}.${ROOT_DOMAIN}"
+        export TRAEFIK_HOST_DOCK="${SUBDOMAIN_DOCK}.${ROOT_DOMAIN}"
+        export TRAEFIK_HOST_MANAGE="${SUBDOMAIN_MANAGE}.${ROOT_DOMAIN}"
+        export TRAEFIK_HOST_VPN="${SUBDOMAIN_VPN}.${ROOT_DOMAIN}"
+        export TRAEFIK_HOST_OAUTH2="${SUBDOMAIN_OAUTH2}.${ROOT_DOMAIN}"
+        export TRAEFIK_HOST_ZIGBEE="${SUBDOMAIN_ZIGBEE}.${ROOT_DOMAIN}"
+    fi
+    
+    # Service-specific aliases for backwards compatibility and clarity
+    export N8N_TRAEFIK_HOST="${TRAEFIK_HOST_CHAIN}"
+    export SEMAPHORE_TRAEFIK_HOST="${TRAEFIK_HOST_AUTO}"
+    export GITEA_TRAEFIK_HOST="${TRAEFIK_HOST_CODE}"
+    export KMPS_TRAEFIK_HOST="${TRAEFIK_HOST_MANAGE}"
+    export OAUTH2_PROXY_HOST="${TRAEFIK_HOST_OAUTH2}"
+    export TRAEFIK_HOST="${TRAEFIK_HOST_AUTH}"  # Used by auth stack
+}
+
+# ============================================================================
 # ENVIRONMENT VARIABLE FILTERING
 # ============================================================================
 
@@ -29,6 +104,15 @@ load_stack_env() {
         log_warning "Root .env file not found at ${STACKS_ROOT}/.env"
     fi
     
+    # Load domain.env if it exists
+    if [ -f "${STACKS_ROOT}/domain.env" ]; then
+        set -a
+        source "${STACKS_ROOT}/domain.env"
+        set +a
+    else
+        log_warning "domain.env file not found. Domain configuration will not be loaded."
+    fi
+    
     # Load secrets.env if it exists
     if [ -f "${STACKS_ROOT}/secrets.env" ]; then
         set -a
@@ -37,6 +121,9 @@ load_stack_env() {
     else
         log_warning "secrets.env file not found. Secrets will not be loaded."
     fi
+    
+    # Generate TRAEFIK_HOST variables from domain configuration
+    generate_traefik_hosts
     
     # Map stack-scoped variables to generic names
     # Example: CORE_POSTGRES_IMAGE -> POSTGRES_IMAGE when running core stack
@@ -208,6 +295,43 @@ DB_PASSWORD=${CORE_DB_PASSWORD}
 
 # Traefik configuration
 TRAEFIK_ENABLED=${TRAEFIK_ENABLED:-true}
+
+# Domain configuration
+ROOT_DOMAIN=${ROOT_DOMAIN}
+BASE_DOMAIN=${BASE_DOMAIN}
+
+# Traefik host variables (auto-generated from domain.env)
+TRAEFIK_HOST=${TRAEFIK_HOST}
+TRAEFIK_HOST_PROXY=${TRAEFIK_HOST_PROXY}
+TRAEFIK_HOST_AUTH=${TRAEFIK_HOST_AUTH}
+TRAEFIK_HOST_CODE=${TRAEFIK_HOST_CODE}
+TRAEFIK_HOST_CHAIN=${TRAEFIK_HOST_CHAIN}
+TRAEFIK_HOST_AUTO=${TRAEFIK_HOST_AUTO}
+TRAEFIK_HOST_BLOG=${TRAEFIK_HOST_BLOG}
+TRAEFIK_HOST_DOCS=${TRAEFIK_HOST_DOCS}
+TRAEFIK_HOST_NEWS=${TRAEFIK_HOST_NEWS}
+TRAEFIK_HOST_CHAT=${TRAEFIK_HOST_CHAT}
+TRAEFIK_HOST_MAIL=${TRAEFIK_HOST_MAIL}
+TRAEFIK_HOST_DATA=${TRAEFIK_HOST_DATA}
+TRAEFIK_HOST_DASH=${TRAEFIK_HOST_DASH}
+TRAEFIK_HOST_TRACK=${TRAEFIK_HOST_TRACK}
+TRAEFIK_HOST_TRACE=${TRAEFIK_HOST_TRACE}
+TRAEFIK_HOST_HOME=${TRAEFIK_HOST_HOME}
+TRAEFIK_HOST_SEXY=${TRAEFIK_HOST_SEXY}
+TRAEFIK_HOST_VAULT=${TRAEFIK_HOST_VAULT}
+TRAEFIK_HOST_LINK=${TRAEFIK_HOST_LINK}
+TRAEFIK_HOST_DOCK=${TRAEFIK_HOST_DOCK}
+TRAEFIK_HOST_MANAGE=${TRAEFIK_HOST_MANAGE}
+TRAEFIK_HOST_VPN=${TRAEFIK_HOST_VPN}
+TRAEFIK_HOST_OAUTH2=${TRAEFIK_HOST_OAUTH2}
+TRAEFIK_HOST_ZIGBEE=${TRAEFIK_HOST_ZIGBEE}
+
+# Service-specific host aliases
+N8N_TRAEFIK_HOST=${N8N_TRAEFIK_HOST}
+SEMAPHORE_TRAEFIK_HOST=${SEMAPHORE_TRAEFIK_HOST}
+GITEA_TRAEFIK_HOST=${GITEA_TRAEFIK_HOST}
+KMPS_TRAEFIK_HOST=${KMPS_TRAEFIK_HOST}
+OAUTH2_PROXY_HOST=${OAUTH2_PROXY_HOST}
 EOF
     
     log_success "Generated .env file at: $env_file"

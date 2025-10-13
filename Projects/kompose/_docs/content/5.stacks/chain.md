@@ -17,7 +17,9 @@ The **chain** stack combines two powerful automation platforms to create a compr
 
 **Container**: `chain_n8n`  
 **Image**: `n8nio/n8n:latest`  
-**URL**: https://chain.localhost  
+**URL**: Configured via `SUBDOMAIN_CHAIN` in `domain.env`
+- Local: http://localhost:5678
+- Production: https://chain.pivoine.art  
 **Port**: 5678
 
 Visual workflow automation platform:
@@ -34,7 +36,9 @@ Visual workflow automation platform:
 
 **Container**: `chain_semaphore`  
 **Image**: `semaphoreui/semaphore:v2.16.18`  
-**URL**: https://auto.localhost  
+**URL**: Configured via `SUBDOMAIN_AUTO` in `domain.env`
+- Local: http://localhost:3000
+- Production: https://auto.pivoine.art  
 **Port**: 3000
 
 Ansible automation UI and task runner:
@@ -114,14 +118,18 @@ Background task executor:
 
 ### First Login - n8n
 
-1. **Access n8n**: https://chain.localhost
+1. **Access n8n**: Check your domain configuration
+   - Local: http://localhost:5678
+   - Production: https://chain.pivoine.art
 2. **Login**: Use admin credentials
 3. **Change Password**: User icon → Settings
 4. **Create Workflow**: Click "New Workflow"
 
 ### First Login - Semaphore
 
-1. **Access Semaphore**: https://auto.localhost
+1. **Access Semaphore**: Check your domain configuration
+   - Local: http://localhost:3000
+   - Production: https://auto.pivoine.art
 2. **Login**: Use admin credentials
 3. **Create Project**: Projects → New Project
 4. **Add Playbooks**: Upload Ansible playbooks
@@ -230,13 +238,19 @@ Background task executor:
 
 ## Environment Variables
 
-**n8n**:
+**Domain Configuration** (in `domain.env`):
+- `SUBDOMAIN_CHAIN`: n8n subdomain (default: `chain` for production, `localhost:5678` for local)
+- `SUBDOMAIN_AUTO`: Semaphore subdomain (default: `auto` for production, `localhost:3000` for local)
+- `ROOT_DOMAIN`: Your domain (e.g., `pivoine.art`)
+- The system automatically generates `N8N_TRAEFIK_HOST` and `SEMAPHORE_TRAEFIK_HOST` from these values
+
+**n8n** (in `.env` or `secrets.env`):
 - `N8N_ENCRYPTION_KEY`: Credential encryption (CRITICAL!)
 - `N8N_BASIC_AUTH_USER`: Admin username
 - `N8N_BASIC_AUTH_PASSWORD`: Admin password
-- `WEBHOOK_URL`: Public webhook URL
+- `WEBHOOK_URL`: Auto-generated from domain configuration
 
-**Semaphore**:
+**Semaphore** (in `.env` or `secrets.env`):
 - `SEMAPHORE_ADMIN`: Admin username
 - `SEMAPHORE_ADMIN_PASSWORD`: Admin password
 - `SEMAPHORE_RUNNER_TOKEN`: Runner registration token
