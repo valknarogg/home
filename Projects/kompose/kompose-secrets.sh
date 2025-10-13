@@ -10,14 +10,14 @@
 # Define all required secrets per stack with their generation method
 declare -A REQUIRED_SECRETS=(
     # Shared secrets
-    ["DB_PASSWORD"]="password:32"
-    ["REDIS_PASSWORD"]="password:32"
-    ["REDIS_API_PASSWORD"]="password:32"
-    ["ADMIN_PASSWORD"]="password:32"
+    ["DB_PASSWORD"]="prompt"
+    ["REDIS_PASSWORD"]="alias:ADMIN_PASSWORD"
+    ["REDIS_API_PASSWORD"]="alias:ADMIN_PASSWORD"
+    ["ADMIN_PASSWORD"]="prompt"
     ["EMAIL_SMTP_PASSWORD"]="manual"
     
     # Auth stack
-    ["KC_ADMIN_PASSWORD"]="password:32"
+    ["KC_ADMIN_PASSWORD"]="alias:ADMIN_PASSWORD"
     ["AUTH_KC_ADMIN_PASSWORD"]="alias:KC_ADMIN_PASSWORD"
     ["OAUTH2_CLIENT_SECRET"]="base64:32"
     ["OAUTH2_COOKIE_SECRET"]="base64:32"
@@ -35,10 +35,10 @@ declare -A REQUIRED_SECRETS=(
     ["N8N_ENCRYPTION_KEY"]="base64:32"
     ["AUTO_ENCRYPTION_KEY"]="alias:N8N_ENCRYPTION_KEY"
     ["CHAIN_N8N_ENCRYPTION_KEY"]="alias:N8N_ENCRYPTION_KEY"
-    ["N8N_BASIC_AUTH_PASSWORD"]="prompt"
-    ["CHAIN_N8N_BASIC_AUTH_PASSWORD"]="prompt"
-    ["SEMAPHORE_ADMIN_PASSWORD"]="prompt"
-    ["CHAIN_SEMAPHORE_ADMIN_PASSWORD"]="prompt"
+    ["N8N_BASIC_AUTH_PASSWORD"]="alias:ADMIN_PASSWORD"
+    ["CHAIN_N8N_BASIC_AUTH_PASSWORD"]="alias:ADMIN_PASSWORD"
+    ["SEMAPHORE_ADMIN_PASSWORD"]="alias:ADMIN_PASSWORD"
+    ["CHAIN_SEMAPHORE_ADMIN_PASSWORD"]="alias:ADMIN_PASSWORD"
     ["SEMAPHORE_RUNNER_TOKEN"]="base64:32"
     
     # KMPS stack
@@ -263,11 +263,11 @@ generate_secret_value() {
             
             # Provide context-specific hints based on secret name
             case $secret_name in
-                N8N_BASIC_AUTH_PASSWORD|CHAIN_N8N_BASIC_AUTH_PASSWORD)
-                    hint="This password secures access to the n8n workflow automation interface.\nYou will use this password to log in to n8n at your configured domain.\nUsername: admin (default)\n\nUse Case: Protects your automation workflows and integrations from unauthorized access."
+                DB_PASSWORD)
+                    hint="This is the master password for PostgreSQL database access.\nAll stacks that need database access will use this password.\n\nServices using this password:\n• Core stack (PostgreSQL)\n• Auth stack (Keycloak)\n• Chain stack (n8n workflows)\n• Code stack (Gitea)\n• KMPS management stack\n\nUse Case: Protects all your application data stored in the central PostgreSQL database.\n\nSecurity Note: This is a critical password. Use a strong, unique password."
                     ;;
-                SEMAPHORE_ADMIN_PASSWORD|CHAIN_SEMAPHORE_ADMIN_PASSWORD)
-                    hint="This password is for the Semaphore admin account.\nYou will use this to log in to the Semaphore web interface for CI/CD automation.\nUsername: admin (default)\n\nUse Case: Manages deployment pipelines and automation tasks."
+                ADMIN_PASSWORD)
+                    hint="This is the primary admin password used across multiple services.\nAll services that require admin authentication will use this password for consistency.\n\nServices using this password:\n• Redis cache (REDIS_PASSWORD)\n• Redis Commander web UI (REDIS_API_PASSWORD)\n• Keycloak admin console (KC_ADMIN_PASSWORD)\n• n8n workflow automation (N8N_BASIC_AUTH_PASSWORD)\n• Semaphore CI/CD (SEMAPHORE_ADMIN_PASSWORD)\n\nUsername: admin (for most services)\n\nUse Case: Provides a unified admin credential across all Kompose services.\nThis simplifies management by using one password for all admin access.\n\nSecurity Note: Since this password is used across multiple services, protect it carefully."
                     ;;
                 *)
                     hint="$prompt_desc"
@@ -389,6 +389,7 @@ EOF
     
     # Group secrets by category
     log_info "Generating shared secrets..."
+    echo ""
     for secret in DB_PASSWORD REDIS_PASSWORD REDIS_API_PASSWORD ADMIN_PASSWORD EMAIL_SMTP_PASSWORD; do
         local method=$(echo "${REQUIRED_SECRETS[$secret]}" | cut -d: -f1)
         local param=$(echo "${REQUIRED_SECRETS[$secret]}" | cut -d: -f2)
@@ -396,6 +397,12 @@ EOF
         if [ "$method" = "manual" ]; then
             echo "${secret}=CHANGE_ME_MANUALLY" >> "$secrets_file"
             manual_count=$((manual_count+1))
+        elif [ "$method" = "prompt" ]; then
+            echo ""
+            local value=$(generate_secret_value "$method" "$param" "$secret")
+            echo "${secret}=${value}" >> "$secrets_file"
+            prompt_count=$((prompt_count+1))
+            echo ""
         else
             local value=$(generate_secret_value "$method" "$param" "$secret")
             echo "${secret}=${value}" >> "$secrets_file"
@@ -405,14 +412,23 @@ EOF
     echo "" >> "$secrets_file"
     
     log_info "Generating auth stack secrets..."
+    echo ""
     echo "# Auth Stack Secrets" >> "$secrets_file"
     for secret in KC_ADMIN_PASSWORD AUTH_KC_ADMIN_PASSWORD OAUTH2_CLIENT_SECRET OAUTH2_COOKIE_SECRET AUTH_OAUTH2_CLIENT_SECRET AUTH_OAUTH2_COOKIE_SECRET; do
         local method=$(echo "${REQUIRED_SECRETS[$secret]}" | cut -d: -f1)
         local param=$(echo "${REQUIRED_SECRETS[$secret]}" | cut -d: -f2)
         
-        local value=$(generate_secret_value "$method" "$param" "$secret")
-        echo "${secret}=${value}" >> "$secrets_file"
-        generated_count=$((generated_count+1))
+        if [ "$method" = "prompt" ]; then
+            echo ""
+            local value=$(generate_secret_value "$method" "$param" "$secret")
+            echo "${secret}=${value}" >> "$secrets_file"
+            prompt_count=$((prompt_count+1))
+            echo ""
+        else
+            local value=$(generate_secret_value "$method" "$param" "$secret")
+            echo "${secret}=${value}" >> "$secrets_file"
+            generated_count=$((generated_count+1))
+        fi
     done
     echo "" >> "$secrets_file"
     
