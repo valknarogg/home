@@ -271,107 +271,14 @@ check_required_vars() {
     done
 }
 
-# Generate a .env file for a specific stack (for legacy compatibility)
-# Usage: generate_stack_env_file "core"
+# DEPRECATED: Per-stack .env file generation has been removed
+# All environment variables are now exported directly from the root environment
+# and made available to Docker Compose through the shell environment.
+# This ensures consistent variable management and eliminates file duplication.
 generate_stack_env_file() {
     local stack=$1
-    local stack_upper=$(echo "$stack" | tr '[:lower:]' '[:upper:]')
-    
-    # Determine stack directory (check built-in first, then custom)
-    local stack_dir="${STACKS_ROOT}/${stack}"
-    if [ ! -d "$stack_dir" ] || [ ! -f "${stack_dir}/${COMPOSE_FILE:-compose.yaml}" ]; then
-        stack_dir="${STACKS_ROOT}/+custom/${stack}"
-        
-        # Skip generating .env files for custom stacks
-        log_info "Skipping .env generation for custom stack: $stack"
-        return 0
-    fi
-    
-    local env_file="${stack_dir}/.env.generated"
-    
-    log_info "Generating .env file for stack: $stack"
-    
-    # Create header
-    cat > "$env_file" << EOF
-# ===================================================================
-# AUTO-GENERATED .env FILE FOR STACK: $stack
-# ===================================================================
-# Generated from root .env configuration
-# DO NOT EDIT - Changes will be overwritten
-# Edit ${STACKS_ROOT}/.env instead
-# ===================================================================
-
-EOF
-    
-    # Add stack-specific variables
-    for var in $(compgen -A variable | grep "^${stack_upper}_" | sort); do
-        local generic_name="${var#${stack_upper}_}"
-        echo "${generic_name}=${!var}" >> "$env_file"
-    done
-    
-    # Add common variables
-    cat >> "$env_file" << EOF
-
-# Common variables
-COMPOSE_PROJECT_NAME=${stack}
-NETWORK_NAME=${NETWORK_NAME:-kompose}
-TIMEZONE=${TIMEZONE:-Europe/Amsterdam}
-
-# Database connection (container-to-container)
-# CRITICAL: DB_HOST must be the container name for inter-container communication
-DB_HOST=core-postgres
-DB_PORT=${CORE_DB_PORT:-5432}
-DB_USER=${DB_USER:-kompose}
-DB_PASSWORD=${CORE_DB_PASSWORD}
-
-# Traefik configuration
-TRAEFIK_ENABLED=${TRAEFIK_ENABLED:-true}
-
-# Domain configuration
-ROOT_DOMAIN=${ROOT_DOMAIN}
-BASE_DOMAIN=${BASE_DOMAIN}
-
-# Traefik host variables (auto-generated from domain.env)
-TRAEFIK_HOST=${TRAEFIK_HOST}
-TRAEFIK_HOST_PROXY=${TRAEFIK_HOST_PROXY}
-TRAEFIK_HOST_AUTH=${TRAEFIK_HOST_AUTH}
-TRAEFIK_HOST_CODE=${TRAEFIK_HOST_CODE}
-TRAEFIK_HOST_CHAIN=${TRAEFIK_HOST_CHAIN}
-TRAEFIK_HOST_AUTO=${TRAEFIK_HOST_AUTO}
-TRAEFIK_HOST_BLOG=${TRAEFIK_HOST_BLOG}
-TRAEFIK_HOST_DOCS=${TRAEFIK_HOST_DOCS}
-TRAEFIK_HOST_NEWS=${TRAEFIK_HOST_NEWS}
-TRAEFIK_HOST_CHAT=${TRAEFIK_HOST_CHAT}
-TRAEFIK_HOST_MAIL=${TRAEFIK_HOST_MAIL}
-TRAEFIK_HOST_DATA=${TRAEFIK_HOST_DATA}
-TRAEFIK_HOST_DASH=${TRAEFIK_HOST_DASH}
-TRAEFIK_HOST_TRACK=${TRAEFIK_HOST_TRACK}
-TRAEFIK_HOST_TRACE=${TRAEFIK_HOST_TRACE}
-TRAEFIK_HOST_HOME=${TRAEFIK_HOST_HOME}
-TRAEFIK_HOST_SEXY=${TRAEFIK_HOST_SEXY}
-TRAEFIK_HOST_VAULT=${TRAEFIK_HOST_VAULT}
-TRAEFIK_HOST_LINK=${TRAEFIK_HOST_LINK}
-TRAEFIK_HOST_DOCK=${TRAEFIK_HOST_DOCK}
-TRAEFIK_HOST_MANAGE=${TRAEFIK_HOST_MANAGE}
-TRAEFIK_HOST_VPN=${TRAEFIK_HOST_VPN}
-TRAEFIK_HOST_OAUTH2=${TRAEFIK_HOST_OAUTH2}
-TRAEFIK_HOST_ZIGBEE=${TRAEFIK_HOST_ZIGBEE}
-
-# Watch Stack Traefik hosts
-TRAEFIK_HOST_PROMETHEUS=${TRAEFIK_HOST_PROMETHEUS}
-TRAEFIK_HOST_GRAFANA=${TRAEFIK_HOST_GRAFANA}
-TRAEFIK_HOST_LOKI=${TRAEFIK_HOST_LOKI}
-TRAEFIK_HOST_ALERTMANAGER=${TRAEFIK_HOST_ALERTMANAGER}
-
-# Service-specific host aliases
-N8N_TRAEFIK_HOST=${N8N_TRAEFIK_HOST}
-SEMAPHORE_TRAEFIK_HOST=${SEMAPHORE_TRAEFIK_HOST}
-GITEA_TRAEFIK_HOST=${GITEA_TRAEFIK_HOST}
-KMPS_TRAEFIK_HOST=${KMPS_TRAEFIK_HOST}
-OAUTH2_PROXY_HOST=${OAUTH2_PROXY_HOST}
-EOF
-    
-    log_success "Generated .env file at: $env_file"
+    log_info "Environment variables are now managed from root - no per-stack .env files generated"
+    return 0
 }
 
 # Export environment for docker-compose
@@ -381,20 +288,13 @@ export_stack_env() {
     local stack=$1
     
     # Load and map environment variables
+    # All variables are exported to the shell environment and will be
+    # automatically available to Docker Compose without needing .env files
     load_stack_env "$stack"
     
-    # Generate .env.generated file for docker-compose to read
-    # This ensures docker-compose can access all variables
-    generate_stack_env_file "$stack"
-    
-    # Determine stack directory for COMPOSE_ENV_FILE
-    local stack_dir="${STACKS_ROOT}/${stack}"
-    if [ ! -d "$stack_dir" ] || [ ! -f "${stack_dir}/${COMPOSE_FILE:-compose.yaml}" ]; then
-        stack_dir="${STACKS_ROOT}/+custom/${stack}"
-    fi
-    
-    # Set the env file path for docker-compose
-    export COMPOSE_ENV_FILE="${stack_dir}/.env.generated"
+    # Note: We no longer generate per-stack .env files
+    # Docker Compose will use the exported environment variables directly
+    log_info "Environment loaded for stack: $stack (${COMPOSE_PROJECT_NAME})"
 }
 
 # ============================================================================
