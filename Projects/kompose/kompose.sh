@@ -77,6 +77,8 @@ declare -A DATABASES=(
     ["n8n"]="n8n workflow database"
     ["semaphore"]="Semaphore Ansible automation database"
     ["gitea"]="Gitea git repository database"
+    ["keycloak"]="Keycloak auth database"
+    ["letterspace"]="Letterspace newsletter database"
 )
 
 # ============================================================================
