@@ -67,12 +67,12 @@ All stack-specific variables use the format: `STACKNAME_VARIABLE`
 ```bash
 # Core stack
 CORE_POSTGRES_IMAGE=postgres:16-alpine
-CORE_DB_USER=kompose
+DB_USER=kompose
 CORE_REDIS_IMAGE=redis:7-alpine
 
 # Auth stack
 AUTH_DOCKER_IMAGE=quay.io/keycloak/keycloak:latest
-AUTH_KC_ADMIN_USERNAME=admin
+AUTH_KEYCLOAK_ADMIN_USERNAME=admin
 AUTH_DB_NAME=keycloak
 
 # Home stack
@@ -184,7 +184,7 @@ TIMEZONE=Europe/Amsterdam
 # ===================================================================
 CORE_COMPOSE_PROJECT_NAME=core
 CORE_POSTGRES_IMAGE=postgres:16-alpine
-CORE_DB_USER=kompose
+DB_USER=kompose
 # ... more core variables
 
 # ===================================================================
@@ -212,7 +212,7 @@ DB_PASSWORD=xxx
 CORE_REDIS_PASSWORD=xxx
 
 # Auth secrets
-AUTH_KC_ADMIN_PASSWORD=xxx
+AUTH_KEYCLOAK_ADMIN_PASSWORD=xxx
 AUTH_OAUTH2_CLIENT_SECRET=xxx
 
 # ... more secrets

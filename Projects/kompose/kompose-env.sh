@@ -174,7 +174,7 @@ map_stack_variables() {
     # CRITICAL: DB_HOST must always be set to the container name for inter-container communication
     export DB_HOST="core-postgres"  # Container name from core stack
     export DB_PORT="${CORE_DB_PORT:-5432}"
-    export DB_USER="${CORE_DB_USER:-kompose}"
+    export DB_USER="${DB_USER:-kompose}"
     export DB_PASSWORD="${CORE_DB_PASSWORD:-${DB_PASSWORD}}"
 }
 
@@ -321,7 +321,7 @@ TIMEZONE=${TIMEZONE:-Europe/Amsterdam}
 # CRITICAL: DB_HOST must be the container name for inter-container communication
 DB_HOST=core-postgres
 DB_PORT=${CORE_DB_PORT:-5432}
-DB_USER=${CORE_DB_USER:-kompose}
+DB_USER=${DB_USER:-kompose}
 DB_PASSWORD=${CORE_DB_PASSWORD}
 
 # Traefik configuration
@@ -455,7 +455,7 @@ ADMIN_PASSWORD=$(generate_secret)
 EMAIL_SMTP_PASSWORD=CHANGE_ME_YOUR_SMTP_PASSWORD
 
 # Auth stack
-AUTH_KC_ADMIN_PASSWORD=$(generate_secret)
+AUTH_KEYCLOAK_ADMIN_PASSWORD=$(generate_secret)
 AUTH_OAUTH2_CLIENT_SECRET=$(generate_secret)
 AUTH_OAUTH2_COOKIE_SECRET=$(generate_secret base64)
 

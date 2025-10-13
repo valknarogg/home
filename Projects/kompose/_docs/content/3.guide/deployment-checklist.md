@@ -491,7 +491,7 @@ Your Kompose.sh infrastructure now includes a comprehensive Single Sign-On (SSO)
 - [ ] **Generate secrets** in `secrets.env`
   ```bash
   # Keycloak admin password
-  AUTH_KC_ADMIN_PASSWORD=$(openssl rand -base64 32)
+  AUTH_KEYCLOAK_ADMIN_PASSWORD=$(openssl rand -base64 32)
   
   # OAuth2 Proxy secrets
   AUTH_OAUTH2_CLIENT_SECRET=$(openssl rand -base64 32)
@@ -532,7 +532,7 @@ Your Kompose.sh infrastructure now includes a comprehensive Single Sign-On (SSO)
 - [ ] **Access Keycloak Admin Console**
   - URL: `https://auth.yourdomain.com`
   - Username: `admin`
-  - Password: `<AUTH_KC_ADMIN_PASSWORD from secrets.env>`
+  - Password: `<AUTH_KEYCLOAK_ADMIN_PASSWORD from secrets.env>`
 
 - [ ] **Create Kompose Realm**
   1. Click "Create Realm"
@@ -781,7 +781,7 @@ docker ps | grep -E 'auth|kmps'
 ```bash
 # Reset admin password
 ./kompose.sh down auth
-# Update AUTH_KC_ADMIN_PASSWORD in secrets.env
+# Update AUTH_KEYCLOAK_ADMIN_PASSWORD in secrets.env
 ./kompose.sh up auth
 ```
 

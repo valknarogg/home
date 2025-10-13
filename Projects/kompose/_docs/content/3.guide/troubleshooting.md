@@ -362,7 +362,7 @@ grep OAUTH2 .env secrets.env
 
 # Update secrets.env
 nano secrets.env
-# Change AUTH_KC_ADMIN_PASSWORD
+# Change AUTH_KEYCLOAK_ADMIN_PASSWORD
 
 # Start again
 ./kompose.sh up auth

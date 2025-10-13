@@ -84,7 +84,7 @@ ADMIN_PASSWORD=local_admin_pass
 
 # Auth Stack
 KC_ADMIN_PASSWORD=admin
-AUTH_KC_ADMIN_PASSWORD=admin
+AUTH_KEYCLOAK_ADMIN_PASSWORD=admin
 OAUTH2_CLIENT_SECRET=local_oauth2_secret
 OAUTH2_COOKIE_SECRET=$(openssl rand -base64 32)
 AUTH_OAUTH2_CLIENT_SECRET=local_oauth2_secret

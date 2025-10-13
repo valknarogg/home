@@ -25,7 +25,7 @@ services:
       GITEA__database__DB_TYPE: postgres
       GITEA__database__HOST: ${CORE_DB_HOST}:5432
       GITEA__database__NAME: ${CODE_GITEA_DB_NAME:-gitea}
-      GITEA__database__USER: ${CORE_DB_USER}
+      GITEA__database__USER: ${DB_USER}
       GITEA__database__PASSWD: ${DB_PASSWORD}
       GITEA__database__SCHEMA: public
       GITEA__database__SSL_MODE: disable
@@ -154,15 +154,15 @@ services:
       - kompose_network
     entrypoint: >
       sh -c "
-        until pg_isready -h ${CORE_DB_HOST} -U ${CORE_DB_USER}; do
+        until pg_isready -h ${CORE_DB_HOST} -U ${DB_USER}; do
           echo 'Waiting for PostgreSQL...';
           sleep 2;
         done;
         echo 'PostgreSQL is ready!';
         
-        if ! psql -h ${CORE_DB_HOST} -U ${CORE_DB_USER} -lqt | cut -d \| -f 1 | grep -qw ${GITEA_DB_NAME}; then
+        if ! psql -h ${CORE_DB_HOST} -U ${DB_USER} -lqt | cut -d \| -f 1 | grep -qw ${GITEA_DB_NAME}; then
           echo 'Creating gitea database...';
-          psql -h ${CORE_DB_HOST} -U ${CORE_DB_USER} -c 'CREATE DATABASE ${GITEA_DB_NAME};';
+          psql -h ${CORE_DB_HOST} -U ${DB_USER} -c 'CREATE DATABASE ${GITEA_DB_NAME};';
           echo 'Database created successfully!';
         else
           echo 'Database already exists.';

@@ -31,7 +31,7 @@ The configuration appears in the core stack configuration section as follows:
 ```bash
 # PostgreSQL Configuration
 CORE_POSTGRES_IMAGE=postgres:16-alpine
-CORE_DB_USER=kompose
+DB_USER=kompose
 CORE_DB_NAME=kompose
 CORE_DB_PORT=5432
 CORE_DB_HOST=core-postgres  # Container name for inter-container communication
@@ -50,7 +50,7 @@ The map_stack_variables function in the kompose-env.sh module has been enhanced 
 # CRITICAL: DB_HOST must always be set to the container name for inter-container communication
 export DB_HOST="core-postgres"  # Container name from core stack
 export DB_PORT="${CORE_DB_PORT:-5432}"
-export DB_USER="${CORE_DB_USER:-kompose}"
+export DB_USER="${DB_USER:-kompose}"
 export DB_PASSWORD="${CORE_DB_PASSWORD:-${DB_PASSWORD}}"
 ```
 

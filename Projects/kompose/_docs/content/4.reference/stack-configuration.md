@@ -50,12 +50,12 @@ Format: `STACKNAME_VARIABLE_NAME`
 ```bash
 # Core stack variables
 CORE_POSTGRES_IMAGE=postgres:16-alpine
-CORE_DB_USER=kompose
+DB_USER=kompose
 CORE_REDIS_PASSWORD=${REDIS_PASSWORD}
 
 # Auth stack variables  
 AUTH_DOCKER_IMAGE=quay.io/keycloak/keycloak:latest
-AUTH_KC_ADMIN_USERNAME=admin
+AUTH_KEYCLOAK_ADMIN_USERNAME=admin
 AUTH_DB_NAME=keycloak
 
 # Home stack variables
@@ -92,7 +92,7 @@ DB_PASSWORD=xxx
 REDIS_PASSWORD=xxx
 
 # Stack-specific secrets
-AUTH_KC_ADMIN_PASSWORD=xxx
+AUTH_KEYCLOAK_ADMIN_PASSWORD=xxx
 CHAIN_N8N_ENCRYPTION_KEY=xxx
 CODE_GITEA_SECRET_KEY=xxx
 ```
@@ -156,7 +156,7 @@ CORE_COMPOSE_PROJECT_NAME=core
 
 # PostgreSQL
 CORE_POSTGRES_IMAGE=postgres:16-alpine
-CORE_DB_USER=kompose
+DB_USER=kompose
 CORE_DB_NAME=kompose
 CORE_POSTGRES_MAX_CONNECTIONS=100
 
@@ -175,7 +175,7 @@ AUTH_COMPOSE_PROJECT_NAME=auth
 # Keycloak
 AUTH_DOCKER_IMAGE=quay.io/keycloak/keycloak:latest
 AUTH_DB_NAME=keycloak
-AUTH_KC_ADMIN_USERNAME=admin
+AUTH_KEYCLOAK_ADMIN_USERNAME=admin
 
 # OAuth2 Proxy
 AUTH_OAUTH2_CLIENT_ID=kompose-sso

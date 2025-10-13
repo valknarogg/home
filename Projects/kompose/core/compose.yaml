@@ -8,7 +8,7 @@ services:
     restart: unless-stopped
     environment:
       TZ: ${TIMEZONE:-Europe/Amsterdam}
-      POSTGRES_USER: ${CORE_DB_USER:-kompose}
+      POSTGRES_USER: ${DB_USER:-kompose}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${CORE_DB_NAME:-kompose}
       # Performance tuning
@@ -18,7 +18,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
       - ./postgres/init:/docker-entrypoint-initdb.d:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${CORE_DB_USER:-kompose}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-kompose}"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -37,7 +37,6 @@ services:
     restart: unless-stopped
     environment:
       TZ: ${TIMEZONE:-Europe/Amsterdam}
-    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
     volumes:
       - redis_data:/data
     healthcheck:
@@ -86,7 +85,7 @@ services:
       TZ: ${TIMEZONE:-Europe/Amsterdam}
       REDIS_HOSTS: local:core-redis:6379:0:${REDIS_PASSWORD}
       HTTP_USER: ${CORE_REDIS_API_USER:-admin}
-      HTTP_PASSWORD: ${REDIS_API_PASSWORD}
+      HTTP_PASSWORD: ${CORE_REDIS_API_PASSWORD}
     healthcheck:
       test: ["CMD", "wget", "--spider", "-q", "http://localhost:8081"]
       interval: 30s

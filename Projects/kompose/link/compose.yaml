@@ -20,7 +20,7 @@ services:
       TZ: ${TIMEZONE:-Europe/Amsterdam}
       
       # Database Configuration
-      DATABASE_URL: postgresql://${CORE_DB_USER}:${DB_PASSWORD}@core-postgres:5432/${LINK_DB_NAME}
+      DATABASE_URL: postgresql://${DB_USER}:${DB_PASSWORD}@core-postgres:5432/${LINK_DB_NAME}
       
       # Authentication
       NEXTAUTH_SECRET: ${NEXTAUTH_SECRET}

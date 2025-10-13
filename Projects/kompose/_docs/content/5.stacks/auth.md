@@ -34,7 +34,7 @@ AUTH_COMPOSE_PROJECT_NAME=auth
 # Keycloak Configuration
 AUTH_DOCKER_IMAGE=quay.io/keycloak/keycloak:latest
 AUTH_DB_NAME=keycloak
-AUTH_KC_ADMIN_USERNAME=admin
+AUTH_KEYCLOAK_ADMIN_USERNAME=admin
 
 # OAuth2 Proxy Configuration
 # Domain automatically configured from domain.env:
@@ -48,7 +48,7 @@ Sensitive values in `/home/valknar/Projects/kompose/secrets.env`:
 
 ```bash
 # Auth stack secrets
-AUTH_KC_ADMIN_PASSWORD=xxx
+AUTH_KEYCLOAK_ADMIN_PASSWORD=xxx
 AUTH_OAUTH2_CLIENT_SECRET=xxx
 AUTH_OAUTH2_COOKIE_SECRET=xxx  # Generate with: openssl rand -base64 32
 ```
@@ -83,8 +83,8 @@ Identity and Access Management platform with:
 ```bash
 AUTH_DOCKER_IMAGE=quay.io/keycloak/keycloak:latest
 AUTH_DB_NAME=keycloak
-AUTH_KC_ADMIN_USERNAME=admin
-AUTH_KC_ADMIN_PASSWORD=${AUTH_KC_ADMIN_PASSWORD}  # from secrets.env
+AUTH_KEYCLOAK_ADMIN_USERNAME=admin
+AUTH_KEYCLOAK_ADMIN_PASSWORD=${AUTH_KEYCLOAK_ADMIN_PASSWORD}  # from secrets.env
 ```
 
 **Database Connection:**
@@ -134,7 +134,7 @@ Add passwords to `secrets.env`:
 vim secrets.env
 
 # Add or verify:
-AUTH_KC_ADMIN_PASSWORD=<strong-password>
+AUTH_KEYCLOAK_ADMIN_PASSWORD=<strong-password>
 AUTH_OAUTH2_CLIENT_SECRET=<strong-secret>
 AUTH_OAUTH2_COOKIE_SECRET=$(openssl rand -base64 32)
 ```
@@ -177,7 +177,7 @@ Expected output:
 ```
 URL: https://${SUBDOMAIN_AUTH}.${ROOT_DOMAIN}  (e.g., https://auth.pivoine.art)
 Username: admin
-Password: <from secrets.env AUTH_KC_ADMIN_PASSWORD>
+Password: <from secrets.env AUTH_KEYCLOAK_ADMIN_PASSWORD>
 ```
 
 ## Customizing Configuration
@@ -188,11 +188,11 @@ Password: <from secrets.env AUTH_KC_ADMIN_PASSWORD>
 vim .env
 
 # Find and modify:
-AUTH_KC_ADMIN_USERNAME=myadmin
+AUTH_KEYCLOAK_ADMIN_USERNAME=myadmin
 
 # Update password in secrets.env
 vim secrets.env
-AUTH_KC_ADMIN_PASSWORD=new-password
+AUTH_KEYCLOAK_ADMIN_PASSWORD=new-password
 
 # Restart
 ./kompose.sh restart auth
@@ -382,7 +382,7 @@ docker exec core-postgres psql -U valknar -l | grep keycloak
 ./kompose.sh env show auth | grep KC_ADMIN_USERNAME
 
 # Check password is set
-grep AUTH_KC_ADMIN_PASSWORD secrets.env
+grep AUTH_KEYCLOAK_ADMIN_PASSWORD secrets.env
 
 # Reset admin password
 # Edit secrets.env, then:

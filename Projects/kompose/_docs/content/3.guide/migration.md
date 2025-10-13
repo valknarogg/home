@@ -155,7 +155,7 @@ AUTH_DB_NAME=keycloak
 
 Examples:
 TRACK_APP_SECRET=<generated-64-char-hex>
-AUTH_KC_ADMIN_PASSWORD=<generated-32-char-password>
+AUTH_KEYCLOAK_ADMIN_PASSWORD=<generated-32-char-password>
 DB_PASSWORD=<generated-32-char-password>
 ```
 
@@ -210,7 +210,7 @@ AUTH_DOCKER_IMAGE=quay.io/keycloak/keycloak:latest
 
 **secrets.env.template:**
 ```bash
-AUTH_KC_ADMIN_PASSWORD=CHANGE_ME_GENERATE_WITH_KOMPOSE
+AUTH_KEYCLOAK_ADMIN_PASSWORD=CHANGE_ME_GENERATE_WITH_KOMPOSE
 ```
 
 **auth/compose.yaml:**
@@ -220,7 +220,7 @@ services:
     image: ${AUTH_DOCKER_IMAGE}
     environment:
       KC_DB_URL: jdbc:postgresql://${DB_HOST}:${DB_PORT}/${AUTH_DB_NAME}
-      KC_BOOTSTRAP_ADMIN_PASSWORD: ${AUTH_KC_ADMIN_PASSWORD}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${AUTH_KEYCLOAK_ADMIN_PASSWORD}
     labels:
       - 'traefik.enable=${AUTH_TRAEFIK_ENABLED}'
       - 'traefik.http.routers.${COMPOSE_PROJECT_NAME}-web.rule=Host(`${AUTH_TRAEFIK_HOST}`)'

@@ -11,18 +11,13 @@
 declare -A REQUIRED_SECRETS=(
     # Shared secrets
     ["DB_PASSWORD"]="prompt"
-    ["REDIS_PASSWORD"]="alias:ADMIN_PASSWORD"
-    ["REDIS_API_PASSWORD"]="alias:ADMIN_PASSWORD"
     ["ADMIN_PASSWORD"]="prompt"
     ["EMAIL_SMTP_PASSWORD"]="manual"
     
     # Auth stack
-    ["KC_ADMIN_PASSWORD"]="alias:ADMIN_PASSWORD"
-    ["AUTH_KC_ADMIN_PASSWORD"]="alias:KC_ADMIN_PASSWORD"
-    ["OAUTH2_CLIENT_SECRET"]="base64:32"
-    ["OAUTH2_COOKIE_SECRET"]="base64:32"
-    ["AUTH_OAUTH2_CLIENT_SECRET"]="alias:OAUTH2_CLIENT_SECRET"
-    ["AUTH_OAUTH2_COOKIE_SECRET"]="alias:OAUTH2_COOKIE_SECRET"
+    ["AUTH_KEYCLOAK_ADMIN_PASSWORD"]="alias:ADMIN_PASSWORD"
+    ["AUTH_OAUTH2_CLIENT_SECRET"]="base64:32"
+    ["AUTH_OAUTH2_COOKIE_SECRET"]="base64:32"
     
     # Code stack (Gitea)
     ["GITEA_SECRET_KEY"]="hex:64"
@@ -70,9 +65,7 @@ declare -A SECRET_STACK_MAP=(
     ["EMAIL_SMTP_PASSWORD"]="shared"
     
     ["KC_ADMIN_PASSWORD"]="auth"
-    ["AUTH_KC_ADMIN_PASSWORD"]="auth"
-    ["OAUTH2_CLIENT_SECRET"]="auth"
-    ["OAUTH2_COOKIE_SECRET"]="auth"
+    ["AUTH_KEYCLOAK_ADMIN_PASSWORD"]="auth"
     ["AUTH_OAUTH2_CLIENT_SECRET"]="auth"
     ["AUTH_OAUTH2_COOKIE_SECRET"]="auth"
     
@@ -104,9 +97,8 @@ declare -A SECRET_STACK_MAP=(
 # Secret descriptions for documentation
 declare -A SECRET_DESCRIPTIONS=(
     ["DB_PASSWORD"]="PostgreSQL password for all database connections"
-    ["REDIS_PASSWORD"]="Redis password for cache and session storage"
-    ["REDIS_API_PASSWORD"]="Redis password for API access"
     ["ADMIN_PASSWORD"]="Default admin password for services"
+    ["CORE_REDIS_API_PASSWORD"]="Redis password for API access"
     ["EMAIL_SMTP_PASSWORD"]="SMTP password for sending emails"
     
     ["KC_ADMIN_PASSWORD"]="Keycloak admin console password"
@@ -414,7 +406,7 @@ EOF
     log_info "Generating auth stack secrets..."
     echo ""
     echo "# Auth Stack Secrets" >> "$secrets_file"
-    for secret in KC_ADMIN_PASSWORD AUTH_KC_ADMIN_PASSWORD OAUTH2_CLIENT_SECRET OAUTH2_COOKIE_SECRET AUTH_OAUTH2_CLIENT_SECRET AUTH_OAUTH2_COOKIE_SECRET; do
+    for secret in KC_ADMIN_PASSWORD AUTH_KEYCLOAK_ADMIN_PASSWORD OAUTH2_CLIENT_SECRET OAUTH2_COOKIE_SECRET AUTH_OAUTH2_CLIENT_SECRET AUTH_OAUTH2_COOKIE_SECRET; do
         local method=$(echo "${REQUIRED_SECRETS[$secret]}" | cut -d: -f1)
         local param=$(echo "${REQUIRED_SECRETS[$secret]}" | cut -d: -f2)
         

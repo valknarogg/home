@@ -103,7 +103,7 @@ Database, cache, and message broker services.
 |----------|----------|---------|-------------|
 | `CORE_COMPOSE_PROJECT_NAME` | Yes | `core` | Docker compose project name |
 | `CORE_POSTGRES_IMAGE` | No | `postgres:16-alpine` | PostgreSQL image |
-| `CORE_DB_USER` | Yes | `kompose` | Database username |
+| `DB_USER` | Yes | `kompose` | Database username |
 | `CORE_DB_NAME` | Yes | `kompose` | Database name |
 | `CORE_DB_PORT` | Yes | `5432` | Database port |
 | `CORE_DB_HOST` | Yes | `localhost` | Database host (local dev) |
@@ -132,8 +132,8 @@ Authentication and SSO services.
 | `AUTH_COMPOSE_PROJECT_NAME` | Yes | `auth` | Docker compose project name |
 | `AUTH_DOCKER_IMAGE` | Yes | `quay.io/keycloak/keycloak:latest` | Keycloak image |
 | `AUTH_DB_NAME` | Yes | `keycloak` | Database name |
-| `AUTH_KC_ADMIN_USERNAME` | Yes | `admin` | Admin username |
-| `AUTH_KC_ADMIN_PASSWORD` | Yes | - | Admin password (secrets.env) |
+| `AUTH_KEYCLOAK_ADMIN_USERNAME` | Yes | `admin` | Admin username |
+| `AUTH_KEYCLOAK_ADMIN_PASSWORD` | Yes | - | Admin password (secrets.env) |
 | `AUTH_KC_HTTP_PORT` | Yes | `8180` | HTTP port |
 
 ### OAuth2 Proxy Configuration
@@ -416,7 +416,7 @@ DB_PASSWORD=
 REDIS_PASSWORD=
 
 # Auth
-AUTH_KC_ADMIN_PASSWORD=
+AUTH_KEYCLOAK_ADMIN_PASSWORD=
 AUTH_OAUTH2_CLIENT_SECRET=
 AUTH_OAUTH2_COOKIE_SECRET=
 
@@ -467,7 +467,7 @@ Format: `{STACK}_{SERVICE}_{PROPERTY}`
 
 Examples:
 - `CORE_POSTGRES_IMAGE` - Core stack, PostgreSQL service, image property
-- `AUTH_KC_ADMIN_PASSWORD` - Auth stack, Keycloak, admin password
+- `AUTH_KEYCLOAK_ADMIN_PASSWORD` - Auth stack, Keycloak, admin password
 - `CHAIN_N8N_PORT` - Chain stack, n8n service, port property
 
 ---

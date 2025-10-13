@@ -28,7 +28,7 @@ CORE_COMPOSE_PROJECT_NAME=core
 
 # PostgreSQL Configuration
 CORE_POSTGRES_IMAGE=postgres:16-alpine
-CORE_DB_USER=valknar
+DB_USER=valknar
 CORE_DB_NAME=kompose
 CORE_DB_PORT=5432
 CORE_DB_HOST=core-postgres
@@ -89,7 +89,7 @@ Generate secrets with:
 **Configuration:**
 ```bash
 CORE_POSTGRES_IMAGE=postgres:16-alpine
-CORE_DB_USER=valknar
+DB_USER=valknar
 CORE_DB_NAME=kompose
 CORE_POSTGRES_MAX_CONNECTIONS=100
 CORE_POSTGRES_SHARED_BUFFERS=256MB
