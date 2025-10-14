@@ -351,9 +351,9 @@ setup_test_env() {
     mkdir -p "${TEMP_DIR}"
     
     # Create minimal .env file if it doesn't exist (needed by some commands)
-    if [ ! -f "${KOMPOSE_ROOT}/.env" ] && [ ! -f "${KOMPOSE_ROOT}/.env.local" ]; then
+    if [ ! -f "${KOMPOSE_ROOT}/.env" ]; then
         log_info "Creating minimal .env for testing..."
-        cat > "${KOMPOSE_ROOT}/.env.test" << 'EOF'
+        cat > "${KOMPOSE_ROOT}/.env" << 'EOF'
 # Minimal test environment configuration
 TIMEZONE=Europe/Amsterdam
 NETWORK_NAME=kompose
@@ -370,6 +370,9 @@ cleanup_test_env() {
     
     # Remove temp files
     rm -rf "${TEMP_DIR}"/*
+    
+    # Don't remove .env as it might be needed for other tests
+    # Tests should handle their own state
     
     log_info "Cleanup complete"
 }
