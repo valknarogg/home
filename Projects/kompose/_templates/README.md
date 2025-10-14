@@ -242,7 +242,7 @@ services:
       API_KEY: ${STACKNAME_API_KEY}   # ✓ Defined in kompose.yml
 ```
 
-## Template Workflow
+## Workflow
 
 ```
 Developer creates template:
@@ -378,6 +378,5 @@ cat _templates/mystack/kompose.yml  # Validate YAML syntax
 ## See Also
 
 - [Generated Stacks](../+stacks/README.md)
-- [Custom Stacks](../+custom/README.md)
 - [Stack Generation Guide](../_docs/content/guide/stack-generation.md)
 - [kompose.yml Specification](../_docs/content/reference/kompose-yml.md)

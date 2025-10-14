@@ -1,0 +1,187 @@
+# ============================================================================
+# Kompose Template Configuration - Blog Stack
+# ============================================================================
+# This file defines all environment variables and secrets used by the stack
+# Used by kompose-generate.sh to create a complete, working stack
+# ============================================================================
+
+name: blog
+description: Static blog website served with static-web-server
+version: 1.0.0
+
+# ============================================================================
+# Environment Variables
+# ============================================================================
+environment:
+  # Project Configuration
+  - name: COMPOSE_PROJECT_NAME
+    default: blog
+    description: Blog stack project name
+    required: yes
+  
+  - name: BLOG_DOCKER_IMAGE
+    default: joseluisq/static-web-server:latest
+    description: Static web server Docker image
+    required: yes
+  
+  # Network Configuration
+  - name: NETWORK_NAME
+    default: kompose
+    description: Docker network name for inter-service communication
+    required: yes
+  
+  # Domain Configuration
+  - name: BLOG_TRAEFIK_HOST
+    default: "${SUBDOMAIN_BLOG}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}"
+    description: Blog hostname (e.g., blog.example.com)
+    required: yes
+  
+  - name: SUBDOMAIN_BLOG
+    default: blog
+    description: Blog subdomain
+    required: yes
+  
+  - name: ROOT_DOMAIN
+    default: ""
+    description: Root domain for all services (e.g., example.com)
+    required: yes
+  
+  # System Configuration
+  - name: TIMEZONE
+    default: Europe/Amsterdam
+    description: System timezone for containers
+    required: no
+
+# ============================================================================
+# Secrets
+# ============================================================================
+secrets: []
+# No secrets required for static blog
+
+# ============================================================================
+# Dependencies
+# ============================================================================
+dependencies:
+  # Required stacks that must be running
+  required:
+    - proxy # Traefik for routing
+  
+  # Optional stacks that enhance functionality
+  optional: []
+
+# ============================================================================
+# Ports
+# ============================================================================
+ports:
+  # Static web server (internal only, accessed via Traefik)
+  - container: 80
+    description: HTTP port (internal)
+    exposed: false
+
+# ============================================================================
+# Volumes
+# ============================================================================
+volumes:
+  - name: /var/www/pivoine.art
+    description: Static website content directory
+    mount: /public
+    type: bind
+    required: yes
+
+# ============================================================================
+# Health Checks
+# ============================================================================
+healthchecks: {}
+# Static-web-server doesn't include wget/curl
+# Traefik detects via port check
+
+# ============================================================================
+# Notes & Documentation
+# ============================================================================
+notes: |
+  # Blog Stack - Static Website Hosting
+  
+  This stack provides static website hosting using static-web-server.
+  
+  ## Components
+  
+  ### Static Web Server
+  - Ultra-fast static file server
+  - Automatic compression (gzip, brotli)
+  - Cache headers support
+  - SPA fallback support
+  
+  ## Setup Instructions
+  
+  1. **Generate the stack:**
+     ```bash
+     ./kompose-generate.sh blog
+     ```
+  
+  2. **Prepare content directory:**
+     ```bash
+     sudo mkdir -p /var/www/pivoine.art
+     sudo chown -R $USER:$USER /var/www/pivoine.art
+     ```
+  
+  3. **Add your website content:**
+     ```bash
+     cp -r your-website/* /var/www/pivoine.art/
+     ```
+  
+  4. **Start required dependencies:**
+     ```bash
+     docker compose -f proxy/compose.yaml up -d
+     ```
+  
+  5. **Start the blog stack:**
+     ```bash
+     docker compose -f blog/compose.yaml up -d
+     ```
+  
+  6. **Access your blog:**
+     - URL: https://blog.yourdomain.com
+  
+  ## Configuration
+  
+  Key configuration variables:
+  - `BLOG_TRAEFIK_HOST`: Blog hostname
+  - `SUBDOMAIN_BLOG`: Subdomain (default: blog)
+  
+  ## Volume Mount
+  
+  The stack mounts `/var/www/pivoine.art` to serve static content.
+  Update this path in `compose.yaml` if your content is elsewhere.
+  
+  ## Updating Content
+  
+  Simply update files in `/var/www/pivoine.art`:
+  ```bash
+  # Copy new files
+  cp new-file.html /var/www/pivoine.art/
+  
+  # Changes are immediately available (no restart needed)
+  ```
+  
+  ## Troubleshooting
+  
+  ### Blog won't start
+  - Verify content directory exists and is readable
+  - Check logs: `docker logs blog_app`
+  
+  ### 404 errors
+  - Verify files exist in /var/www/pivoine.art
+  - Check file permissions
+  
+  ### Traefik routing issues
+  - Verify BLOG_TRAEFIK_HOST is correct
+  - Check Traefik dashboard for routing rules
+  - Ensure DNS points to your server
+  
+  ## Performance
+  
+  Static-web-server is optimized for performance:
+  - Automatic compression (gzip, brotli)
+  - HTTP/2 support
+  - Cache headers
+  - No dependencies or runtime

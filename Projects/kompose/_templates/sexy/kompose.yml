@@ -1,0 +1,614 @@
+# ============================================================================
+# Kompose Template Configuration - Sexy Stack (Directus CMS)
+# ============================================================================
+# This file defines all environment variables and secrets used by the stack
+# Used by kompose-generate.sh to create a complete, working stack
+# ============================================================================
+
+name: sexy
+description: Directus CMS with custom frontend for sexy.pivoine.art
+version: 1.0.0
+
+# ============================================================================
+# Environment Variables
+# ============================================================================
+environment:
+  # Project Configuration
+  - name: COMPOSE_PROJECT_NAME
+    default: sexy
+    description: Sexy stack project name
+    required: yes
+  
+  # Database Configuration
+  - name: SEXY_DB_NAME
+    default: directus
+    description: Database name for Directus
+    required: yes
+  
+  - name: DB_USER
+    default: kompose
+    description: PostgreSQL database user
+    required: yes
+  
+  - name: CORE_DB_HOST
+    default: core-postgres
+    description: PostgreSQL host (container name)
+    required: yes
+  
+  - name: CORE_DB_PORT
+    default: 5432
+    description: PostgreSQL port
+    required: yes
+  
+  # Redis Configuration
+  - name: CORE_REDIS_HOST
+    default: core-redis
+    description: Redis host (container name)
+    required: yes
+  
+  - name: CORE_REDIS_PORT
+    default: 6379
+    description: Redis port
+    required: yes
+  
+  # Directus API Configuration
+  - name: APP_PORT
+    default: 8055
+    description: Directus API port
+    required: yes
+  
+  - name: SEXY_CACHE_ENABLED
+    default: true
+    description: Enable Directus caching
+    required: no
+  
+  - name: SEXY_CACHE_AUTO_PURGE
+    default: true
+    description: Auto-purge cache on content changes
+    required: no
+  
+  - name: SEXY_WEBSOCKETS_ENABLED
+    default: true
+    description: Enable WebSocket support
+    required: no
+  
+  - name: SEXY_PUBLIC_URL
+    default: https://sexy.pivoine.art/api
+    description: Public URL for Directus API
+    required: yes
+  
+  # CORS Configuration
+  - name: SEXY_CORS_ENABLED
+    default: true
+    description: Enable CORS
+    required: no
+  
+  - name: SEXY_CORS_ORIGIN
+    default: https://sexy.pivoine.art
+    description: Allowed CORS origins
+    required: yes
+  
+  # Session Configuration
+  - name: SEXY_SESSION_COOKIE_SECURE
+    default: true
+    description: Use secure cookies (HTTPS only)
+    required: no
+  
+  - name: SEXY_SESSION_COOKIE_SAME_SITE
+    default: strict
+    description: SameSite cookie policy
+    required: no
+  
+  - name: SEXY_SESSION_COOKIE_DOMAIN
+    default: sexy.pivoine.art
+    description: Cookie domain
+    required: yes
+  
+  # Extensions Configuration
+  - name: SEXY_EXTENSIONS_PATH
+    default: ./extensions
+    description: Path to Directus extensions
+    required: no
+  
+  - name: SEXY_EXTENSIONS_AUTO_RELOAD
+    default: true
+    description: Auto-reload extensions on changes
+    required: no
+  
+  - name: SEXY_DIRECTUS_BUNDLE
+    default: /var/www/sexy.pivoine.art/packages/bundle
+    description: Path to custom bundle extensions
+    required: yes
+  
+  # Security Configuration
+  - name: SEXY_CONTENT_SECURITY_POLICY_DIRECTIVES__FRAME_SRC
+    default: https://sexy.pivoine.art
+    description: CSP frame-src directive
+    required: no
+  
+  - name: SEXY_USER_REGISTER_URL_ALLOW_LIST
+    default: https://sexy.pivoine.art/signup/verify
+    description: Allowed URLs for user registration
+    required: no
+  
+  - name: SEXY_PASSWORD_RESET_URL_ALLOW_LIST
+    default: https://sexy.pivoine.art/password/reset
+    description: Allowed URLs for password reset
+    required: no
+  
+  # Email Configuration
+  - name: EMAIL_TRANSPORT
+    default: smtp
+    description: Email transport protocol
+    required: yes
+  
+  - name: EMAIL_FROM
+    default: noreply@sexy.pivoine.art
+    description: Default sender email address
+    required: yes
+  
+  - name: EMAIL_SMTP_HOST
+    default: messaging_mailhog
+    description: SMTP host for outgoing email
+    required: yes
+  
+  - name: EMAIL_SMTP_PORT
+    default: 1025
+    description: SMTP port
+    required: yes
+  
+  - name: EMAIL_SMTP_USER
+    default: ""
+    description: SMTP username (optional)
+    required: no
+  
+  # Frontend Configuration
+  - name: SEXY_FRONTEND_IMAGE
+    default: node:22
+    description: Frontend Docker image
+    required: yes
+  
+  - name: SEXY_FRONTEND_PORT
+    default: 3000
+    description: Frontend HTTP port
+    required: yes
+  
+  # Admin Configuration
+  - name: ADMIN_EMAIL
+    default: admin@example.com
+    description: Directus admin email
+    required: yes
+  
+  # Network Configuration
+  - name: NETWORK_NAME
+    default: kompose
+    description: Docker network name for inter-service communication
+    required: yes
+  
+  # Domain Configuration
+  - name: SEXY_TRAEFIK_HOST
+    default: "${SUBDOMAIN_SEXY}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}"
+    description: Sexy hostname (e.g., sexy.example.com)
+    required: yes
+  
+  - name: SUBDOMAIN_SEXY
+    default: sexy
+    description: Sexy subdomain
+    required: yes
+  
+  - name: ROOT_DOMAIN
+    default: ""
+    description: Root domain for all services (e.g., example.com)
+    required: yes
+  
+  # System Configuration
+  - name: TIMEZONE
+    default: Europe/Amsterdam
+    description: System timezone for containers
+    required: no
+
+# ============================================================================
+# Secrets
+# ============================================================================
+secrets:
+  # Shared Database Secret
+  - name: DB_PASSWORD
+    description: PostgreSQL password for database connections
+    required: yes
+    type: password
+    length: 32
+    stacks:
+      - core
+      - sexy
+      - chain
+      - code
+    command: openssl rand -base64 48 | tr -d '=+/' | cut -c1-32
+  
+  # Shared Redis Secret
+  - name: REDIS_PASSWORD
+    description: Redis password for cache and session storage
+    required: yes
+    type: password
+    length: 32
+    stacks:
+      - core
+      - sexy
+      - code
+    command: openssl rand -base64 48 | tr -d '=+/' | cut -c1-32
+  
+  # Sexy Stack Secrets
+  - name: SEXY_DIRECTUS_SECRET
+    description: Directus secret key for encryption and token signing
+    required: yes
+    type: password
+    length: 64
+    stacks:
+      - sexy
+    command: openssl rand -hex 32
+  
+  - name: ADMIN_PASSWORD
+    description: Directus admin password
+    required: yes
+    type: password
+    length: 24
+    stacks:
+      - sexy
+    command: openssl rand -base64 48 | tr -d '=+/' | cut -c1-32
+  
+  # Email Secret (optional for development)
+  - name: EMAIL_SMTP_PASSWORD
+    description: SMTP password for sending emails (leave empty for Mailhog)
+    required: no
+    type: password
+    length: 32
+    stacks:
+      - sexy
+      - chain
+      - code
+    command: openssl rand -base64 48 | tr -d '=+/' | cut -c1-32
+
+# ============================================================================
+# Dependencies
+# ============================================================================
+dependencies:
+  # Required stacks that must be running
+  required:
+    - core      # PostgreSQL and Redis
+    - proxy     # Traefik for routing
+  
+  # Optional stacks that enhance functionality
+  optional:
+    - messaging # Mailhog for emails
+    - watch     # Prometheus monitoring
+
+# ============================================================================
+# Ports
+# ============================================================================
+ports:
+  # Directus API (internal only, accessed via Traefik)
+  - container: 8055
+    description: Directus API port (internal)
+    exposed: false
+  
+  # Frontend (internal only, accessed via Traefik)
+  - container: 3000
+    description: Frontend HTTP port (internal)
+    exposed: false
+
+# ============================================================================
+# Volumes
+# ============================================================================
+volumes:
+  - name: ./uploads
+    description: Directus uploaded files directory
+    mount: /directus/uploads
+    type: bind
+    required: yes
+  
+  - name: /var/www/sexy.pivoine.art/packages/bundle
+    description: Custom Directus extensions bundle
+    mount: /directus/extensions/sexy.pivoine.art
+    type: bind
+    required: yes
+  
+  - name: /var/www/sexy.pivoine.art
+    description: Frontend application code
+    mount: /home/node/app
+    type: bind
+    required: yes
+
+# ============================================================================
+# Health Checks
+# ============================================================================
+healthchecks: {}
+# Health checks commented out in compose.yaml
+# Can be enabled if needed
+
+# ============================================================================
+# Notes & Documentation
+# ============================================================================
+notes: |
+  # Sexy Stack - Directus CMS with Custom Frontend
+  
+  This stack provides a complete content management system with:
+  - Directus headless CMS (API backend)
+  - Custom SvelteKit frontend
+  - Database storage (PostgreSQL)
+  - Redis caching
+  - Email notifications
+  - Custom extensions
+  
+  ## Components
+  
+  ### Directus API
+  - Headless CMS with RESTful API
+  - GraphQL support
+  - Role-based access control
+  - File management
+  - Webhooks and flows
+  - Custom extensions
+  
+  ### Frontend
+  - SvelteKit application
+  - Server-side rendering
+  - Directus SDK integration
+  - Custom UI components
+  
+  ## Setup Instructions
+  
+  1. **Generate the stack:**
+     ```bash
+     ./kompose-generate.sh sexy
+     ```
+  
+  2. **Prepare directories:**
+     ```bash
+     # Create uploads directory
+     mkdir -p +stacks/sexy/uploads
+     chmod 777 +stacks/sexy/uploads
+     
+     # Ensure bundle directory exists
+     mkdir -p /var/www/sexy.pivoine.art/packages/bundle
+     
+     # Ensure frontend code exists
+     mkdir -p /var/www/sexy.pivoine.art/packages/frontend
+     ```
+  
+  3. **Start required dependencies:**
+     ```bash
+     docker compose -f core/compose.yaml up -d
+     docker compose -f proxy/compose.yaml up -d
+     ```
+  
+  4. **Create database:**
+     ```bash
+     ./kompose.sh db exec -d postgres \
+       "CREATE DATABASE directus OWNER kompose;"
+     ```
+  
+  5. **Build the services:**
+     ```bash
+     cd +stacks/sexy
+     # Add your Dockerfile for Directus
+     docker compose build
+     ```
+  
+  6. **Bootstrap Directus:**
+     ```bash
+     docker compose run --rm directus npx directus bootstrap
+     ```
+  
+  7. **Start the sexy stack:**
+     ```bash
+     docker compose -f sexy/compose.yaml up -d
+     ```
+  
+  8. **Access the application:**
+     - Frontend: https://sexy.example.com
+     - API: https://sexy.example.com/api
+     - Admin: https://sexy.example.com/api/admin
+  
+  ## Configuration
+  
+  Key configuration variables:
+  - `SEXY_DB_NAME`: Database name (default: directus)
+  - `SEXY_PUBLIC_URL`: Public API URL
+  - `SEXY_CACHE_ENABLED`: Enable caching
+  - `SEXY_WEBSOCKETS_ENABLED`: Enable real-time updates
+  
+  ## Secrets
+  
+  Required secrets:
+  - `SEXY_DIRECTUS_SECRET`: Directus encryption key
+  - `ADMIN_PASSWORD`: Directus admin password
+  - `DB_PASSWORD`: Database access (shared)
+  - `REDIS_PASSWORD`: Cache access (shared)
+  - `EMAIL_SMTP_PASSWORD`: Email sending (optional)
+  
+  ## Volume Mounts
+  
+  The stack requires several volume mounts:
+  
+  1. **./uploads** - Uploaded files from Directus
+  2. **/var/www/sexy.pivoine.art/packages/bundle** - Custom extensions
+  3. **/var/www/sexy.pivoine.art** - Frontend application code
+  
+  Update these paths in `compose.yaml` based on your setup.
+  
+  ## Directus Admin
+  
+  First login:
+  - Email: Value from `ADMIN_EMAIL`
+  - Password: Value from `ADMIN_PASSWORD` (secrets.env)
+  - URL: https://sexy.example.com/api/admin
+  
+  ## Custom Extensions
+  
+  The stack supports custom Directus extensions via the bundle directory.
+  Place your extensions in `/var/www/sexy.pivoine.art/packages/bundle`.
+  
+  Extensions are automatically loaded and can include:
+  - Custom endpoints
+  - Hooks
+  - Interfaces
+  - Displays
+  - Panels
+  - Modules
+  
+  ## Frontend Development
+  
+  The frontend is a SvelteKit application:
+  
+  ```bash
+  # Navigate to frontend
+  cd /var/www/sexy.pivoine.art/packages/frontend
+  
+  # Install dependencies
+  npm install
+  
+  # Build
+  npm run build
+  
+  # Restart container
+  docker compose restart frontend
+  ```
+  
+  ## API Routes
+  
+  Traefik routes requests:
+  - `/api/*` → Directus API (port 8055)
+  - `/*` → Frontend (port 3000)
+  
+  The API route has `/api` prefix stripped before reaching Directus.
+  
+  ## Security Configuration
+  
+  ### CORS
+  - Enabled by default
+  - Configured for frontend domain
+  - Update `SEXY_CORS_ORIGIN` for your domain
+  
+  ### Cookies
+  - Secure cookies (HTTPS only)
+  - SameSite: strict
+  - Domain-specific
+  
+  ### CSP
+  - Frame-src restricted to frontend domain
+  - Update `SEXY_CONTENT_SECURITY_POLICY_DIRECTIVES__FRAME_SRC`
+  
+  ### URL Allowlists
+  - Registration and password reset URLs restricted
+  - Update allowlists in environment variables
+  
+  ## Email Integration
+  
+  Directus sends emails for:
+  - User invitations
+  - Password resets
+  - Activity notifications
+  
+  Development (Mailhog):
+  ```bash
+  EMAIL_SMTP_HOST=messaging_mailhog
+  EMAIL_SMTP_PORT=1025
+  EMAIL_SMTP_PASSWORD=  # Empty for Mailhog
+  ```
+  
+  Production (External SMTP):
+  ```bash
+  EMAIL_SMTP_HOST=smtp.sendgrid.net
+  EMAIL_SMTP_PORT=587
+  EMAIL_SMTP_USER=apikey
+  EMAIL_SMTP_PASSWORD=your-sendgrid-key
+  ```
+  
+  ## Caching with Redis
+  
+  Directus uses Redis for:
+  - Query result caching
+  - Rate limiting
+  - Session storage
+  
+  Cache automatically purges on content changes when
+  `SEXY_CACHE_AUTO_PURGE=true`.
+  
+  ## Troubleshooting
+  
+  ### Directus won't start
+  - Verify database exists and is accessible
+  - Check DB_PASSWORD in secrets.env
+  - Verify Redis is running
+  - Check logs: `docker logs sexy_api`
+  
+  ### Frontend shows errors
+  - Verify frontend code is in /var/www/sexy.pivoine.art
+  - Check build was successful
+  - Verify environment variables
+  - Check logs: `docker logs sexy_frontend`
+  
+  ### API not accessible
+  - Verify Traefik routing rules
+  - Check /api prefix is configured
+  - Test direct: `curl http://localhost:8055/server/ping`
+  
+  ### File uploads fail
+  - Verify ./uploads directory exists
+  - Check permissions: `chmod 777 uploads`
+  - Check disk space
+  
+  ### Extensions not loading
+  - Verify bundle directory path is correct
+  - Check extensions are properly built
+  - Enable auto-reload: `SEXY_EXTENSIONS_AUTO_RELOAD=true`
+  - Restart Directus
+  
+  ## Database Management
+  
+  ### Backup
+  ```bash
+  ./kompose.sh db backup directus
+  ```
+  
+  ### Restore
+  ```bash
+  ./kompose.sh db restore directus backup-file.sql
+  ```
+  
+  ### Migrations
+  ```bash
+  # Apply migrations
+  docker compose run --rm directus npx directus database migrate:latest
+  
+  # Create snapshot
+  docker compose run --rm directus npx directus schema snapshot ./snapshot.yaml
+  ```
+  
+  ## Development vs Production
+  
+  Development:
+  ```bash
+  SEXY_EXTENSIONS_AUTO_RELOAD=true
+  SEXY_CACHE_ENABLED=false
+  EMAIL_SMTP_PASSWORD=  # Use Mailhog
+  ```
+  
+  Production:
+  ```bash
+  SEXY_EXTENSIONS_AUTO_RELOAD=false
+  SEXY_CACHE_ENABLED=true
+  EMAIL_SMTP_PASSWORD=real-password  # Use real SMTP
+  SEXY_SESSION_COOKIE_SECURE=true
+  ```
+  
+  ## Monitoring
+  
+  Directus doesn't include Prometheus metrics by default.
+  Consider using Traefik metrics or implementing custom endpoints.
+  
+  ## Resources
+  
+  - [Directus Documentation](https://docs.directus.io/)
+  - [Directus API Reference](https://docs.directus.io/reference/introduction)
+  - [Extensions Guide](https://docs.directus.io/extensions/introduction)
+  - [SvelteKit Documentation](https://kit.svelte.dev/)

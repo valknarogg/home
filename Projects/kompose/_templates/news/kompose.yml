@@ -1,0 +1,455 @@
+# ============================================================================
+# Kompose Template Configuration - News Stack (Letterpress)
+# ============================================================================
+# This file defines all environment variables and secrets used by the stack
+# Used by kompose-generate.sh to create a complete, working stack
+# ============================================================================
+
+name: news
+description: Letterpress newsletter and news platform with full integration
+version: 1.0.0
+
+# ============================================================================
+# Environment Variables
+# ============================================================================
+environment:
+  # Project Configuration
+  - name: COMPOSE_PROJECT_NAME
+    default: news
+    description: News stack project name
+    required: yes
+  
+  # Database Configuration
+  - name: NEWS_DB_NAME
+    default: letterpress
+    description: Database name for news/letterpress
+    required: yes
+  
+  - name: DB_USER
+    default: kompose
+    description: PostgreSQL database user
+    required: yes
+  
+  - name: CORE_DB_HOST
+    default: core-postgres
+    description: PostgreSQL host (container name)
+    required: yes
+  
+  - name: CORE_DB_PORT
+    default: 5432
+    description: PostgreSQL port
+    required: yes
+  
+  # Redis Configuration
+  - name: CORE_REDIS_HOST
+    default: core-redis
+    description: Redis host (container name)
+    required: yes
+  
+  - name: CORE_REDIS_PORT
+    default: 6379
+    description: Redis port
+    required: yes
+  
+  - name: REDIS_SESSION_PREFIX
+    default: letterpress:session:
+    description: Redis session key prefix
+    required: no
+  
+  - name: REDIS_CACHE_TTL
+    default: 3600
+    description: Redis cache TTL in seconds
+    required: no
+  
+  # MQTT Configuration
+  - name: MQTT_ENABLED
+    default: true
+    description: Enable MQTT event publishing
+    required: no
+  
+  - name: CORE_MQTT_HOST
+    default: core-mqtt
+    description: MQTT broker host (container name)
+    required: yes
+  
+  - name: CORE_MQTT_PORT
+    default: 1883
+    description: MQTT broker port
+    required: yes
+  
+  - name: MQTT_TOPIC_PREFIX
+    default: kompose/news
+    description: MQTT topic prefix for events
+    required: no
+  
+  # Email Configuration
+  - name: EMAIL_TRANSPORT
+    default: smtp
+    description: Email transport protocol
+    required: yes
+  
+  - name: EMAIL_FROM
+    default: noreply@example.com
+    description: Default sender email address
+    required: yes
+  
+  - name: EMAIL_SMTP_HOST
+    default: messaging_mailhog
+    description: SMTP host for outgoing email
+    required: yes
+  
+  - name: EMAIL_SMTP_PORT
+    default: 1025
+    description: SMTP port
+    required: yes
+  
+  - name: EMAIL_SMTP_USER
+    default: ""
+    description: SMTP username (optional)
+    required: no
+  
+  # Application Configuration
+  - name: APP_PORT
+    default: 3000
+    description: Application HTTP port
+    required: yes
+  
+  - name: METRICS_ENABLED
+    default: true
+    description: Enable Prometheus metrics
+    required: no
+  
+  - name: METRICS_PORT
+    default: 9090
+    description: Prometheus metrics port
+    required: no
+  
+  # Network Configuration
+  - name: NETWORK_NAME
+    default: kompose
+    description: Docker network name for inter-service communication
+    required: yes
+  
+  # Domain Configuration
+  - name: TRAEFIK_HOST
+    default: "${SUBDOMAIN_NEWS}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}"
+    description: News hostname (e.g., news.example.com)
+    required: yes
+  
+  - name: SUBDOMAIN_NEWS
+    default: news
+    description: News subdomain
+    required: yes
+  
+  - name: ROOT_DOMAIN
+    default: ""
+    description: Root domain for all services (e.g., example.com)
+    required: yes
+  
+  # System Configuration
+  - name: TIMEZONE
+    default: Europe/Amsterdam
+    description: System timezone for containers
+    required: no
+
+# ============================================================================
+# Secrets
+# ============================================================================
+secrets:
+  # Shared Database Secret
+  - name: DB_PASSWORD
+    description: PostgreSQL password for database connections
+    required: yes
+    type: password
+    length: 32
+    stacks:
+      - core
+      - news
+      - chain
+      - code
+    command: openssl rand -base64 48 | tr -d '=+/' | cut -c1-32
+  
+  # Shared Redis Secret
+  - name: REDIS_PASSWORD
+    description: Redis password for cache and session storage
+    required: yes
+    type: password
+    length: 32
+    stacks:
+      - core
+      - news
+      - code
+    command: openssl rand -base64 48 | tr -d '=+/' | cut -c1-32
+  
+  # News Stack Secrets
+  - name: NEWS_JWT_SECRET
+    description: JWT secret for authentication tokens
+    required: yes
+    type: password
+    length: 64
+    stacks:
+      - news
+    command: openssl rand -hex 32
+  
+  # Email Secret (optional for development)
+  - name: EMAIL_SMTP_PASSWORD
+    description: SMTP password for sending emails (leave empty for Mailhog)
+    required: no
+    type: password
+    length: 32
+    stacks:
+      - news
+      - chain
+      - code
+    command: openssl rand -base64 48 | tr -d '=+/' | cut -c1-32
+
+# ============================================================================
+# Dependencies
+# ============================================================================
+dependencies:
+  # Required stacks that must be running
+  required:
+    - core      # PostgreSQL, Redis, MQTT
+    - proxy     # Traefik for routing
+    - messaging # Mailhog for emails
+  
+  # Optional stacks that enhance functionality
+  optional:
+    - watch     # Prometheus monitoring
+    - auth      # SSO authentication
+
+# ============================================================================
+# Ports
+# ============================================================================
+ports:
+  # Application (internal only, accessed via Traefik)
+  - container: 3000
+    description: Application HTTP port (internal)
+    exposed: false
+  
+  # Metrics (internal, for Prometheus)
+  - container: 9090
+    description: Prometheus metrics port (internal)
+    exposed: false
+
+# ============================================================================
+# Volumes
+# ============================================================================
+volumes:
+  - name: ./metrics
+    description: Prometheus metrics data directory
+    mount: /app/metrics
+    type: bind
+    required: no
+
+# ============================================================================
+# Health Checks
+# ============================================================================
+healthchecks:
+  backend:
+    test: 'curl -f http://localhost:3000/api/v1/health'
+    interval: 30s
+    timeout: 10s
+    retries: 3
+    start_period: 40s
+
+# ============================================================================
+# Notes & Documentation
+# ============================================================================
+notes: |
+  # News Stack (Letterpress) - Newsletter Platform
+  
+  This stack provides a full-featured newsletter and news platform with:
+  - Database storage (PostgreSQL)
+  - Session management and caching (Redis)
+  - Event publishing (MQTT)
+  - Email campaigns (SMTP via Mailhog)
+  - Monitoring (Prometheus metrics)
+  - Optional SSO authentication
+  
+  ## Components
+  
+  ### Backend Service
+  - Custom-built Letterpress application
+  - RESTful API
+  - Real-time event publishing
+  - Campaign tracking
+  - Email management
+  
+  ## Setup Instructions
+  
+  1. **Generate the stack:**
+     ```bash
+     ./kompose-generate.sh news
+     ```
+  
+  2. **Start required dependencies:**
+     ```bash
+     docker compose -f core/compose.yaml up -d
+     docker compose -f proxy/compose.yaml up -d
+     docker compose -f messaging/compose.yaml up -d
+     ```
+  
+  3. **Create database:**
+     ```bash
+     ./kompose.sh db exec -d postgres \
+       "CREATE DATABASE letterpress OWNER kompose;"
+     ```
+  
+  4. **Build the application:**
+     ```bash
+     cd +stacks/news
+     # Add your Dockerfile and application code
+     docker compose build
+     ```
+  
+  5. **Run database migrations:**
+     ```bash
+     docker compose run --rm backend npm run migrate
+     ```
+  
+  6. **Start the news stack:**
+     ```bash
+     docker compose -f news/compose.yaml up -d
+     ```
+  
+  7. **Access the application:**
+     - URL: https://news.yourdomain.com
+  
+  ## Configuration
+  
+  Key configuration variables:
+  - `NEWS_DB_NAME`: Database name (default: letterpress)
+  - `APP_PORT`: Application port (default: 3000)
+  - `MQTT_ENABLED`: Enable event publishing
+  - `METRICS_ENABLED`: Enable Prometheus metrics
+  
+  ## Secrets
+  
+  Required secrets:
+  - `NEWS_JWT_SECRET`: JWT token signing
+  - `DB_PASSWORD`: Database access (shared)
+  - `REDIS_PASSWORD`: Cache access (shared)
+  - `EMAIL_SMTP_PASSWORD`: Email sending (optional for Mailhog)
+  
+  ## Integration
+  
+  ### Database (PostgreSQL)
+  Stores all application data:
+  - Articles and newsletters
+  - User accounts
+  - Subscriptions
+  - Campaign data
+  
+  ### Redis
+  Used for:
+  - Session storage (prefix: letterpress:session:)
+  - Query result caching (TTL: 3600s)
+  - Rate limiting
+  
+  ### MQTT
+  Publishes events to topics:
+  - `kompose/news/article/published`
+  - `kompose/news/newsletter/sent`
+  - `kompose/news/subscription/new`
+  
+  ### Email (Mailhog)
+  Sends newsletters and notifications:
+  - Campaign delivery
+  - Subscription confirmations
+  - Password resets
+  
+  ### Monitoring (Prometheus)
+  Exposes metrics at `/metrics`:
+  - HTTP request metrics
+  - Database query performance
+  - Cache hit rates
+  - Email delivery status
+  
+  ## SSO Integration (Optional)
+  
+  Enable SSO by adding middleware in compose.yaml:
+  ```yaml
+  labels:
+    - 'traefik.http.routers.news-web-secure.middlewares=kompose-sso,sso-secure'
+  ```
+  
+  ## API Endpoints
+  
+  - `GET /api/v1/health` - Health check
+  - `GET /api/v1/articles` - List articles
+  - `POST /api/v1/newsletters` - Create newsletter
+  - `GET /metrics` - Prometheus metrics
+  
+  ## Troubleshooting
+  
+  ### Application won't start
+  - Verify database is running and accessible
+  - Check database exists: `./kompose.sh db list`
+  - Verify Redis connection
+  - Check logs: `docker logs news_backend`
+  
+  ### Database connection fails
+  - Verify core stack is running
+  - Check DB_PASSWORD in secrets.env
+  - Test connection: `./kompose.sh db test`
+  
+  ### Redis connection fails
+  - Verify Redis is running
+  - Check REDIS_PASSWORD in secrets.env
+  - Test: `docker exec core_redis redis-cli ping`
+  
+  ### MQTT events not publishing
+  - Verify MQTT_ENABLED=true
+  - Check MQTT broker is running
+  - Test: `docker logs core_mqtt`
+  
+  ### Emails not sending
+  - Check Mailhog is running
+  - Verify EMAIL_SMTP_HOST is correct
+  - View caught emails: https://mail.yourdomain.com
+  
+  ## Development
+  
+  ### Local Development
+  ```bash
+  # Use local Mailhog (no password needed)
+  EMAIL_SMTP_PASSWORD=
+  
+  # Disable MQTT if not needed
+  MQTT_ENABLED=false
+  
+  # Disable metrics
+  METRICS_ENABLED=false
+  ```
+  
+  ### Production
+  ```bash
+  # Use external SMTP
+  EMAIL_SMTP_HOST=smtp.sendgrid.net
+  EMAIL_SMTP_PORT=587
+  EMAIL_SMTP_USER=apikey
+  EMAIL_SMTP_PASSWORD=your-sendgrid-key
+  
+  # Enable all features
+  MQTT_ENABLED=true
+  METRICS_ENABLED=true
+  ```
+  
+  ## Monitoring
+  
+  View metrics in Grafana (if watch stack is running):
+  - Dashboard: Letterpress Overview
+  - Panels: Requests, Performance, Errors, Email Stats
+  
+  ## Backup
+  
+  Backup the database:
+  ```bash
+  ./kompose.sh db backup letterpress
+  ```
+  
+  Restore from backup:
+  ```bash
+  ./kompose.sh db restore letterpress backup-file.sql
+  ```
