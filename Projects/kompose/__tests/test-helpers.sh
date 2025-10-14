@@ -309,6 +309,9 @@ run_kompose() {
     # Run command and capture output
     cd "${KOMPOSE_ROOT}" || exit 1
     
+    # Ensure STACKS_ROOT is set to KOMPOSE_ROOT for tests
+    export STACKS_ROOT="${KOMPOSE_ROOT}"
+    
     set +e
     output=$(bash kompose.sh "$@" 2>&1)
     exit_code=$?
@@ -321,6 +324,7 @@ run_kompose() {
 
 run_kompose_quiet() {
     cd "${KOMPOSE_ROOT}" || exit 1
+    export STACKS_ROOT="${KOMPOSE_ROOT}"
     bash kompose.sh "$@" >/dev/null 2>&1
     return $?
 }
