@@ -56,7 +56,7 @@ teardown_generate_tests() {
 
 test_generate_requires_stack_name() {
     local output
-    output=$(./kompose.sh generate 2>&1)
+    output=$(run_kompose generate 2>&1)
     
     assert_contains "$output" "Generate subcommand required" \
         "generate command should require a stack name or subcommand"
@@ -66,8 +66,8 @@ test_generate_creates_stack_files() {
     setup_generate_tests
     
     # Generate stack non-interactively
-    echo "n" | ./kompose.sh generate "$TEST_STACK_NAME" > /dev/null 2>&1 || true
-    ./kompose.sh generate "$TEST_STACK_NAME" > /dev/null 2>&1
+    echo "n" | run_kompose generate "$TEST_STACK_NAME" > /dev/null 2>&1 || true
+    run_kompose generate "$TEST_STACK_NAME" > /dev/null 2>&1
     
     # Check compose.yaml
     assert_file_exists "${TEST_CUSTOM_DIR}/${TEST_STACK_NAME}/compose.yaml" \
@@ -91,7 +91,7 @@ test_generate_creates_stack_files() {
 test_generate_compose_is_valid() {
     setup_generate_tests
     
-    ./kompose.sh generate "$TEST_STACK_NAME" > /dev/null 2>&1
+    run_kompose generate "$TEST_STACK_NAME" > /dev/null 2>&1
     
     # Validate compose file
     cd "${TEST_CUSTOM_DIR}/${TEST_STACK_NAME}"
@@ -105,7 +105,7 @@ test_generate_compose_is_valid() {
 test_generate_compose_has_traefik_labels() {
     setup_generate_tests
     
-    ./kompose.sh generate "$TEST_STACK_NAME" > /dev/null 2>&1
+    run_kompose generate "$TEST_STACK_NAME" > /dev/null 2>&1
     
     local compose_content
     compose_content=$(cat "${TEST_CUSTOM_DIR}/${TEST_STACK_NAME}/compose.yaml")
@@ -122,7 +122,7 @@ test_generate_compose_has_traefik_labels() {
 test_generate_compose_uses_kompose_network() {
     setup_generate_tests
     
-    ./kompose.sh generate "$TEST_STACK_NAME" > /dev/null 2>&1
+    run_kompose generate "$TEST_STACK_NAME" > /dev/null 2>&1
     
     local compose_content
     compose_content=$(cat "${TEST_CUSTOM_DIR}/${TEST_STACK_NAME}/compose.yaml")
@@ -139,7 +139,7 @@ test_generate_compose_uses_kompose_network() {
 test_generate_env_has_required_vars() {
     setup_generate_tests
     
-    ./kompose.sh generate "$TEST_STACK_NAME" > /dev/null 2>&1
+    run_kompose generate "$TEST_STACK_NAME" > /dev/null 2>&1
     
     local env_content
     env_content=$(cat "${TEST_CUSTOM_DIR}/${TEST_STACK_NAME}/.env")
@@ -159,7 +159,7 @@ test_generate_env_has_required_vars() {
 test_generate_readme_has_stack_name() {
     setup_generate_tests
     
-    ./kompose.sh generate "$TEST_STACK_NAME" > /dev/null 2>&1
+    run_kompose generate "$TEST_STACK_NAME" > /dev/null 2>&1
     
     local readme_content
     readme_content=$(cat "${TEST_DOCS_DIR}/${TEST_STACK_NAME}.md")
@@ -176,7 +176,7 @@ test_generate_readme_has_stack_name() {
 test_generate_creates_gitignore() {
     setup_generate_tests
     
-    ./kompose.sh generate "$TEST_STACK_NAME" > /dev/null 2>&1
+    run_kompose generate "$TEST_STACK_NAME" > /dev/null 2>&1
     
     assert_file_exists "${TEST_CUSTOM_DIR}/${TEST_STACK_NAME}/.gitignore" \
         "generate should create .gitignore"
@@ -193,7 +193,7 @@ test_generate_creates_gitignore() {
 test_generate_test_file_is_executable() {
     setup_generate_tests
     
-    ./kompose.sh generate "$TEST_STACK_NAME" > /dev/null 2>&1
+    run_kompose generate "$TEST_STACK_NAME" > /dev/null 2>&1
     
     assert_true "[ -x '${TEST_GENERATED_DIR}/test-${TEST_STACK_NAME}.sh' ]" \
         "generated test file should be executable"
@@ -208,10 +208,10 @@ test_generate_test_file_is_executable() {
 test_generate_list_shows_custom_stacks() {
     setup_generate_tests
     
-    ./kompose.sh generate "$TEST_STACK_NAME" > /dev/null 2>&1
+    run_kompose generate "$TEST_STACK_NAME" > /dev/null 2>&1
     
     local output
-    output=$(./kompose.sh generate list)
+    output=$(run_kompose generate list)
     
     assert_contains "$output" "$TEST_STACK_NAME" \
         "generate list should show custom stacks"
@@ -223,7 +223,7 @@ test_generate_list_shows_empty_message() {
     setup_generate_tests
     
     local output
-    output=$(./kompose.sh generate list)
+    output=$(run_kompose generate list)
     
     # Since there might be other custom stacks, just check it doesn't error
     assert_true "true" \
@@ -239,10 +239,10 @@ test_generate_list_shows_empty_message() {
 test_generate_show_displays_stack_info() {
     setup_generate_tests
     
-    ./kompose.sh generate "$TEST_STACK_NAME" > /dev/null 2>&1
+    run_kompose generate "$TEST_STACK_NAME" > /dev/null 2>&1
     
     local output
-    output=$(./kompose.sh generate show "$TEST_STACK_NAME")
+    output=$(run_kompose generate show "$TEST_STACK_NAME")
     
     assert_contains "$output" "compose.yaml" \
         "generate show should display compose.yaml path"
@@ -255,7 +255,7 @@ test_generate_show_displays_stack_info() {
 
 test_generate_show_requires_stack_name() {
     local output
-    output=$(./kompose.sh generate show 2>&1)
+    output=$(run_kompose generate show 2>&1)
     
     assert_contains "$output" "Stack name is required" \
         "generate show should require stack name"
@@ -263,7 +263,7 @@ test_generate_show_requires_stack_name() {
 
 test_generate_show_errors_on_nonexistent_stack() {
     local output
-    output=$(./kompose.sh generate show nonexistent-stack-xyz 2>&1)
+    output=$(run_kompose generate show nonexistent-stack-xyz 2>&1)
     
     assert_contains "$output" "Stack not found" \
         "generate show should error on nonexistent stack"
@@ -276,11 +276,11 @@ test_generate_show_errors_on_nonexistent_stack() {
 test_generate_delete_requires_confirmation() {
     setup_generate_tests
     
-    ./kompose.sh generate "$TEST_STACK_NAME" > /dev/null 2>&1
+    run_kompose generate "$TEST_STACK_NAME" > /dev/null 2>&1
     
     # Test that delete asks for confirmation (we'll cancel it)
     local output
-    output=$(echo "n" | ./kompose.sh generate delete "$TEST_STACK_NAME" 2>&1)
+    output=$(echo "n" | run_kompose generate delete "$TEST_STACK_NAME" 2>&1)
     
     assert_contains "$output" "Are you sure" \
         "generate delete should ask for confirmation"
@@ -295,10 +295,10 @@ test_generate_delete_requires_confirmation() {
 test_generate_delete_removes_files() {
     setup_generate_tests
     
-    ./kompose.sh generate "$TEST_STACK_NAME" > /dev/null 2>&1
+    run_kompose generate "$TEST_STACK_NAME" > /dev/null 2>&1
     
     # Confirm deletion
-    echo "y" | ./kompose.sh generate delete "$TEST_STACK_NAME" > /dev/null 2>&1
+    echo "y" | run_kompose generate delete "$TEST_STACK_NAME" > /dev/null 2>&1
     
     # Check files are removed
     assert_false "[ -d '${TEST_CUSTOM_DIR}/${TEST_STACK_NAME}' ]" \
@@ -315,7 +315,7 @@ test_generate_delete_removes_files() {
 
 test_generate_delete_errors_on_nonexistent_stack() {
     local output
-    output=$(./kompose.sh generate delete nonexistent-stack-xyz 2>&1)
+    output=$(run_kompose generate delete nonexistent-stack-xyz 2>&1)
     
     assert_contains "$output" "Stack not found" \
         "generate delete should error on nonexistent stack"
@@ -329,17 +329,17 @@ test_generate_rejects_invalid_stack_names() {
     local output
     
     # Test uppercase
-    output=$(./kompose.sh generate "MyApp" 2>&1)
+    output=$(run_kompose generate "MyApp" 2>&1)
     assert_contains "$output" "Invalid stack name" \
         "should reject uppercase names"
     
     # Test spaces
-    output=$(./kompose.sh generate "my app" 2>&1)
+    output=$(run_kompose generate "my app" 2>&1)
     assert_contains "$output" "Invalid stack name" \
         "should reject names with spaces"
     
     # Test special characters
-    output=$(./kompose.sh generate "my_app" 2>&1)
+    output=$(run_kompose generate "my_app" 2>&1)
     assert_contains "$output" "Invalid stack name" \
         "should reject names with underscores"
 }
@@ -348,7 +348,7 @@ test_generate_accepts_valid_stack_names() {
     setup_generate_tests
     
     # Test lowercase with hyphens
-    ./kompose.sh generate "my-test-app" > /dev/null 2>&1
+    run_kompose generate "my-test-app" > /dev/null 2>&1
     
     assert_file_exists "${TEST_CUSTOM_DIR}/my-test-app/compose.yaml" \
         "should accept lowercase names with hyphens"
@@ -368,7 +368,7 @@ test_generate_accepts_valid_stack_names() {
 test_generated_stack_can_be_started() {
     setup_generate_tests
     
-    ./kompose.sh generate "$TEST_STACK_NAME" > /dev/null 2>&1
+    run_kompose generate "$TEST_STACK_NAME" > /dev/null 2>&1
     
     # Update .env with a valid image
     sed -i 's|DOCKER_IMAGE=your-image:latest|DOCKER_IMAGE=nginx:alpine|' \

@@ -34,10 +34,9 @@ test_setup_no_subcommand() {
     assert_not_contains "$output" "Unknown command" \
         "Setup command is recognized"
     
-    # Setup defaults to showing status when no subcommand provided
-    # This is user-friendly behavior, so we accept either status output or help
-    assert_contains "$output" "local\|prod\|status\|mode\|Mode\|configuration\|Configuration" \
-        "Setup shows status or available subcommands"
+    # Setup should show available commands when no subcommand provided
+    assert_contains "$output" "Available setup commands\|local\|prod\|status" \
+        "Setup shows available subcommands"
 }
 
 # ============================================================================

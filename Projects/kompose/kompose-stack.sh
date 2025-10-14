@@ -243,11 +243,18 @@ list_stacks() {
             # Get stack directory
             local stack_dir="${STACKS_ROOT}/${stack}"
             
-            export_stack_env "$stack" > /dev/null 2>&1
-            cd "${stack_dir}"
-            local running=$(docker compose ps -q 2>/dev/null | wc -l)
-            local total=$(docker compose config --services 2>/dev/null | wc -l)
-            echo -e "    Status: ${running}/${total} containers running"
+            # Try to show status, but don't fail if environment is not set up
+            if [ -f "${STACKS_ROOT}/.env" ] || [ -f "${STACKS_ROOT}/.env.local" ]; then
+                (
+                    export_stack_env "$stack" > /dev/null 2>&1
+                    cd "${stack_dir}"
+                    local running=$(docker compose ps -q 2>/dev/null | wc -l)
+                    local total=$(docker compose config --services 2>/dev/null | wc -l)
+                    echo -e "    Status: ${running}/${total} containers running"
+                )
+            else
+                echo -e "    Status: ${YELLOW}(environment not configured)${NC}"
+            fi
             echo ""
         fi
     done
@@ -262,11 +269,18 @@ list_stacks() {
                 # Get custom stack directory
                 local stack_dir="${STACKS_ROOT}/+custom/${stack}"
                 
-                export_stack_env "$stack" > /dev/null 2>&1
-                cd "${stack_dir}"
-                local running=$(docker compose ps -q 2>/dev/null | wc -l)
-                local total=$(docker compose config --services 2>/dev/null | wc -l)
-                echo -e "    Status: ${running}/${total} containers running"
+                # Try to show status, but don't fail if environment is not set up
+                if [ -f "${STACKS_ROOT}/.env" ] || [ -f "${STACKS_ROOT}/.env.local" ]; then
+                    (
+                        export_stack_env "$stack" > /dev/null 2>&1
+                        cd "${stack_dir}"
+                        local running=$(docker compose ps -q 2>/dev/null | wc -l)
+                        local total=$(docker compose config --services 2>/dev/null | wc -l)
+                        echo -e "    Status: ${running}/${total} containers running"
+                    )
+                else
+                    echo -e "    Status: ${YELLOW}(environment not configured)${NC}"
+                fi
                 echo ""
             fi
         done

@@ -1136,7 +1136,27 @@ make_scripts_executable() {
 # ============================================================================
 
 handle_setup_command() {
-    local subcmd=${1:-status}
+    # If no subcommand provided, show available commands
+    if [ $# -eq 0 ]; then
+        log_info "Setup configuration management"
+        echo ""
+        echo "Available setup commands:"
+        echo "  local          Switch to local development mode"
+        echo "  prod           Switch to production mode"
+        echo "  status         Show current configuration mode"
+        echo "  save-prod      Save current config as production"
+        echo "  backup         Create backup of current configuration"
+        echo "  help           Show setup help"
+        echo ""
+        echo "Examples:"
+        echo "  ./kompose.sh setup local    # Switch to local development"
+        echo "  ./kompose.sh setup status   # Check current mode"
+        echo "  ./kompose.sh setup prod     # Switch to production"
+        echo ""
+        return 0
+    fi
+    
+    local subcmd=$1
     
     case $subcmd in
         local|dev)
