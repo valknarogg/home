@@ -61,7 +61,12 @@ Test Files:
     database-commands     Test database commands
     tag-commands         Test git tag commands
     api-commands         Test API server commands
-    env-validation       Test environment validation
+    secrets-commands      Test secrets management commands
+    profile-commands      Test profile management commands
+    env-commands          Test environment management commands
+    setup-commands        Test setup and initialization commands
+    utils-commands        Test utility functions
+    generate-commands     Test stack generator commands
 
 Examples:
     $0                              Run all tests
@@ -125,6 +130,12 @@ TEST_FILES=(
     "test-database-commands.sh"
     "test-tag-commands.sh"
     "test-api-commands.sh"
+    "test-secrets-commands.sh"
+    "test-profile-commands.sh"
+    "test-env-commands.sh"
+    "test-setup-commands.sh"
+    "test-utils-commands.sh"
+    "test-generate-commands.sh"
 )
 
 for test_file in "${TEST_FILES[@]}"; do
@@ -219,6 +230,24 @@ if [ -n "$SPECIFIC_TEST" ]; then
         api-commands)
             run_test_suite "test-api-commands.sh" "API Commands"
             ;;
+        secrets-commands)
+            run_test_suite "test-secrets-commands.sh" "Secrets Management"
+            ;;
+        profile-commands)
+            run_test_suite "test-profile-commands.sh" "Profile Management"
+            ;;
+        env-commands)
+            run_test_suite "test-env-commands.sh" "Environment Management"
+            ;;
+        setup-commands)
+            run_test_suite "test-setup-commands.sh" "Setup & Initialization"
+            ;;
+        utils-commands)
+            run_test_suite "test-utils-commands.sh" "Utility Functions"
+            ;;
+        generate-commands)
+            run_test_suite "test-generate-commands.sh" "Stack Generator"
+            ;;
         *)
             log_error "Unknown test: $SPECIFIC_TEST"
             exit 1
@@ -231,6 +260,12 @@ else
     run_test_suite "test-database-commands.sh" "Database Commands"
     run_test_suite "test-tag-commands.sh" "Tag Commands"
     run_test_suite "test-api-commands.sh" "API Commands"
+    run_test_suite "test-secrets-commands.sh" "Secrets Management"
+    run_test_suite "test-profile-commands.sh" "Profile Management"
+    run_test_suite "test-env-commands.sh" "Environment Management"
+    run_test_suite "test-setup-commands.sh" "Setup & Initialization"
+    run_test_suite "test-utils-commands.sh" "Utility Functions"
+    run_test_suite "test-generate-commands.sh" "Stack Generator"
 fi
 
 # ============================================================================

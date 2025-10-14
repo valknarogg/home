@@ -4,495 +4,410 @@ Comprehensive test suite for the Kompose Docker Compose Stack Manager.
 
 ## Overview
 
-This test suite provides:
-- **Snapshot Testing** - Capture and compare command outputs
-- **Unit Tests** - Test individual commands and functions
-- **Integration Tests** - Test full stack lifecycle (requires Docker)
-- **Regression Testing** - Prevent breaking changes
+This test suite provides automated testing for all kompose.sh commands and subcommands. Tests are organized by functional area and can be run individually or as a complete suite.
 
-## Directory Structure
+## Test Structure
 
 ```
 __tests/
-├── README.md                    # This file
-├── run-all-tests.sh            # Master test runner
-├── test-helpers.sh             # Shared test utilities
-├── test-basic-commands.sh      # Tests for help, version, list, etc.
-├── test-stack-commands.sh      # Tests for up, down, restart, status
-├── test-database-commands.sh   # Tests for database operations
-├── test-tag-commands.sh        # Tests for git tag deployments
-├── test-api-commands.sh        # Tests for API server commands
-├── snapshots/                  # Snapshot files for comparison
-│   ├── help_output.snapshot
-│   ├── version_output.snapshot
-│   └── ...
-└── temp/                       # Temporary test files (gitignored)
+├── run-all-tests.sh          # Main test runner
+├── test-helpers.sh           # Shared test utilities and assertions
+├── make-executable.sh        # Makes all test scripts executable
+├── test-basic-commands.sh    # Basic commands (help, version, list)
+├── test-stack-commands.sh    # Stack management (up, down, restart, logs, etc.)
+├── test-database-commands.sh # Database operations (backup, restore, shell, etc.)
+├── test-tag-commands.sh      # Git tag deployments
+├── test-api-commands.sh      # REST API server
+├── test-secrets-commands.sh  # Secrets management
+├── test-profile-commands.sh  # Profile management
+├── test-env-commands.sh      # Environment management
+├── test-setup-commands.sh    # Setup and initialization
+├── test-utils-commands.sh    # Utility functions
+├── test-generate-commands.sh # Stack generator
+├── snapshots/                # Snapshot files for regression testing
+├── temp/                     # Temporary files during test execution
+└── generated/                # Generated test files for custom stacks
 ```
 
 ## Quick Start
 
-### Run All Tests
+### Make Scripts Executable
 
 ```bash
 cd __tests
-./run-all-tests.sh
+bash make-executable.sh
+```
+
+### Run All Tests
+
+```bash
+bash run-all-tests.sh
 ```
 
 ### Run Specific Test Suite
 
 ```bash
-./run-all-tests.sh -t basic-commands
-./run-all-tests.sh -t stack-commands
-./run-all-tests.sh -t database-commands
+bash run-all-tests.sh -t basic-commands
+bash run-all-tests.sh -t stack-commands
+bash run-all-tests.sh -t secrets-commands
 ```
 
-### Update Snapshots
-
-When command outputs change intentionally:
+### Run with Options
 
 ```bash
-./run-all-tests.sh -u
-```
+# Update snapshots
+bash run-all-tests.sh -u
 
-### Run Integration Tests
+# Verbose output
+bash run-all-tests.sh -v
 
-Requires Docker to be running:
+# Run integration tests (requires Docker)
+bash run-all-tests.sh -i
 
-```bash
-./run-all-tests.sh -i
-```
-
-### Combine Options
-
-```bash
-# Update snapshots and run integration tests
-./run-all-tests.sh -u -i
-
-# Verbose output for specific test
-./run-all-tests.sh -v -t basic-commands
+# Combine options
+bash run-all-tests.sh -v -i
 ```
 
 ## Test Suites
 
-### Basic Commands (`test-basic-commands.sh`)
-
-Tests fundamental kompose commands:
-- `kompose help` - Help text output
+### 1. Basic Commands (`test-basic-commands.sh`)
+Tests fundamental kompose.sh commands:
+- `kompose help` - Help display
 - `kompose version` - Version information
-- `kompose list` - Stack listing
+- `kompose list` - List available stacks
 - `kompose validate` - Configuration validation
 - Error handling for invalid commands
+- Help flags (`-h`, `--help`)
 
-**Example:**
-```bash
-./test-basic-commands.sh
-```
+**Tests:** 8 test cases
 
-### Stack Management (`test-stack-commands.sh`)
-
-Tests stack lifecycle commands:
-- `kompose up [STACK]` - Start stacks
-- `kompose down [STACK]` - Stop stacks
-- `kompose restart [STACK]` - Restart stacks
-- `kompose status [STACK]` - Stack status
-- `kompose logs [STACK]` - View logs
-- `kompose pull [STACK]` - Pull images
-- `kompose deploy [STACK] [VERSION]` - Deploy version
-- `kompose exec [STACK] [CMD]` - Execute commands
+### 2. Stack Management (`test-stack-commands.sh`)
+Tests stack lifecycle operations:
+- `kompose up` - Start stacks
+- `kompose down` - Stop stacks
+- `kompose restart` - Restart stacks
+- `kompose status` - Stack status
+- `kompose logs` - View logs
+- `kompose deploy` - Deploy specific versions
+- `kompose exec` - Execute commands in containers
 - `kompose ps` - Show all containers
+- Error handling for non-existent stacks
 
-**Example:**
-```bash
-./test-stack-commands.sh
-```
+**Tests:** 10 test cases + integration tests
 
-With Docker running:
-```bash
-RUN_INTEGRATION_TESTS=1 ./test-stack-commands.sh
-```
-
-### Database Commands (`test-database-commands.sh`)
-
+### 3. Database Commands (`test-database-commands.sh`)
 Tests database operations:
 - `kompose db backup` - Create backups
-- `kompose db restore` - Restore from backup
+- `kompose db restore` - Restore from backups
 - `kompose db list` - List backups
 - `kompose db status` - Database status
 - `kompose db exec` - Execute SQL
-- `kompose db shell` - Interactive shell
+- `kompose db shell` - Open database shell
 - `kompose db migrate` - Run migrations
 - `kompose db reset` - Reset database
+- Option parsing (`-d`, `-f`, `--compress`)
 
-**Example:**
-```bash
-./test-database-commands.sh
-```
+**Tests:** 11 test cases
 
-### Tag Commands (`test-tag-commands.sh`)
-
-Tests git tag deployment commands:
-- `kompose tag create` - Create deployment tag
-- `kompose tag deploy` - Create and deploy tag
-- `kompose tag move` - Move tag to new commit
-- `kompose tag delete` - Delete tag
+### 4. Tag Commands (`test-tag-commands.sh`)
+Tests git tag deployment operations:
+- `kompose tag create` - Create deployment tags
+- `kompose tag deploy` - Deploy with tags
+- `kompose tag move` - Move tags
+- `kompose tag delete` - Delete tags
 - `kompose tag list` - List tags
-- `kompose tag rollback` - Rollback to previous tag
-- `kompose tag status` - Show deployment status
+- `kompose tag rollback` - Rollback deployments
+- `kompose tag status` - Tag status
+- Option parsing (`-s`, `-e`, `-v`, `-c`, `-m`, `-f`, `-d`)
 
-**Example:**
-```bash
-./test-tag-commands.sh
-```
+**Tests:** 11 test cases
 
-### API Commands (`test-api-commands.sh`)
-
-Tests REST API server:
+### 5. API Commands (`test-api-commands.sh`)
+Tests REST API server operations:
 - `kompose api start` - Start API server
 - `kompose api stop` - Stop API server
-- `kompose api status` - Check status
-- `kompose api logs` - View logs
+- `kompose api status` - Server status
+- `kompose api logs` - View server logs
+- Custom port and host configuration
+- Error handling
 
-**Example:**
+**Tests:** 8 test cases
+
+### 6. Secrets Management (`test-secrets-commands.sh`) ⭐ NEW
+Tests secrets management operations:
+- `kompose secrets generate` - Generate secrets
+- `kompose secrets validate` - Validate configuration
+- `kompose secrets list` - List secrets
+- `kompose secrets rotate` - Rotate secrets
+- `kompose secrets set` - Set secret values
+- `kompose secrets backup` - Backup secrets
+- `kompose secrets export` - Export to JSON
+- Stack filtering (`-s`)
+
+**Tests:** 11 test cases
+
+### 7. Profile Management (`test-profile-commands.sh`) ⭐ NEW
+Tests profile management operations:
+- `kompose profile list` - List profiles
+- `kompose profile create` - Create profiles
+- `kompose profile use` - Switch profiles
+- `kompose profile show` - Show profile details
+- `kompose profile edit` - Edit profiles
+- `kompose profile delete` - Delete profiles
+- `kompose profile copy` - Copy profiles
+- `kompose profile export` - Export profiles
+- `kompose profile import` - Import profiles
+- `kompose profile up` - Start profile stacks
+- `kompose profile current` - Show active profile
+
+**Tests:** 14 test cases
+
+### 8. Environment Management (`test-env-commands.sh`) ⭐ NEW
+Tests environment variable operations:
+- `kompose env list` - List environment variables
+- `kompose env generate` - Generate .env.example files
+- `kompose env export` - Export to JSON
+- `kompose env stacks` - List stacks with env definitions
+- `kompose env help` - Show help
+- Stack-specific operations
+- Force regeneration (`--force`)
+
+**Tests:** 13 test cases
+
+### 9. Setup & Initialization (`test-setup-commands.sh`) ⭐ NEW
+Tests setup and configuration:
+- `kompose init` - Interactive initialization
+- `kompose setup local` - Switch to local mode
+- `kompose setup prod` - Switch to production mode
+- `kompose setup status` - Show configuration mode
+- `kompose setup save-prod` - Save production config
+- `kompose setup backup` - Backup configuration
+- `kompose cleanup` - Clean up files
+- `kompose validate` - Validate configuration
+
+**Tests:** 10 test cases
+
+### 10. Utility Functions (`test-utils-commands.sh`) ⭐ NEW
+Tests core utility functions:
+- Version information
+- Container listing (`ps`)
+- Stack listing
+- Stack existence validation
+- Custom stack discovery
+- Help completeness
+- Error handling
+- Color variable exports
+- Script directory detection
+- Built-in stack definitions
+
+**Tests:** 12 test cases
+
+### 11. Stack Generator (`test-generate-commands.sh`)
+Tests stack generation functionality:
+- `kompose generate <name>` - Create custom stacks
+- `kompose generate list` - List custom stacks
+- `kompose generate show` - Show stack info
+- `kompose generate delete` - Delete custom stacks
+- File generation (compose.yaml, .env, README, tests)
+- Validation and error handling
+- Integration with kompose ecosystem
+
+**Tests:** Multiple test cases
+
+## Test Helpers
+
+The `test-helpers.sh` file provides:
+
+### Assertion Functions
+- `assert_equals` - Compare two values
+- `assert_contains` - Check if string contains substring
+- `assert_not_contains` - Check if string doesn't contain substring
+- `assert_exit_code` - Check exit code
+- `assert_file_exists` - Check file existence
+- `assert_directory_exists` - Check directory existence
+
+### Snapshot Testing
+- `create_snapshot` - Create new snapshot
+- `update_snapshot` - Update existing snapshot
+- `compare_snapshot` - Compare output to snapshot
+- Automatic normalization (whitespace, ANSI codes)
+
+### Command Execution
+- `run_kompose` - Execute kompose command with output capture
+- `run_kompose_quiet` - Execute without output
+- `capture_output` - Capture command output
+
+### Test Environment
+- `setup_test_env` - Initialize test environment
+- `cleanup_test_env` - Clean up after tests
+- `print_test_summary` - Display test results
+
+### Docker Helpers
+- `wait_for_container` - Wait for container to start
+- `is_docker_available` - Check Docker availability
+- `container_is_healthy` - Check container health
+
+## Test Options
+
+### Update Snapshots
 ```bash
-./test-api-commands.sh
+bash run-all-tests.sh -u
 ```
+Creates or updates snapshot files for regression testing.
 
-## Snapshot Testing
-
-### How It Works
-
-1. **First Run**: Creates baseline snapshots of command outputs
-2. **Subsequent Runs**: Compares current output against snapshots
-3. **Failures**: Shows diff when output doesn't match
-4. **Updates**: Use `-u` flag to update snapshots
-
-### Snapshot Files
-
-Snapshots are stored in `snapshots/` directory:
-
-```
-snapshots/
-├── help_output.snapshot         # kompose help output
-├── version_output.snapshot      # kompose version output
-├── list_output.snapshot         # kompose list output
-├── status_all_syntax.snapshot   # kompose status output
-└── ...
-```
-
-### Creating Snapshots
-
+### Verbose Output
 ```bash
-# Generate all snapshots
-UPDATE_SNAPSHOTS=1 ./run-all-tests.sh
-
-# Generate specific test snapshots
-UPDATE_SNAPSHOTS=1 ./test-basic-commands.sh
+bash run-all-tests.sh -v
 ```
+Shows detailed output including diffs and full error messages.
 
-### When to Update Snapshots
+### Integration Tests
+```bash
+bash run-all-tests.sh -i
+```
+Runs tests that require Docker (stack lifecycle tests).
 
-Update snapshots when:
-- You intentionally change command output
-- You add new features that modify output
-- You fix formatting or display issues
-
-**DO NOT** update snapshots to "fix" failing tests without understanding why they fail!
+### Specific Test
+```bash
+bash run-all-tests.sh -t basic-commands
+```
+Runs only the specified test suite.
 
 ## Writing Tests
 
-### Test Structure
+### Basic Test Structure
 
 ```bash
 #!/bin/bash
+
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "${SCRIPT_DIR}/test-helpers.sh"
 
-log_section "TESTING: Your Feature"
+log_section "TESTING: My Feature"
 setup_test_env
 
-test_your_feature() {
-    log_test "Testing your feature"
+test_my_feature() {
+    log_test "Testing my feature"
     
     local output
-    output=$(run_kompose your-command 2>&1)
+    local exit_code
+    
+    set +e
+    output=$(run_kompose mycommand 2>&1)
+    exit_code=$?
+    set -e
+    
+    assert_exit_code 0 $exit_code \
+        "Command should succeed"
     
     assert_contains "$output" "expected text" \
-        "Output contains expected text"
-    
-    if [ "${UPDATE_SNAPSHOTS}" = "1" ]; then
-        create_snapshot "your_feature" "$output"
-    else
-        compare_snapshot "your_feature" "$output" \
-            "Your feature output matches snapshot"
-    fi
+        "Output should contain expected text"
 }
 
-test_your_feature
+test_my_feature
 
 cleanup_test_env
-print_test_summary
+
+if print_test_summary; then
+    exit 0
+else
+    exit 1
+fi
 ```
 
-### Available Assertions
+### Best Practices
 
-```bash
-# Equality
-assert_equals "expected" "actual" "test description"
+1. **Use `set -e`** - Exit on first error
+2. **Use `set +e` around commands** - Capture exit codes
+3. **Always restore `set -e`** - After capturing exit codes
+4. **Use descriptive test names** - Clear purpose
+5. **Use assertions** - Don't just check exit codes
+6. **Test error cases** - Invalid inputs, missing arguments
+7. **Clean up** - Remove test files/directories
+8. **Use snapshots** - For complex output validation
 
-# String contains
-assert_contains "haystack" "needle" "test description"
+## Continuous Integration
 
-# String does not contain
-assert_not_contains "haystack" "needle" "test description"
-
-# Exit code
-assert_exit_code 0 $? "command succeeded"
-
-# File exists
-assert_file_exists "/path/to/file" "file exists"
-
-# Directory exists
-assert_directory_exists "/path/to/dir" "directory exists"
-```
-
-### Available Utilities
-
-```bash
-# Run kompose command
-output=$(run_kompose status core)
-
-# Run kompose quietly (no output)
-run_kompose_quiet up core
-
-# Capture any command output
-output=$(capture_output docker ps)
-
-# Snapshot operations
-create_snapshot "name" "$output"
-update_snapshot "name" "$output"
-compare_snapshot "name" "$output" "description"
-
-# Docker utilities
-wait_for_container "container-name" 30  # Wait up to 30 seconds
-is_docker_available                     # Check if Docker is available
-```
-
-## Integration Tests
-
-Integration tests actually start Docker containers and test real functionality.
-
-### Requirements
-
-- Docker installed and running
-- Sufficient system resources
-- Network connectivity (for pulling images)
-
-### Running Integration Tests
-
-```bash
-# Enable integration tests
-./run-all-tests.sh -i
-
-# Or set environment variable
-RUN_INTEGRATION_TESTS=1 ./run-all-tests.sh
-```
-
-### What Integration Tests Do
-
-- Start actual Docker containers
-- Test stack lifecycle (up/down/restart)
-- Verify container health
-- Test inter-stack dependencies
-- Test database operations
-- Clean up after tests
-
-### Integration Test Example
-
-```bash
-test_core_stack_lifecycle() {
-    if [ $DOCKER_AVAILABLE -eq 0 ]; then
-        log_skip "Skipping - Docker not available"
-        return
-    fi
-    
-    # Start stack
-    run_kompose up core -d
-    
-    # Wait for containers
-    wait_for_container "core-postgres" 30
-    
-    # Check status
-    status=$(run_kompose status core)
-    assert_contains "$status" "healthy" "Core stack is healthy"
-    
-    # Stop stack
-    run_kompose down core
-}
-```
-
-## CI/CD Integration
-
-### GitHub Actions Example
+Tests are designed to work in CI environments:
 
 ```yaml
-name: Test Suite
-
-on: [push, pull_request]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Run Unit Tests
-        run: |
-          cd __tests
-          ./run-all-tests.sh
-      
-      - name: Run Integration Tests
-        run: |
-          cd __tests
-          ./run-all-tests.sh -i
-```
-
-### GitLab CI Example
-
-```yaml
-test:
-  stage: test
-  script:
-    - cd __tests
-    - ./run-all-tests.sh
-    - ./run-all-tests.sh -i
-```
-
-## Troubleshooting
-
-### Tests Fail After Changes
-
-1. **Review the diff** - Understand what changed
-2. **Verify intentional** - Is the change expected?
-3. **Update snapshots** - If change is correct: `./run-all-tests.sh -u`
-4. **Fix bugs** - If change is unexpected, fix the bug
-
-### Docker Not Available
-
-```bash
-# Skip integration tests
-./run-all-tests.sh
-
-# Or run specific non-Docker tests
-./test-basic-commands.sh
-```
-
-### Permission Denied
-
-```bash
-# Make scripts executable
-chmod +x __tests/*.sh
-```
-
-### Snapshot Mismatches
-
-```bash
-# View diff
-./run-all-tests.sh  # Shows diff in output
-
-# Update specific test snapshots
-UPDATE_SNAPSHOTS=1 ./test-basic-commands.sh
-
-# Update all snapshots
-./run-all-tests.sh -u
-```
-
-## Best Practices
-
-### Writing Tests
-
-1. **Test one thing per test** - Keep tests focused
-2. **Use descriptive names** - Make failures easy to understand
-3. **Clean up after tests** - Don't leave containers running
-4. **Use snapshots wisely** - Not everything needs snapshots
-5. **Handle errors** - Use `set +e` when testing error cases
-
-### Maintaining Tests
-
-1. **Update snapshots carefully** - Review diffs before updating
-2. **Run tests before committing** - Catch issues early
-3. **Add tests for bugs** - Prevent regressions
-4. **Document complex tests** - Help future maintainers
-5. **Keep tests fast** - Minimize Docker usage in unit tests
-
-### Running Tests
-
-1. **Run locally before pushing** - Catch issues early
-2. **Run full suite periodically** - Not just changed tests
-3. **Use verbose mode for debugging** - `-v` flag
-4. **Run integration tests before releases** - `-i` flag
-5. **Update snapshots as needed** - `-u` flag
-
-## Environment Variables
-
-```bash
-# Update all snapshots
-UPDATE_SNAPSHOTS=1 ./run-all-tests.sh
-
-# Run integration tests
-RUN_INTEGRATION_TESTS=1 ./run-all-tests.sh
-
-# Verbose output
-VERBOSE=1 ./run-all-tests.sh
-
-# Combine multiple
-UPDATE_SNAPSHOTS=1 RUN_INTEGRATION_TESTS=1 ./run-all-tests.sh
+# Example GitHub Actions workflow
+- name: Run Tests
+  run: |
+    cd __tests
+    bash make-executable.sh
+    bash run-all-tests.sh -v
 ```
 
 ## Test Coverage
 
 Current test coverage:
 
-- ✅ **Basic Commands** - help, version, list, validate
-- ✅ **Stack Management** - up, down, restart, status, logs, pull, deploy, exec, ps
-- ✅ **Database Commands** - backup, restore, list, status, exec, shell, migrate, reset
-- ✅ **Tag Commands** - create, deploy, move, delete, list, rollback, status
-- ✅ **API Commands** - start, stop, status, logs
-- ⏳ **Environment Validation** - Planned
-- ⏳ **End-to-End Tests** - Planned
+| Area | Test Suite | Status |
+|------|-----------|--------|
+| Basic Commands | ✅ | Complete |
+| Stack Management | ✅ | Complete |
+| Database Operations | ✅ | Complete |
+| Git Tag Deployments | ✅ | Complete |
+| API Server | ✅ | Complete |
+| Secrets Management | ✅ | Complete |
+| Profile Management | ✅ | Complete |
+| Environment Management | ✅ | Complete |
+| Setup & Initialization | ✅ | Complete |
+| Utility Functions | ✅ | Complete |
+| Stack Generator | ✅ | Complete |
+
+**Total Test Suites:** 11  
+**Total Test Cases:** 100+
+
+## Troubleshooting
+
+### Tests Fail Due to Missing Files
+```bash
+cd __tests
+bash make-executable.sh
+```
+
+### Snapshot Mismatches
+Update snapshots if intentional changes:
+```bash
+bash run-all-tests.sh -u
+```
+
+### Docker Not Available
+Skip integration tests:
+```bash
+bash run-all-tests.sh  # Skips integration tests by default
+```
+
+### Permission Denied
+Make scripts executable:
+```bash
+chmod +x __tests/*.sh
+```
 
 ## Contributing
 
-### Adding New Tests
+When adding new features to kompose.sh:
 
-1. Create test file: `test-your-feature.sh`
-2. Source helpers: `source "${SCRIPT_DIR}/test-helpers.sh"`
-3. Write test functions
-4. Add to `run-all-tests.sh`
-5. Generate snapshots: `UPDATE_SNAPSHOTS=1 ./test-your-feature.sh`
-6. Run full suite: `./run-all-tests.sh`
+1. Add corresponding tests
+2. Follow existing test structure
+3. Use test helpers
+4. Document new test suites
+5. Update this README
+6. Run full test suite before submitting
 
-### Example Pull Request Checklist
+## Support
 
-- [ ] Tests pass locally
-- [ ] New features have tests
-- [ ] Snapshots updated if needed
-- [ ] Integration tests pass (if applicable)
-- [ ] Documentation updated
-
-## Resources
-
-- [Kompose Documentation](../_docs/content/)
-- [Stack Configuration](../_docs/content/5.stacks/)
-- [Test Helpers Source](./test-helpers.sh)
-
-## License
-
-Same as Kompose project.
+For issues or questions:
+- Check test output with `-v` flag
+- Review test-helpers.sh for available utilities
+- Examine existing tests for examples
+- Run individual test suites to isolate issues
 
 ---
 
-**Last Updated**: 2025-01-12  
-**Version**: 1.0.0
+**Last Updated:** October 2025  
+**Version:** 1.0.0
