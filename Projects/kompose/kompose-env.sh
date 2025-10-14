@@ -54,15 +54,7 @@ PROXY_PORT_DASHBOARD|8080|Traefik dashboard port (localhost only)|no
 TRAEFIK_HOST_PROXY||Traefik dashboard hostname (e.g., proxy.example.com)|no
 "
 
-# Auth Stack
-ENV_VARS[auth]="
-AUTH_COMPOSE_PROJECT_NAME|auth|Auth stack project name|yes
-AUTH_DOCKER_IMAGE|quay.io/keycloak/keycloak:latest|Keycloak Docker image|no
-AUTH_DB_NAME|keycloak|Keycloak database name|yes
-TRAEFIK_HOST_AUTH||Keycloak hostname (e.g., auth.example.com)|yes
-AUTH_OAUTH2_CLIENT_ID|kompose-sso|OAuth2 client ID for SSO|yes
-TRAEFIK_HOST_OAUTH2||OAuth2 proxy hostname (e.g., sso.example.com)|yes
-"
+
 
 # Code Stack
 ENV_VARS[code]="

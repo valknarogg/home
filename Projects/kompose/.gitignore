@@ -65,10 +65,15 @@ docker-compose.override.yml
 # Stack-specific
 # ===================================================================
 
-# Customer stacks
-# TODO: Comment in, when finalized
-# +custom/
-# _docs/content/5.stacks/+custom/
+# Generated stacks (from templates)
++stacks/
+
+# Custom stacks (user-created)
++custom/
+_docs/content/5.stacks/+custom/
+
+# Templates (keep these in version control!)
+!_templates/
 
 # Home Assistant
 home/homeassistant/

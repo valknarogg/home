@@ -1,0 +1,352 @@
+# ============================================================================
+# Kompose Template Configuration - Auth Stack
+# ============================================================================
+# This file defines all environment variables and secrets used by the stack
+# Used by kompose-generate.sh to create a complete, working stack
+# ============================================================================
+
+name: auth
+description: Authentication and SSO stack with Keycloak and OAuth2 Proxy
+version: 1.0.0
+
+# ============================================================================
+# Environment Variables
+# ============================================================================
+environment:
+  # Project Configuration
+  - name: AUTH_COMPOSE_PROJECT_NAME
+    default: auth
+    description: Auth stack project name
+    required: yes
+  
+  - name: AUTH_DOCKER_IMAGE
+    default: quay.io/keycloak/keycloak:latest
+    description: Keycloak Docker image
+    required: no
+  
+  # Database Configuration
+  - name: AUTH_DB_NAME
+    default: keycloak
+    description: Keycloak database name
+    required: yes
+  
+  - name: DB_USER
+    default: kompose
+    description: PostgreSQL database user
+    required: yes
+  
+  - name: CORE_DB_HOST
+    default: core_postgres
+    description: PostgreSQL host (container name)
+    required: yes
+  
+  - name: CORE_DB_PORT
+    default: 5432
+    description: PostgreSQL port
+    required: yes
+  
+  # Redis Configuration (for OAuth2 Proxy sessions)
+  - name: CORE_REDIS_HOST
+    default: core_redis
+    description: Redis host (container name)
+    required: yes
+  
+  - name: CORE_REDIS_PORT
+    default: 6379
+    description: Redis port
+    required: yes
+  
+  # OAuth2 Configuration
+  - name: AUTH_OAUTH2_CLIENT_ID
+    default: kompose-sso
+    description: OAuth2 client ID for SSO
+    required: yes
+  
+  - name: OAUTH2_PROXY_OIDC_ISSUER_URL
+    default: "${PROTOCOL}://${SUBDOMAIN_AUTH}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}/realms/kompose"
+    description: OIDC issuer URL for OAuth2 Proxy
+    required: yes
+  
+  - name: OAUTH2_PROXY_REDIRECT_URL
+    default: "${PROTOCOL}://${SUBDOMAIN_OAUTH2}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}/oauth2/callback"
+    description: OAuth2 callback URL
+    required: yes
+  
+  # Domain Configuration
+  - name: PROTOCOL
+    default: https
+    description: Protocol (http or https)
+    required: yes
+  
+  - name: SUBDOMAIN_AUTH
+    default: auth
+    description: Keycloak subdomain
+    required: yes
+  
+  - name: SUBDOMAIN_OAUTH2
+    default: sso
+    description: OAuth2 Proxy subdomain
+    required: yes
+  
+  - name: ROOT_DOMAIN
+    default: ""
+    description: Root domain for all services (e.g., example.com)
+    required: yes
+  
+  - name: KC_HOSTNAME
+    default: "${PROTOCOL}://${SUBDOMAIN_AUTH}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}"
+    description: Keycloak hostname (override if needed)
+    required: no
+  
+  # Network Configuration
+  - name: NETWORK_NAME
+    default: kompose
+    description: Docker network name for inter-service communication
+    required: yes
+  
+  # Traefik Configuration
+  - name: TRAEFIK_ENABLED_AUTH
+    default: false
+    description: Enable Traefik routing for Keycloak
+    required: no
+  
+  - name: TRAEFIK_ENABLED_OAUTH2
+    default: false
+    description: Enable Traefik routing for OAuth2 Proxy
+    required: no
+  
+  # System Configuration
+  - name: TIMEZONE
+    default: Europe/Amsterdam
+    description: System timezone for containers
+    required: no
+  
+  - name: AUTH_KEYCLOAK_ADMIN_USERNAME
+    default: admin
+    description: Keycloak admin username
+    required: yes
+
+# ============================================================================
+# Secrets
+# ============================================================================
+secrets:
+  # Shared Database Secret
+  - name: DB_PASSWORD
+    description: PostgreSQL password for database connections
+    required: yes
+    type: password
+    length: 32
+    stacks:
+      - core
+      - auth
+      - chain
+      - code
+      - kmps
+      - link
+      - track
+      - watch
+  
+  # Auth Stack Secrets
+  - name: AUTH_KEYCLOAK_ADMIN_PASSWORD
+    description: Keycloak admin password for web UI access
+    required: yes
+    type: password
+    length: 24
+    stacks:
+      - auth
+  
+  - name: AUTH_OAUTH2_CLIENT_SECRET
+    description: OAuth2 Proxy client secret for SSO functionality (generate in Keycloak UI)
+    required: yes
+    type: password
+    length: 32
+    stacks:
+      - auth
+    notes: Generate this in Keycloak UI after creating the kompose-sso client
+  
+  - name: AUTH_OAUTH2_COOKIE_SECRET
+    description: OAuth2 Proxy cookie secret for session encryption (must be 32 bytes base64)
+    required: yes
+    type: base64
+    length: 32
+    stacks:
+      - auth
+    command: openssl rand -base64 32
+
+# ============================================================================
+# Dependencies
+# ============================================================================
+dependencies:
+  # Required stacks that must be running
+  required:
+    - core  # PostgreSQL and Redis
+    - proxy # Traefik for routing
+  
+  # Optional stacks that enhance functionality
+  optional: []
+
+# ============================================================================
+# Ports
+# ============================================================================
+ports:
+  # Keycloak (internal only, accessed via Traefik)
+  - container: 8080
+    description: Keycloak HTTP port (internal)
+    exposed: false
+  
+  # OAuth2 Proxy (internal only, accessed via Traefik)
+  - container: 4180
+    description: OAuth2 Proxy HTTP port (internal)
+    exposed: false
+
+# ============================================================================
+# Volumes
+# ============================================================================
+volumes: []
+# Keycloak stores data in PostgreSQL, no persistent volumes needed
+
+# ============================================================================
+# Health Checks
+# ============================================================================
+healthchecks:
+  keycloak:
+    test: 'curl -f http://localhost:8080/health'
+    interval: 30s
+    timeout: 5s
+    retries: 3
+    start_period: 60s
+  
+  oauth2-proxy:
+    test: 'wget --spider -q http://localhost:4180/ping'
+    interval: 30s
+    timeout: 5s
+    retries: 3
+    start_period: 15s
+
+# ============================================================================
+# Notes & Documentation
+# ============================================================================
+notes: |
+  # Auth Stack - Authentication and SSO
+  
+  This stack provides centralized authentication and Single Sign-On (SSO) 
+  capabilities for all kompose services using Keycloak and OAuth2 Proxy.
+  
+  ## Components
+  
+  ### Keycloak
+  - Enterprise-grade identity and access management
+  - OpenID Connect and SAML 2.0 support
+  - User federation and social login
+  - Role-based access control (RBAC)
+  
+  ### OAuth2 Proxy
+  - Forward authentication middleware
+  - Integrates with Traefik for SSO across services
+  - Session management with Redis
+  - Cookie-based authentication
+  
+  ## Setup Instructions
+  
+  1. **Generate the stack:**
+     ```bash
+     ./kompose-generate.sh auth
+     ```
+  
+  2. **Start required dependencies:**
+     ```bash
+     docker compose -f core/compose.yaml up -d
+     docker compose -f proxy/compose.yaml up -d
+     ```
+  
+  3. **Start the auth stack:**
+     ```bash
+     docker compose -f auth/compose.yaml up -d
+     ```
+  
+  4. **Access Keycloak admin console:**
+     - URL: https://auth.yourdomain.com
+     - Username: admin
+     - Password: [from AUTH_KEYCLOAK_ADMIN_PASSWORD]
+  
+  5. **Configure SSO Client in Keycloak:**
+     - Create new realm: 'kompose'
+     - Create client: 'kompose-sso'
+     - Client Type: OpenID Connect
+     - Access Type: Confidential
+     - Valid Redirect URIs: https://sso.yourdomain.com/oauth2/callback
+     - Copy client secret and set AUTH_OAUTH2_CLIENT_SECRET
+  
+  6. **Enable SSO for services:**
+     Add this label to any service that needs authentication:
+     ```yaml
+     traefik.http.routers.SERVICE-web-secure.middlewares=kompose-sso
+     ```
+  
+  ## Environment Variables
+  
+  Key configuration variables:
+  - `SUBDOMAIN_AUTH`: Keycloak subdomain (default: auth)
+  - `SUBDOMAIN_OAUTH2`: OAuth2 Proxy subdomain (default: sso)
+  - `AUTH_OAUTH2_CLIENT_ID`: OAuth2 client ID (default: kompose-sso)
+  
+  ## Secrets
+  
+  Required secrets:
+  - `AUTH_KEYCLOAK_ADMIN_PASSWORD`: Admin access
+  - `AUTH_OAUTH2_CLIENT_SECRET`: Generated in Keycloak
+  - `AUTH_OAUTH2_COOKIE_SECRET`: Session encryption (base64, 32 bytes)
+  - `DB_PASSWORD`: Shared database password
+  
+  ## Troubleshooting
+  
+  ### Keycloak won't start
+  - Check database connection (core stack must be running)
+  - Verify DB_PASSWORD is set correctly
+  - Check logs: `docker logs auth_keycloak`
+  
+  ### OAuth2 authentication fails
+  - Verify AUTH_OAUTH2_CLIENT_SECRET matches Keycloak
+  - Check redirect URLs in Keycloak client configuration
+  - Ensure Redis is accessible for session storage
+  - Check logs: `docker logs auth_oauth2_proxy`
+  
+  ### SSL/TLS issues
+  - Verify PROTOCOL is set to 'https' for production
+  - Ensure Traefik SSL certificates are valid
+  - Check KC_HOSTNAME matches actual domain
+  
+  ## Security Considerations
+  
+  - Always use HTTPS in production (set PROTOCOL=https)
+  - Keep AUTH_OAUTH2_COOKIE_SECRET secure and unique
+  - Rotate secrets regularly
+  - Configure appropriate session timeouts
+  - Enable MFA in Keycloak for admin accounts
+  - Review and restrict client permissions
+  
+  ## Integration Examples
+  
+  ### Protect a service with SSO
+  ```yaml
+  labels:
+    - 'traefik.http.routers.myservice-web-secure.middlewares=kompose-sso'
+  ```
+  
+  ### Create a new OAuth2 client
+  1. Keycloak Admin > Clients > Create
+  2. Client ID: my-app
+  3. Client Protocol: openid-connect
+  4. Access Type: confidential
+  5. Standard Flow Enabled: ON
+  6. Save and configure redirect URIs
+  
+  ## Monitoring
+  
+  Health endpoints:
+  - Keycloak: http://localhost:8080/health
+  - OAuth2 Proxy: http://localhost:4180/ping
+  
+  Metrics:
+  - Keycloak exposes metrics at /metrics endpoint
+  - OAuth2 Proxy logs authentication events
