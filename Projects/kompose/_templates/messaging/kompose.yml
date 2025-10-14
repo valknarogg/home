@@ -1,0 +1,435 @@
+# ============================================================================
+# Kompose Template Configuration - Messaging Stack
+# ============================================================================
+# This file defines all environment variables and secrets used by the stack
+# Used by kompose-generate.sh to create a complete, working stack
+# ============================================================================
+
+name: messaging
+description: Messaging and email testing stack with Gotify and Mailhog
+version: 1.0.0
+
+# ============================================================================
+# Environment Variables
+# ============================================================================
+environment:
+  # Project Configuration
+  - name: MESSAGING_COMPOSE_PROJECT_NAME
+    default: messaging
+    description: Messaging stack project name
+    required: yes
+  
+  # Gotify Configuration
+  - name: MESSAGING_GOTIFY_IMAGE
+    default: gotify/server:latest
+    description: Gotify Docker image
+    required: no
+  
+  - name: MESSAGING_GOTIFY_DEFAULTUSER_NAME
+    default: admin
+    description: Gotify default admin username
+    required: yes
+  
+  - name: MESSAGING_GOTIFY_PORT
+    default: 8085
+    description: Gotify port for local access
+    required: no
+  
+  # Mailhog Configuration
+  - name: MESSAGING_MAILHOG_IMAGE
+    default: mailhog/mailhog:latest
+    description: Mailhog Docker image
+    required: no
+  
+  - name: MESSAGING_MAILHOG_PORT
+    default: 8025
+    description: Mailhog web UI port for local access
+    required: no
+  
+  - name: MESSAGING_MAILHOG_OUTGOING_SMTP_ENABLED
+    default: false
+    description: Enable outgoing SMTP relay for Mailhog
+    required: no
+  
+  # Email Configuration
+  - name: EMAIL_FROM
+    default: noreply@example.com
+    description: Default email sender address
+    required: no
+  
+  - name: EMAIL_SMTP_HOST
+    default: messaging_mailhog
+    description: SMTP host for outgoing email
+    required: no
+  
+  - name: EMAIL_SMTP_PORT
+    default: 1025
+    description: SMTP port for outgoing email
+    required: no
+  
+  - name: EMAIL_SMTP_USER
+    default: ""
+    description: SMTP username (if authentication required)
+    required: no
+  
+  # Domain Configuration
+  - name: PROTOCOL
+    default: https
+    description: Protocol (http or https)
+    required: yes
+  
+  - name: SUBDOMAIN_CHAT
+    default: chat
+    description: Gotify subdomain
+    required: yes
+  
+  - name: SUBDOMAIN_MAIL
+    default: mail
+    description: Mailhog subdomain
+    required: yes
+  
+  - name: ROOT_DOMAIN
+    default: ""
+    description: Root domain for all services (e.g., example.com)
+    required: yes
+  
+  # Network Configuration
+  - name: NETWORK_NAME
+    default: kompose
+    description: Docker network name for inter-service communication
+    required: yes
+  
+  # Traefik Configuration
+  - name: TRAEFIK_ENABLED_CHAT
+    default: false
+    description: Enable Traefik routing for Gotify
+    required: no
+  
+  - name: TRAEFIK_ENABLED_MAIL
+    default: false
+    description: Enable Traefik routing for Mailhog
+    required: no
+  
+  # System Configuration
+  - name: TIMEZONE
+    default: Europe/Amsterdam
+    description: System timezone for containers
+    required: no
+
+# ============================================================================
+# Secrets
+# ============================================================================
+secrets:
+  # Gotify Admin Password
+  - name: MESSAGING_GOTIFY_DEFAULTUSER_PASS
+    description: Gotify admin password for web UI access
+    required: yes
+    type: password
+    length: 24
+    stacks:
+      - messaging
+  
+  # Email SMTP Password (if using external SMTP)
+  - name: EMAIL_SMTP_PASSWORD
+    description: SMTP password for external email relay (optional)
+    required: no
+    type: password
+    length: 32
+    stacks:
+      - messaging
+    notes: Only needed if using external SMTP relay (MESSAGING_MAILHOG_OUTGOING_SMTP_ENABLED=true)
+
+# ============================================================================
+# Dependencies
+# ============================================================================
+dependencies:
+  # Required stacks that must be running
+  required:
+    - proxy # Traefik for routing
+  
+  # Optional stacks that enhance functionality
+  optional: []
+
+# ============================================================================
+# Ports
+# ============================================================================
+ports:
+  # Gotify (internal only when using Traefik, or exposed for local access)
+  - container: 80
+    host: 8085
+    description: Gotify HTTP port
+    exposed: true
+  
+  # Mailhog Web UI (internal only when using Traefik, or exposed for local access)
+  - container: 8025
+    host: 8025
+    description: Mailhog web interface
+    exposed: true
+  
+  # Mailhog SMTP (always exposed for services to send email)
+  - container: 1025
+    host: 1025
+    description: Mailhog SMTP server
+    exposed: true
+
+# ============================================================================
+# Volumes
+# ============================================================================
+volumes:
+  - name: gotify_data
+    description: Gotify application data and message storage
+    path: /app/data
+
+# ============================================================================
+# Health Checks
+# ============================================================================
+healthchecks:
+  gotify:
+    test: 'wget --spider -q http://localhost:80/health || exit 1'
+    interval: 30s
+    timeout: 5s
+    retries: 3
+    start_period: 15s
+  
+  mailhog:
+    test: 'wget --spider -q http://localhost:8025/ || exit 1'
+    interval: 30s
+    timeout: 5s
+    retries: 3
+    start_period: 10s
+
+# ============================================================================
+# Notes & Documentation
+# ============================================================================
+notes: |
+  # Messaging Stack - Push Notifications and Email Testing
+  
+  This stack provides push notification services via Gotify and email testing
+  capabilities with Mailhog for development and testing environments.
+  
+  ## Components
+  
+  ### Gotify
+  - Simple push notification server
+  - WebSocket-based real-time notifications
+  - REST API for sending messages
+  - Web UI for managing apps and messages
+  - Mobile apps available (Android/iOS)
+  
+  ### Mailhog
+  - Email testing tool for developers
+  - Catches all outgoing emails
+  - Web UI for viewing captured emails
+  - SMTP server on port 1025
+  - Optional SMTP relay for external delivery
+  
+  ## Setup Instructions
+  
+  1. **Generate the stack:**
+     ```bash
+     ./kompose-generate.sh messaging
+     ```
+  
+  2. **Start required dependencies:**
+     ```bash
+     docker compose -f proxy/compose.yaml up -d
+     ```
+  
+  3. **Start the messaging stack:**
+     ```bash
+     docker compose -f messaging/compose.yaml up -d
+     ```
+  
+  4. **Access Gotify:**
+     - URL: https://chat.yourdomain.com (or http://localhost:8085)
+     - Username: admin
+     - Password: [from MESSAGING_GOTIFY_DEFAULTUSER_PASS]
+  
+  5. **Access Mailhog:**
+     - URL: https://mail.yourdomain.com (or http://localhost:8025)
+     - No authentication required
+  
+  ## Using Gotify for Notifications
+  
+  ### Create an Application
+  1. Log into Gotify web UI
+  2. Apps > Create Application
+  3. Name your app (e.g., "My Service")
+  4. Copy the application token
+  
+  ### Send a Notification
+  ```bash
+  curl -X POST "https://chat.yourdomain.com/message" \
+    -H "X-Gotify-Key: YOUR_APP_TOKEN" \
+    -F "title=Hello" \
+    -F "message=This is a test notification" \
+    -F "priority=5"
+  ```
+  
+  ### In Docker Compose Services
+  Add to your service's environment:
+  ```yaml
+  environment:
+    GOTIFY_URL: http://messaging_gotify:80
+    GOTIFY_TOKEN: your_app_token_here
+  ```
+  
+  ## Using Mailhog for Email Testing
+  
+  ### Configure Services to Use Mailhog
+  Set your service's SMTP configuration:
+  ```yaml
+  environment:
+    SMTP_HOST: messaging_mailhog
+    SMTP_PORT: 1025
+    SMTP_USER: ""  # No authentication needed
+    SMTP_PASSWORD: ""
+  ```
+  
+  ### View Captured Emails
+  Open Mailhog web UI and see all emails sent by your services.
+  Perfect for testing:
+  - Email templates
+  - Registration emails
+  - Password reset flows
+  - Notification emails
+  
+  ### Enable External SMTP Relay (Optional)
+  To forward emails to real addresses:
+  1. Set `MESSAGING_MAILHOG_OUTGOING_SMTP_ENABLED=true`
+  2. Configure external SMTP settings:
+     - `EMAIL_SMTP_HOST`: Your SMTP server
+     - `EMAIL_SMTP_PORT`: Usually 587 or 465
+     - `EMAIL_SMTP_USER`: Your SMTP username
+     - `EMAIL_SMTP_PASSWORD`: Your SMTP password
+  
+  ## Environment Variables
+  
+  Key configuration variables:
+  - `SUBDOMAIN_CHAT`: Gotify subdomain (default: chat)
+  - `SUBDOMAIN_MAIL`: Mailhog subdomain (default: mail)
+  - `MESSAGING_GOTIFY_PORT`: Local port for Gotify (default: 8085)
+  - `MESSAGING_MAILHOG_PORT`: Local port for Mailhog (default: 8025)
+  
+  ## Secrets
+  
+  Required secrets:
+  - `MESSAGING_GOTIFY_DEFAULTUSER_PASS`: Gotify admin password
+  
+  Optional secrets (for SMTP relay):
+  - `EMAIL_SMTP_PASSWORD`: External SMTP password
+  
+  ## Integration Examples
+  
+  ### Shell Script Notification
+  ```bash
+  #!/bin/bash
+  GOTIFY_URL="http://messaging_gotify:80"
+  GOTIFY_TOKEN="your_token_here"
+  
+  notify() {
+    local title="$1"
+    local message="$2"
+    local priority="${3:-5}"
+    
+    curl -X POST "${GOTIFY_URL}/message" \
+      -H "X-Gotify-Key: ${GOTIFY_TOKEN}" \
+      -F "title=${title}" \
+      -F "message=${message}" \
+      -F "priority=${priority}"
+  }
+  
+  notify "Backup Complete" "Database backup finished successfully"
+  ```
+  
+  ### Python Email Example
+  ```python
+  import smtplib
+  from email.mime.text import MIMEText
+  
+  def send_email(to, subject, body):
+      msg = MIMEText(body)
+      msg['Subject'] = subject
+      msg['From'] = 'noreply@example.com'
+      msg['To'] = to
+      
+      with smtplib.SMTP('messaging_mailhog', 1025) as server:
+          server.send_message(msg)
+  
+  send_email('user@example.com', 'Test', 'This is a test email')
+  ```
+  
+  ### Node.js Email Example
+  ```javascript
+  const nodemailer = require('nodemailer');
+  
+  const transporter = nodemailer.createTransport({
+    host: 'messaging_mailhog',
+    port: 1025,
+    secure: false,
+    ignoreTLS: true
+  });
+  
+  await transporter.sendMail({
+    from: 'noreply@example.com',
+    to: 'user@example.com',
+    subject: 'Test Email',
+    text: 'This is a test email'
+  });
+  ```
+  
+  ## Troubleshooting
+  
+  ### Gotify won't start
+  - Check if port 8085 is already in use
+  - Verify MESSAGING_GOTIFY_DEFAULTUSER_PASS is set
+  - Check logs: `docker logs messaging_gotify`
+  
+  ### Can't send notifications
+  - Verify application token is correct
+  - Check network connectivity to Gotify
+  - Test with curl first before integrating
+  
+  ### Mailhog not receiving emails
+  - Verify service is using correct SMTP host (messaging_mailhog)
+  - Check port is 1025 (not 25 or 587)
+  - Ensure services are on kompose network
+  - Check logs: `docker logs messaging_mailhog`
+  
+  ### External SMTP relay not working
+  - Verify SMTP credentials are correct
+  - Check firewall rules for outgoing SMTP
+  - Test SMTP connection manually
+  - Review Mailhog logs for errors
+  
+  ## Security Considerations
+  
+  - **Gotify**: Keep admin password secure and rotate regularly
+  - **Gotify**: Use application-specific tokens, not admin credentials
+  - **Gotify**: Revoke unused application tokens
+  - **Mailhog**: Only for development/testing - not production-safe
+  - **Mailhog**: Never expose Mailhog publicly without authentication
+  - **SMTP Relay**: Use app-specific passwords for external SMTP
+  - **Network**: Keep on private network, access via Traefik proxy
+  
+  ## Monitoring
+  
+  Health endpoints:
+  - Gotify: http://localhost:80/health
+  - Mailhog: http://localhost:8025/
+  
+  Check service status:
+  ```bash
+  docker compose -f messaging/compose.yaml ps
+  docker logs messaging_gotify
+  docker logs messaging_mailhog
+  ```
+  
+  ## Production Considerations
+  
+  - Replace Mailhog with a proper SMTP server for production
+  - Consider using external services like SendGrid, Mailgun, or SES
+  - Implement rate limiting for Gotify API
+  - Set up monitoring for notification delivery
+  - Configure backup for Gotify data volume
+  - Use proper authentication middleware for public access

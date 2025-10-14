@@ -307,7 +307,6 @@ get_ordered_stacks() {
             "core"        # Database, Redis, MQTT - foundational services
             "chain"       # Automation platform - may be used by other services
             "watch"       # Monitoring - should start early to capture metrics
-            "messaging"   # Communication services
             "code"        # Git repository and CI/CD
             "home"        # Smart home platform
             "kmps"        # Management portal
