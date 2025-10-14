@@ -305,7 +305,7 @@ get_ordered_stacks() {
         # Startup order: dependencies first, custom stacks after built-in, docs last
         local startup_order=(
             "core"        # Database, Redis, MQTT - foundational services
-            "chain"       # Automation platform - may be used by other services
+
             "watch"       # Monitoring - should start early to capture metrics
             "code"        # Git repository and CI/CD
             "home"        # Smart home platform

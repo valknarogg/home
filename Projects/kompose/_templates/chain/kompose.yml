@@ -1,0 +1,595 @@
+# ============================================================================
+# Kompose Template Configuration - Chain Stack
+# ============================================================================
+# This file defines all environment variables and secrets used by the stack
+# Used by kompose-generate.sh to create a complete, working stack
+# ============================================================================
+
+name: chain
+description: Workflow automation and infrastructure orchestration with n8n and Semaphore
+version: 1.0.0
+
+# ============================================================================
+# Environment Variables
+# ============================================================================
+environment:
+  # Project Configuration
+  - name: CHAIN_COMPOSE_PROJECT_NAME
+    default: chain
+    description: Chain stack project name
+    required: yes
+  
+  # n8n Configuration
+  - name: CHAIN_N8N_IMAGE
+    default: n8nio/n8n:latest
+    description: n8n Docker image
+    required: no
+  
+  - name: CHAIN_N8N_DB_NAME
+    default: n8n
+    description: n8n database name
+    required: yes
+  
+  - name: CHAIN_N8N_BASIC_AUTH_ACTIVE
+    default: true
+    description: Enable n8n basic authentication
+    required: no
+  
+  - name: CHAIN_N8N_BASIC_AUTH_USER
+    default: admin
+    description: n8n basic auth username
+    required: yes
+  
+  - name: CHAIN_N8N_PORT
+    default: 5678
+    description: n8n web UI port
+    required: no
+  
+  # Semaphore Configuration
+  - name: CHAIN_SEMAPHORE_IMAGE
+    default: semaphoreui/semaphore:latest
+    description: Semaphore Docker image
+    required: no
+  
+  - name: CHAIN_SEMAPHORE_DB_NAME
+    default: semaphore
+    description: Semaphore database name
+    required: yes
+  
+  - name: CHAIN_SEMAPHORE_ADMIN_USERNAME
+    default: admin
+    description: Semaphore admin username
+    required: yes
+  
+  - name: CHAIN_SEMAPHORE_ADMIN_NAME
+    default: Admin
+    description: Semaphore admin display name
+    required: no
+  
+  - name: CHAIN_SEMAPHORE_PORT
+    default: 3000
+    description: Semaphore web UI port
+    required: no
+  
+  - name: CHAIN_SEMAPHORE_RUNNER_IMAGE
+    default: public.ecr.aws/semaphore/pro/runner:latest
+    description: Semaphore runner Docker image
+    required: no
+  
+  # Database Configuration
+  - name: DB_USER
+    default: kompose
+    description: PostgreSQL database user
+    required: yes
+  
+  - name: CORE_DB_HOST
+    default: core_postgres
+    description: PostgreSQL host (container name)
+    required: yes
+  
+  - name: CORE_DB_PORT
+    default: 5432
+    description: PostgreSQL port
+    required: yes
+  
+  # Domain Configuration
+  - name: PROTOCOL
+    default: https
+    description: Protocol (http or https)
+    required: yes
+  
+  - name: SUBDOMAIN_CHAIN
+    default: workflow
+    description: n8n subdomain
+    required: yes
+  
+  - name: SUBDOMAIN_AUTO
+    default: auto
+    description: Semaphore subdomain
+    required: yes
+  
+  - name: ROOT_DOMAIN
+    default: ""
+    description: Root domain for all services (e.g., example.com)
+    required: yes
+  
+  # Network Configuration
+  - name: NETWORK_NAME
+    default: kompose
+    description: Docker network name for inter-service communication
+    required: yes
+  
+  # Traefik Configuration
+  - name: TRAEFIK_ENABLED_CHAIN
+    default: false
+    description: Enable Traefik routing for n8n
+    required: no
+  
+  - name: TRAEFIK_ENABLED_AUTO
+    default: false
+    description: Enable Traefik routing for Semaphore
+    required: no
+  
+  # System Configuration
+  - name: TIMEZONE
+    default: Europe/Amsterdam
+    description: System timezone for containers
+    required: no
+  
+  - name: ADMIN_EMAIL
+    default: admin@example.com
+    description: Administrator email address
+    required: yes
+  
+  # Email Configuration
+  - name: EMAIL_TRANSPORT
+    default: smtp
+    description: Email transport method
+    required: no
+  
+  - name: EMAIL_SMTP_HOST
+    default: ""
+    description: SMTP server hostname
+    required: yes
+  
+  - name: EMAIL_SMTP_PORT
+    default: 587
+    description: SMTP server port
+    required: no
+  
+  - name: EMAIL_SMTP_USER
+    default: ""
+    description: SMTP authentication username
+    required: yes
+  
+  - name: EMAIL_FROM
+    default: noreply@example.com
+    description: Email sender address
+    required: yes
+
+# ============================================================================
+# Secrets
+# ============================================================================
+secrets:
+  # Shared Database Secret
+  - name: DB_PASSWORD
+    description: PostgreSQL password for database connections
+    required: yes
+    type: password
+    length: 32
+    stacks:
+      - core
+      - auth
+      - chain
+      - code
+      - kmps
+      - link
+      - track
+      - watch
+  
+  # Chain Stack Secrets - n8n
+  - name: CHAIN_N8N_ENCRYPTION_KEY
+    description: n8n encryption key for credential encryption
+    required: yes
+    type: password
+    length: 32
+    stacks:
+      - chain
+    notes: Used to encrypt credentials in n8n database
+  
+  - name: CHAIN_N8N_BASIC_AUTH_PASSWORD
+    description: n8n basic auth password for web UI access
+    required: yes
+    type: password
+    length: 24
+    stacks:
+      - chain
+  
+  # Chain Stack Secrets - Semaphore
+  - name: CHAIN_SEMAPHORE_ADMIN_PASSWORD
+    description: Semaphore admin password for web UI access
+    required: yes
+    type: password
+    length: 24
+    stacks:
+      - chain
+  
+  - name: CHAIN_SEMAPHORE_RUNNER_TOKEN
+    description: Semaphore runner registration token
+    required: yes
+    type: password
+    length: 32
+    stacks:
+      - chain
+    notes: Generate in Semaphore UI after first login - Settings → Runner Registration
+  
+  # Email Secret
+  - name: EMAIL_SMTP_PASSWORD
+    description: SMTP authentication password
+    required: yes
+    type: password
+    length: 24
+    stacks:
+      - chain
+      - code
+      - kmps
+      - link
+      - track
+
+# ============================================================================
+# Dependencies
+# ============================================================================
+dependencies:
+  # Required stacks that must be running
+  required:
+    - core  # PostgreSQL for data storage
+    - proxy # Traefik for routing
+  
+  # Optional stacks that enhance functionality
+  optional:
+    - auth  # SSO integration
+
+# ============================================================================
+# Ports
+# ============================================================================
+ports:
+  # n8n (internal only, accessed via Traefik)
+  - container: 5678
+    host: 5678
+    description: n8n HTTP port
+    exposed: true
+  
+  # Semaphore (internal only, accessed via Traefik)
+  - container: 3000
+    host: 3000
+    description: Semaphore HTTP port
+    exposed: true
+
+# ============================================================================
+# Volumes
+# ============================================================================
+volumes:
+  - name: n8n_data
+    description: n8n workflow data and configurations
+    path: /home/node/.n8n
+  
+  - name: semaphore_data
+    description: Semaphore data and configurations
+    path: /var/lib/semaphore
+  
+  - name: semaphore_config
+    description: Semaphore configuration files
+    path: /etc/semaphore
+  
+  - name: semaphore_tmp
+    description: Semaphore temporary files
+    path: /tmp/semaphore
+
+# ============================================================================
+# Health Checks
+# ============================================================================
+healthchecks:
+  n8n:
+    test: 'wget --spider -q http://localhost:5678/healthz'
+    interval: 30s
+    timeout: 10s
+    retries: 3
+    start_period: 45s
+  
+  semaphore:
+    test: 'curl -f http://localhost:3000/api/ping'
+    interval: 30s
+    timeout: 10s
+    retries: 3
+    start_period: 40s
+  
+  semaphore-runner:
+    test: 'test -f /var/lib/semaphore/runner.key'
+    interval: 30s
+    timeout: 5s
+    retries: 3
+    start_period: 10s
+
+# ============================================================================
+# Notes & Documentation
+# ============================================================================
+notes: |
+  # Chain Stack - Workflow Automation & Infrastructure Orchestration
+  
+  This stack provides workflow automation and infrastructure orchestration 
+  capabilities using n8n for workflow automation and Semaphore for Ansible 
+  task management.
+  
+  ## Components
+  
+  ### n8n
+  - Visual workflow automation platform
+  - 200+ integrations with services and APIs
+  - Webhook support for external triggers
+  - Database-backed execution history
+  - Email notifications
+  
+  ### Semaphore
+  - Modern Ansible UI and task runner
+  - Git repository integration
+  - Scheduled task execution
+  - Multi-environment support
+  - Email alerts for task results
+  
+  ### Semaphore Runner
+  - Task execution worker
+  - Isolated execution environment
+  - Auto-registration with main Semaphore instance
+  
+  ## Setup Instructions
+  
+  1. **Generate the stack:**
+     ```bash
+     ./kompose-generate.sh chain
+     ```
+  
+  2. **Start required dependencies:**
+     ```bash
+     docker compose -f core/compose.yaml up -d
+     docker compose -f proxy/compose.yaml up -d
+     ```
+  
+  3. **Start the chain stack:**
+     ```bash
+     docker compose -f chain/compose.yaml up -d
+     ```
+  
+  4. **Access n8n:**
+     - URL: https://workflow.yourdomain.com
+     - Username: admin (from CHAIN_N8N_BASIC_AUTH_USER)
+     - Password: [from CHAIN_N8N_BASIC_AUTH_PASSWORD]
+  
+  5. **Access Semaphore:**
+     - URL: https://auto.yourdomain.com
+     - Username: admin (from CHAIN_SEMAPHORE_ADMIN_USERNAME)
+     - Password: [from CHAIN_SEMAPHORE_ADMIN_PASSWORD]
+  
+  6. **Configure Semaphore Runner:**
+     - Log into Semaphore UI
+     - Go to Settings → Runner Registration
+     - Copy the registration token
+     - Set CHAIN_SEMAPHORE_RUNNER_TOKEN in secrets.env
+     - Restart the runner: `docker compose -f chain/compose.yaml restart semaphore-runner`
+  
+  ## Environment Variables
+  
+  Key configuration variables:
+  - `SUBDOMAIN_CHAIN`: n8n subdomain (default: workflow)
+  - `SUBDOMAIN_AUTO`: Semaphore subdomain (default: auto)
+  - `CHAIN_N8N_BASIC_AUTH_USER`: n8n login username
+  - `CHAIN_SEMAPHORE_ADMIN_USERNAME`: Semaphore login username
+  
+  ## Secrets
+  
+  Required secrets:
+  - `CHAIN_N8N_ENCRYPTION_KEY`: Credential encryption (auto-generated)
+  - `CHAIN_N8N_BASIC_AUTH_PASSWORD`: n8n access
+  - `CHAIN_SEMAPHORE_ADMIN_PASSWORD`: Semaphore access
+  - `CHAIN_SEMAPHORE_RUNNER_TOKEN`: Generated in Semaphore UI
+  - `DB_PASSWORD`: Shared database password
+  - `EMAIL_SMTP_PASSWORD`: Email notifications
+  
+  ## n8n Usage
+  
+  ### Creating Workflows
+  1. Access n8n UI
+  2. Click "Add workflow"
+  3. Add nodes by clicking "+"
+  4. Configure node connections
+  5. Test workflow with "Execute Workflow"
+  6. Activate workflow
+  
+  ### Common Integrations
+  - HTTP Request: Call external APIs
+  - Webhook: Receive external events
+  - Schedule: Time-based triggers
+  - Database: PostgreSQL queries
+  - Email: Send notifications
+  - Slack/Discord: Team notifications
+  
+  ### Webhook URLs
+  - Production: https://workflow.yourdomain.com/webhook/your-path
+  - Test: https://workflow.yourdomain.com/webhook-test/your-path
+  
+  ## Semaphore Usage
+  
+  ### Creating Projects
+  1. Access Semaphore UI
+  2. Click "New Project"
+  3. Configure Git repository
+  4. Add SSH keys or access tokens
+  5. Create environments
+  6. Define task templates
+  
+  ### Running Tasks
+  1. Select project
+  2. Choose task template
+  3. Select environment
+  4. Review variables
+  5. Click "Run"
+  
+  ### Scheduled Tasks
+  1. Create task template
+  2. Click "Schedule"
+  3. Set cron expression
+  4. Configure notifications
+  5. Save schedule
+  
+  ## Troubleshooting
+  
+  ### n8n won't start
+  - Check database connection (core stack must be running)
+  - Verify DB_PASSWORD is set correctly
+  - Check logs: `docker logs chain_n8n`
+  - Ensure CHAIN_N8N_ENCRYPTION_KEY is set
+  
+  ### n8n workflows not executing
+  - Verify workflow is activated (toggle switch)
+  - Check execution history for errors
+  - Test webhook URLs are accessible
+  - Verify database connectivity
+  
+  ### Semaphore won't start
+  - Check database connection
+  - Verify admin credentials are set
+  - Check logs: `docker logs chain_semaphore`
+  - Ensure email configuration is valid
+  
+  ### Semaphore runner not connecting
+  - Generate registration token in UI first
+  - Verify CHAIN_SEMAPHORE_RUNNER_TOKEN is set
+  - Check logs: `docker logs chain_semaphore_runner`
+  - Ensure runner can reach semaphore service
+  
+  ### Email notifications not working
+  - Verify SMTP credentials
+  - Check EMAIL_SMTP_HOST and EMAIL_SMTP_PORT
+  - Test SMTP connection manually
+  - Review service logs for SMTP errors
+  
+  ## Security Considerations
+  
+  - Always use HTTPS in production (set PROTOCOL=https)
+  - Keep CHAIN_N8N_ENCRYPTION_KEY secure and never change it
+  - Use strong passwords for admin accounts
+  - Rotate secrets regularly
+  - Limit webhook access with authentication
+  - Review workflow permissions carefully
+  - Secure Ansible inventory files
+  - Use vault for sensitive playbook variables
+  
+  ## Integration with Other Stacks
+  
+  ### Auth Stack (SSO)
+  To enable SSO for n8n:
+  ```yaml
+  labels:
+    - 'traefik.http.routers.chain-n8n-web-secure.middlewares=kompose-sso'
+  ```
+  
+  To enable SSO for Semaphore:
+  ```yaml
+  labels:
+    - 'traefik.http.routers.chain-semaphore-web-secure.middlewares=kompose-sso'
+  ```
+  
+  ### Watch Stack (Monitoring)
+  - n8n exposes metrics at `/metrics` endpoint
+  - Semaphore logs can be collected for monitoring
+  - Set up alerts for workflow failures
+  
+  ## Advanced Configuration
+  
+  ### n8n Custom Nodes
+  1. Create custom node directory
+  2. Mount as volume in compose.yaml:
+     ```yaml
+     volumes:
+       - ./custom-nodes:/home/node/.n8n/custom
+     ```
+  3. Restart n8n
+  
+  ### Semaphore Git Integration
+  1. Add SSH key or access token in project settings
+  2. Configure branch/tag to track
+  3. Enable auto-sync for automatic updates
+  
+  ### Email Templates
+  Both services support custom email templates:
+  - n8n: Configure in workflow nodes
+  - Semaphore: Configure in task templates
+  
+  ## Monitoring & Logs
+  
+  ### View Logs
+  ```bash
+  # n8n logs
+  docker logs -f chain_n8n
+  
+  # Semaphore logs
+  docker logs -f chain_semaphore
+  
+  # Runner logs
+  docker logs -f chain_semaphore_runner
+  ```
+  
+  ### Health Endpoints
+  - n8n: http://localhost:5678/healthz
+  - Semaphore: http://localhost:3000/api/ping
+  
+  ### Execution History
+  - n8n: View in UI → Executions
+  - Semaphore: View in UI → Task History
+  
+  ## Backup and Recovery
+  
+  ### Backup n8n Workflows
+  Workflows are stored in PostgreSQL database (n8n schema).
+  Use standard PostgreSQL backup procedures.
+  
+  ### Backup Semaphore Projects
+  Projects are stored in PostgreSQL database (semaphore schema).
+  Additionally backup:
+  - `/var/lib/semaphore` volume (keys and configs)
+  - `/etc/semaphore` volume (settings)
+  
+  ### Export/Import
+  - n8n: Use built-in export/import in UI
+  - Semaphore: Use project backup/restore in UI
+  
+  ## Performance Tuning
+  
+  ### n8n
+  - Adjust execution timeout in environment
+  - Configure execution data retention
+  - Use queue mode for high-volume workflows
+  
+  ### Semaphore
+  - Increase runner count for parallel execution
+  - Configure task timeout limits
+  - Use task queuing for large deployments
+  
+  ## Related Documentation
+  
+  - [n8n Documentation](https://docs.n8n.io/)
+  - [Semaphore Documentation](https://docs.semaphoreui.com/)
+  - [Ansible Documentation](https://docs.ansible.com/)
+  
+  ## Support
+  
+  For issues or questions:
+  1. Check the troubleshooting section above
+  2. Review logs for specific services
+  3. Consult the official documentation
+  4. Check kompose repository issues
+  
+  ## Template Version
+  
+  - Version: 1.0.0
+  - Last Updated: 2025-10-14
+  - Compatible with: Kompose 1.x

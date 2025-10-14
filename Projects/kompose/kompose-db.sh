@@ -209,11 +209,11 @@ db_migrate() {
     case $db_name in
         n8n)
             log_info "n8n handles migrations automatically on startup"
-            log_info "Restart n8n: kompose restart chain"
+            log_info "Restart n8n by restarting its stack"
             ;;
         gitea)
             log_info "Gitea handles migrations automatically on startup"
-            log_info "Restart gitea: kompose restart chain"
+            log_info "Restart gitea: kompose restart code"
             ;;
         kompose)
             local migrations_dir="./migrations"

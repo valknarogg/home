@@ -39,7 +39,7 @@ declare -A STACKS=(
     ["kmps"]="Management Portal - User & SSO Administration"
     ["home"]="Smart Home - Home Assistant, Matter, Zigbee, ESPHome"
     ["vpn"]="VPN - WireGuard remote access (wg-easy)"
-    ["chain"]="Automation Platform - n8n workflows, Semaphore/Ansible tasks"
+
     ["code"]="Git Repository & CI/CD - Gitea with Actions runner"
     ["proxy"]="Reverse Proxy - Traefik with SSL"
     ["link"]="Link Management - Linkwarden bookmark manager"
