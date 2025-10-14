@@ -1138,7 +1138,8 @@ make_scripts_executable() {
 handle_setup_command() {
     # If no subcommand provided, show available commands
     if [ $# -eq 0 ]; then
-        log_info "Setup configuration management"
+        echo ""
+        echo "Setup configuration management"
         echo ""
         echo "Available setup commands:"
         echo "  local          Switch to local development mode"

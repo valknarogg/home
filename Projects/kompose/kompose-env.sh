@@ -420,7 +420,12 @@ list_env_stacks() {
 # Export environment variables as JSON
 export_env_json() {
     local stack="${1:-all}"
-    local output_file="${2:-env-vars.json}"
+    local output_file="${2:-${ENV_VARS_JSON_OUTPUT:-env-vars.json}}"
+    
+    # If TEST_ARTIFACT_DIR is set and output_file is not an absolute path, prepend TEST_ARTIFACT_DIR
+    if [ -n "${TEST_ARTIFACT_DIR}" ] && [[ "$output_file" != /* ]]; then
+        output_file="${TEST_ARTIFACT_DIR}/${output_file}"
+    fi
     
     log_info "Exporting environment variables to JSON: $output_file"
     

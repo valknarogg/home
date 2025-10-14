@@ -127,7 +127,6 @@ CUSTOM STACKS:
     blog            - BLOG Stack Configuration
     news            - Custom stack
     sexy            - SEXY Stack Configuration
-    testapp         - TESTAPP Stack Configuration
 EXAMPLES:
     # Stack Management
     kompose up home                    # Start home stack

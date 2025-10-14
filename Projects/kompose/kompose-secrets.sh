@@ -545,12 +545,17 @@ backup_secrets() {
 
 # Export secrets to JSON
 export_secrets() {
-    local output_file="${1:-secrets.json}"
+    local output_file="${1:-${SECRETS_JSON_OUTPUT:-secrets.json}}"
     local include_values="${2:-false}"
     
     if [ ! -f "$SECRETS_ENV_FILE" ]; then
         log_error "No secrets.env file to export"
         return 1
+    fi
+    
+    # If TEST_ARTIFACT_DIR is set and output_file is not an absolute path, prepend TEST_ARTIFACT_DIR
+    if [ -n "${TEST_ARTIFACT_DIR}" ] && [[ "$output_file" != /* ]]; then
+        output_file="${TEST_ARTIFACT_DIR}/${output_file}"
     fi
     
     log_info "Exporting secrets to $output_file..."

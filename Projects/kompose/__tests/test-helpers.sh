@@ -371,8 +371,15 @@ EOF
         cp "${TEMP_DIR}/.env" "${KOMPOSE_ROOT}/.env"
     fi
     
+    # Export environment variables to redirect artifact outputs to temp directory
+    export TEST_ARTIFACT_DIR="${TEMP_DIR}"
+    export ENV_VARS_JSON_OUTPUT="${TEMP_DIR}/env-vars.json"
+    export SECRETS_JSON_OUTPUT="${TEMP_DIR}/secrets.json"
+    export CONFIG_JSON_OUTPUT="${TEMP_DIR}/config.json"
+    
     log_info "Test environment ready"
     log_info "Test sandbox: ${TEMP_DIR}"
+    log_info "Artifacts will be created in: ${TEMP_DIR}"
 }
 
 cleanup_test_env() {
@@ -383,6 +390,25 @@ cleanup_test_env() {
         rm -rf "${TEMP_DIR}"
         log_info "Removed temp directory: ${TEMP_DIR}"
     fi
+    
+    # Clean up any artifacts that may have been created in the root directory during tests
+    # This is a safety measure in case some tests don't respect TEST_ARTIFACT_DIR
+    for artifact in "${KOMPOSE_ROOT}/config.json" "${KOMPOSE_ROOT}/env-vars.json" "${KOMPOSE_ROOT}/secrets.json"; do
+        if [ -f "$artifact" ] && [ -n "${TEST_ARTIFACT_DIR}" ]; then
+            # Only remove if we're in a test context (TEST_ARTIFACT_DIR is set)
+            # and if the file was likely created during this test (very recent)
+            if [ $(find "$artifact" -mmin -5 2>/dev/null | wc -l) -gt 0 ]; then
+                rm -f "$artifact"
+                log_info "Removed test artifact: $artifact"
+            fi
+        fi
+    done
+    
+    # Unset test environment variables
+    unset TEST_ARTIFACT_DIR
+    unset ENV_VARS_JSON_OUTPUT
+    unset SECRETS_JSON_OUTPUT
+    unset CONFIG_JSON_OUTPUT
     
     # Don't remove .env from KOMPOSE_ROOT as it might be needed for other tests
     # Individual test suites should handle their own specific cleanup

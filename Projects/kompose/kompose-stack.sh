@@ -231,14 +231,14 @@ stack_exec() {
 
 list_stacks() {
     echo ""
-    log_info "Available stacks:"
+    echo "Available stacks:"
     echo ""
     
     # List built-in stacks
-    echo -e "${BLUE}Built-in Stacks:${NC}"
+    echo "Built-in Stacks:"
     for stack in $(echo "${!STACKS[@]}" | tr ' ' '\n' | sort); do
         if stack_exists "$stack" 2>/dev/null; then
-            echo -e "  ${CYAN}${stack}${NC} - ${STACKS[$stack]}"
+            echo "  ${stack} - ${STACKS[$stack]}"
             
             # Get stack directory
             local stack_dir="${STACKS_ROOT}/${stack}"
@@ -247,13 +247,13 @@ list_stacks() {
             if [ -f "${STACKS_ROOT}/.env" ] || [ -f "${STACKS_ROOT}/.env.local" ]; then
                 (
                     export_stack_env "$stack" > /dev/null 2>&1
-                    cd "${stack_dir}"
+                    cd "${stack_dir}" 2>/dev/null || exit 0
                     local running=$(docker compose ps -q 2>/dev/null | wc -l)
                     local total=$(docker compose config --services 2>/dev/null | wc -l)
-                    echo -e "    Status: ${running}/${total} containers running"
+                    echo "    Status: ${running}/${total} containers running"
                 )
             else
-                echo -e "    Status: ${YELLOW}(environment not configured)${NC}"
+                echo "    Status: (environment not configured)"
             fi
             echo ""
         fi
@@ -261,10 +261,10 @@ list_stacks() {
     
     # List custom stacks if any exist
     if [ ${#CUSTOM_STACKS[@]} -gt 0 ]; then
-        echo -e "${MAGENTA}Custom Stacks:${NC}"
+        echo "Custom Stacks:"
         for stack in $(echo "${!CUSTOM_STACKS[@]}" | tr ' ' '\n' | sort); do
             if stack_exists "$stack" 2>/dev/null; then
-                echo -e "  ${CYAN}${stack}${NC} - ${CUSTOM_STACKS[$stack]}"
+                echo "  ${stack} - ${CUSTOM_STACKS[$stack]}"
                 
                 # Get custom stack directory
                 local stack_dir="${STACKS_ROOT}/+custom/${stack}"
@@ -273,13 +273,13 @@ list_stacks() {
                 if [ -f "${STACKS_ROOT}/.env" ] || [ -f "${STACKS_ROOT}/.env.local" ]; then
                     (
                         export_stack_env "$stack" > /dev/null 2>&1
-                        cd "${stack_dir}"
+                        cd "${stack_dir}" 2>/dev/null || exit 0
                         local running=$(docker compose ps -q 2>/dev/null | wc -l)
                         local total=$(docker compose config --services 2>/dev/null | wc -l)
-                        echo -e "    Status: ${running}/${total} containers running"
+                        echo "    Status: ${running}/${total} containers running"
                     )
                 else
-                    echo -e "    Status: ${YELLOW}(environment not configured)${NC}"
+                    echo "    Status: (environment not configured)"
                 fi
                 echo ""
             fi
