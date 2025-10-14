@@ -1,0 +1,457 @@
+# ============================================================================
+# Kompose Template Configuration - Link Stack
+# ============================================================================
+# This file defines all environment variables and secrets used by the stack
+# Used by kompose-generate.sh to create a complete, working stack
+# ============================================================================
+
+name: link
+description: Link Management - Linkwarden bookmark manager with SSO
+version: 1.0.0
+
+# ============================================================================
+# Environment Variables
+# ============================================================================
+environment:
+  # Project Configuration
+  - name: LINK_COMPOSE_PROJECT_NAME
+    default: link
+    description: Link stack project name
+    required: yes
+  
+  - name: LINK_DOCKER_IMAGE
+    default: ghcr.io/linkwarden/linkwarden:latest
+    description: Linkwarden Docker image
+    required: no
+  
+  # Database Configuration
+  - name: LINK_DB_NAME
+    default: linkwarden
+    description: Linkwarden database name
+    required: yes
+  
+  - name: DB_USER
+    default: kompose
+    description: PostgreSQL database user
+    required: yes
+  
+  - name: CORE_DB_HOST
+    default: core_postgres
+    description: PostgreSQL host (container name)
+    required: yes
+  
+  - name: CORE_DB_PORT
+    default: 5432
+    description: PostgreSQL port
+    required: yes
+  
+  # Redis Configuration
+  - name: CORE_REDIS_HOST
+    default: core_redis
+    description: Redis host (container name)
+    required: yes
+  
+  - name: CORE_REDIS_PORT
+    default: 6379
+    description: Redis port
+    required: yes
+  
+  # Application Configuration
+  - name: LINK_APP_PORT
+    default: 3000
+    description: Linkwarden web UI port
+    required: no
+  
+  - name: LINK_DISABLE_SCREENSHOT
+    default: false
+    description: Disable automatic screenshots
+    required: no
+  
+  - name: LINK_DISABLE_ARCHIVE
+    default: false
+    description: Disable automatic archiving
+    required: no
+  
+  - name: LINK_DISABLE_REGISTRATION
+    default: false
+    description: Disable user registration
+    required: no
+  
+  # Email Configuration
+  - name: EMAIL_FROM
+    default: noreply@kompose.local
+    description: Email sender address
+    required: no
+  
+  - name: EMAIL_SMTP_USER
+    default: mailhog
+    description: SMTP username
+    required: no
+  
+  - name: EMAIL_SMTP_PASSWORD
+    default: mailhog
+    description: SMTP password
+    required: no
+  
+  # MQTT Configuration
+  - name: MQTT_ENABLED
+    default: true
+    description: Enable MQTT event publishing
+    required: no
+  
+  - name: CORE_MQTT_PORT
+    default: 1883
+    description: MQTT broker port
+    required: no
+  
+  # Domain Configuration
+  - name: PROTOCOL
+    default: https
+    description: Protocol (http or https)
+    required: yes
+  
+  - name: SUBDOMAIN_LINK
+    default: links
+    description: Linkwarden subdomain
+    required: yes
+  
+  - name: ROOT_DOMAIN
+    default: ""
+    description: Root domain for all services (e.g., example.com)
+    required: yes
+  
+  # Network Configuration
+  - name: NETWORK_NAME
+    default: kompose
+    description: Docker network name for inter-service communication
+    required: yes
+  
+  # Traefik Configuration
+  - name: TRAEFIK_ENABLED_LINK
+    default: false
+    description: Enable Traefik routing for Linkwarden
+    required: no
+  
+  # System Configuration
+  - name: TIMEZONE
+    default: Europe/Amsterdam
+    description: System timezone for containers
+    required: no
+
+# ============================================================================
+# Secrets
+# ============================================================================
+secrets:
+  # Shared Database Secret
+  - name: DB_PASSWORD
+    description: PostgreSQL password for database connections
+    required: yes
+    type: password
+    length: 32
+    stacks:
+      - core
+      - auth
+      - chain
+      - code
+      - kmps
+      - link
+      - track
+      - watch
+  
+  # Redis Password
+  - name: REDIS_PASSWORD
+    description: Redis password for cache connections
+    required: yes
+    type: password
+    length: 32
+    stacks:
+      - core
+      - link
+      - auth
+  
+  # Link Stack Secrets
+  - name: LINK_NEXTAUTH_SECRET
+    description: NextAuth secret for session encryption (must be 32 characters)
+    required: yes
+    type: password
+    length: 32
+    stacks:
+      - link
+
+# ============================================================================
+# Dependencies
+# ============================================================================
+dependencies:
+  # Required stacks that must be running
+  required:
+    - core      # PostgreSQL, Redis, and MQTT
+    - proxy     # Traefik for routing
+  
+  # Optional stacks that enhance functionality
+  optional:
+    - auth      # SSO authentication via Keycloak
+    - messaging # Email notifications via Mailhog
+
+# ============================================================================
+# Ports
+# ============================================================================
+ports:
+  # Linkwarden (internal only, accessed via Traefik)
+  - container: 3000
+    description: Linkwarden HTTP port (internal)
+    exposed: false
+
+# ============================================================================
+# Volumes
+# ============================================================================
+volumes:
+  - name: linkwarden_data
+    description: Linkwarden archive storage
+    mount: /data/archives
+    backup: recommended
+
+# ============================================================================
+# Health Checks
+# ============================================================================
+healthchecks:
+  linkwarden:
+    test: 'wget --spider -q http://localhost:3000/api/healthcheck'
+    interval: 30s
+    timeout: 10s
+    retries: 3
+    start_period: 60s
+
+# ============================================================================
+# Notes & Documentation
+# ============================================================================
+notes: |
+  # Link Stack - Linkwarden Bookmark Manager
+  
+  Linkwarden is a self-hosted, collaborative bookmark manager that helps you 
+  organize and save your favorite links with features like tagging, collections, 
+  full-text search, and automatic archiving.
+  
+  ## Features
+  
+  - 📚 Organize bookmarks with collections and tags
+  - 🔍 Full-text search across all saved links
+  - 📸 Automatic screenshot capture
+  - 📦 Archive web pages for offline access
+  - 👥 Collaboration with teams
+  - 🔒 SSO integration with Keycloak
+  - 📧 Email notifications
+  - 🚀 Fast Redis caching
+  - 📊 MQTT event publishing
+  
+  ## Setup Instructions
+  
+  1. **Generate the stack:**
+     ```bash
+     ./kompose-generate.sh link
+     ```
+  
+  2. **Start required dependencies:**
+     ```bash
+     docker compose -f core/compose.yaml up -d
+     docker compose -f proxy/compose.yaml up -d
+     ```
+  
+  3. **Start the link stack:**
+     ```bash
+     docker compose -f link/compose.yaml up -d
+     ```
+  
+  4. **Access Linkwarden:**
+     - URL: https://links.yourdomain.com
+     - Create your first account (if registration is enabled)
+     - Start saving bookmarks!
+  
+  ## Configuration
+  
+  ### Application Settings
+  
+  Control various Linkwarden features:
+  - `LINK_DISABLE_SCREENSHOT`: Disable automatic screenshot capture
+  - `LINK_DISABLE_ARCHIVE`: Disable automatic archiving of pages
+  - `LINK_DISABLE_REGISTRATION`: Close registration (admin-only invites)
+  
+  ### Email Configuration
+  
+  Linkwarden sends email notifications for:
+  - New user registration
+  - Team invitations
+  - Shared collections
+  
+  Configure SMTP via the messaging stack or external provider.
+  
+  ### SSO Integration
+  
+  Enable SSO with the auth stack:
+  1. Configure Keycloak client for Linkwarden
+  2. Set OAuth2 credentials in environment
+  3. Enable SSO middleware in Traefik labels
+  
+  ## Environment Variables
+  
+  Key configuration variables:
+  - `SUBDOMAIN_LINK`: Linkwarden subdomain (default: links)
+  - `LINK_DB_NAME`: Database name (default: linkwarden)
+  - `LINK_APP_PORT`: Application port (default: 3000)
+  
+  ## Secrets
+  
+  Required secrets:
+  - `LINK_NEXTAUTH_SECRET`: Session encryption (32 characters)
+  - `DB_PASSWORD`: Shared database password
+  - `REDIS_PASSWORD`: Redis cache password
+  
+  ## Data Management
+  
+  ### Backups
+  
+  The linkwarden_data volume stores:
+  - Archived web pages
+  - Screenshot images
+  - User uploads
+  
+  Regular backups recommended:
+  ```bash
+  docker run --rm -v linkwarden_data:/data -v $(pwd):/backup \
+    alpine tar czf /backup/linkwarden-backup-$(date +%Y%m%d).tar.gz /data
+  ```
+  
+  ### Database
+  
+  Bookmark metadata is stored in PostgreSQL:
+  ```bash
+  ./kompose.sh db backup -d linkwarden
+  ```
+  
+  ## Troubleshooting
+  
+  ### Application won't start
+  - Check database connection (core stack must be running)
+  - Verify LINK_NEXTAUTH_SECRET is set and 32 characters
+  - Check logs: `docker logs link_app`
+  
+  ### Screenshots not working
+  - Ensure LINK_DISABLE_SCREENSHOT is false
+  - Check container permissions for /data/archives
+  - Verify adequate disk space
+  
+  ### SSO authentication fails
+  - Verify auth stack is running
+  - Check OAuth2 configuration in Keycloak
+  - Ensure redirect URLs are correct
+  - Check logs for authentication errors
+  
+  ### Email not sending
+  - Verify messaging stack is running (if using Mailhog)
+  - Check SMTP credentials
+  - Test email configuration
+  
+  ## Performance Optimization
+  
+  ### Redis Caching
+  
+  Linkwarden uses Redis for:
+  - Session storage
+  - API response caching
+  - Rate limiting
+  
+  Monitor cache hit ratio for optimization.
+  
+  ### Database Tuning
+  
+  For large collections (1000+ bookmarks):
+  - Increase PostgreSQL connection pool
+  - Add indexes on frequently queried fields
+  - Consider read replicas for scaling
+  
+  ## Security Considerations
+  
+  - Always use HTTPS in production (set PROTOCOL=https)
+  - Keep LINK_NEXTAUTH_SECRET secure and unique
+  - Enable SSO for enterprise deployments
+  - Disable registration after initial setup
+  - Regular security updates for Docker image
+  - Backup encryption for sensitive data
+  
+  ## Integration Examples
+  
+  ### Browser Extensions
+  
+  Linkwarden supports browser extensions for quick bookmarking:
+  - Chrome/Edge Extension
+  - Firefox Add-on
+  - Mobile apps (iOS/Android)
+  
+  ### API Access
+  
+  Integrate with other services:
+  ```bash
+  curl -X POST https://links.yourdomain.com/api/bookmarks \
+    -H "Authorization: Bearer YOUR_TOKEN" \
+    -H "Content-Type: application/json" \
+    -d '{"url": "https://example.com", "title": "Example"}'
+  ```
+  
+  ### MQTT Events
+  
+  Subscribe to bookmark events:
+  ```bash
+  mosquitto_sub -h core_mqtt -t "kompose/linkwarden/#"
+  ```
+  
+  Events published:
+  - `kompose/linkwarden/bookmark/created`
+  - `kompose/linkwarden/bookmark/updated`
+  - `kompose/linkwarden/bookmark/deleted`
+  - `kompose/linkwarden/collection/created`
+  
+  ## Monitoring
+  
+  Health endpoints:
+  - Health: http://localhost:3000/api/healthcheck
+  - Metrics: http://localhost:9100/metrics (Prometheus)
+  
+  Monitor:
+  - Bookmark creation rate
+  - Archive success/failure rate
+  - API response times
+  - Database query performance
+  - Redis cache hit ratio
+  
+  ## Migration
+  
+  ### From other bookmark managers
+  
+  Import bookmarks from:
+  - Browser HTML exports
+  - Pocket
+  - Pinboard
+  - Other bookmark services
+  
+  Use the import feature in the web UI.
+  
+  ## Advanced Features
+  
+  ### Team Collaboration
+  
+  - Create shared collections
+  - Invite team members
+  - Set permissions (read/write/admin)
+  - Activity feed for team updates
+  
+  ### Automation
+  
+  - Scheduled archiving jobs
+  - Automatic tag generation
+  - Link expiration policies
+  - Bulk operations via API
+  
+  ## Resources
+  
+  - Official docs: https://linkwarden.app/docs
+  - GitHub: https://github.com/linkwarden/linkwarden
+  - Docker Hub: https://hub.docker.com/r/linkwarden/linkwarden

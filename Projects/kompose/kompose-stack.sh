@@ -310,7 +310,6 @@ get_ordered_stacks() {
             "kmps"        # Management portal
             "track"       # Analytics tracking
             "vault"       # Password manager
-            "link"        # Link management
             "proxy"       # Reverse proxy - should be available for all services
             "vpn"         # VPN access
             "auth"        # Authentication - after proxy for proper routing

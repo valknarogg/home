@@ -42,7 +42,6 @@ declare -A STACKS=(
 
 
     ["proxy"]="Reverse Proxy - Traefik with SSL"
-    ["link"]="Link Management - Linkwarden bookmark manager"
     ["track"]="Activity Tracking - Umami analytics"
     ["vault"]="Password Manager - Vaultwarden"
     ["watch"]="Monitoring & Observability - Uptime Kuma, Grafana"
