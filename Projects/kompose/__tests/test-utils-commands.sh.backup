@@ -59,7 +59,7 @@ test_ps_command() {
         "PS command is recognized"
     
     # Should show container information or docker command
-    assert_contains "$output" "container\|Container\|NAME\|STATUS\|PORTS\|docker\|running" \
+    assert_contains "$output" "container\|Container\|NAME\|STATUS\|PORTS\|docker" \
         "PS command shows container information"
 }
 
@@ -82,43 +82,13 @@ test_list_stacks_command() {
     assert_not_contains "$output" "Unknown command" \
         "List command is recognized"
     
-    # Should contain stack information - be flexible about which stacks appear
-    assert_contains "$output" "stack\|Stack\|Built-in\|Custom\|Available" \
-        "List command shows stack information"
-}
-
-test_list_shows_builtin_stacks() {
-    log_test "Testing that list shows built-in stacks"
+    # Should contain stack information
+    assert_contains "$output" "stack\|Stack\|core\|auth\|proxy" \
+        "List command shows available stacks"
     
-    # Only test if stack directories actually exist
-    if [ ! -d "${KOMPOSE_ROOT}/core" ]; then
-        log_skip "Core stack directory doesn't exist - skipping test"
-        return 0
-    fi
-    
-    local output
-    set +e
-    output=$(run_kompose list 2>&1)
-    set -e
-    
-    # Should show core stack if directory exists
+    # Should show built-in stacks
     assert_contains "$output" "core" \
         "List shows core stack"
-}
-
-test_list_shows_auth_stack() {
-    log_test "Testing that list shows auth stack"
-    
-    # Only test if stack directory exists  
-    if [ ! -d "${KOMPOSE_ROOT}/auth" ]; then
-        log_skip "Auth stack directory doesn't exist - skipping test"
-        return 0
-    fi
-    
-    local output
-    set +e
-    output=$(run_kompose list 2>&1)
-    set -e
     
     assert_contains "$output" "auth" \
         "List shows auth stack"
@@ -151,12 +121,6 @@ test_validate_config_command() {
 test_stack_exists_core() {
     log_test "Testing stack existence check for 'core'"
     
-    # Only test if core directory exists
-    if [ ! -d "${KOMPOSE_ROOT}/core" ]; then
-        log_skip "Core stack directory doesn't exist - skipping test"
-        return 0
-    fi
-    
     local output
     local exit_code
     
@@ -182,7 +146,7 @@ test_stack_exists_nonexistent() {
     set -e
     
     # Should show error for non-existent stack
-    assert_contains "$output" "does not exist\|not found\|ERROR\|Unknown stack\|Stack not found" \
+    assert_contains "$output" "does not exist\|not found\|ERROR\|Unknown stack" \
         "Non-existent stack is properly detected"
 }
 
@@ -341,25 +305,13 @@ test_builtin_stacks_defined() {
     output=$(run_kompose list 2>&1)
     set -e
     
-    # Check for essential built-in stacks that exist
-    local found_stacks=0
+    # Check for essential built-in stacks
     local essential_stacks=("core" "auth" "proxy" "home")
     
     for stack in "${essential_stacks[@]}"; do
-        if [ -d "${KOMPOSE_ROOT}/${stack}" ]; then
-            if echo "$output" | grep -q "$stack"; then
-                found_stacks=$((found_stacks+1))
-            fi
-        fi
+        assert_contains "$output" "$stack" \
+            "Built-in stack '$stack' is defined"
     done
-    
-    # At least some stacks should be found
-    TESTS_RUN=$((TESTS_RUN+1))
-    if [ $found_stacks -gt 0 ]; then
-        log_pass "Built-in stacks are defined (found $found_stacks)"
-    else
-        log_warning "No built-in stacks found in output (check stack directories)"
-    fi
 }
 
 # ============================================================================
@@ -369,8 +321,6 @@ test_builtin_stacks_defined() {
 test_version_command
 test_ps_command
 test_list_stacks_command
-test_list_shows_builtin_stacks
-test_list_shows_auth_stack
 test_validate_config_command
 test_stack_exists_core
 test_stack_exists_nonexistent

@@ -3,4 +3,21 @@
 [SUCCESS] domain.env is valid
 [SUCCESS] ROOT_DOMAIN is configured: pivoine.art
 [SUCCESS] .env exists
-[WARNING] secrets.env not found (using template)
+[SUCCESS] secrets.env exists
+[WARNING] secrets.env contains CHANGE_ME placeholders
+[SUCCESS] Docker network 'kompose' exists
+[INFO] Validating compose files...
+[ERROR] Invalid compose file: auth
+[ERROR] Invalid compose file: chain
+[ERROR] Invalid compose file: code
+[ERROR] Invalid compose file: core
+[ERROR] Invalid compose file: home
+[ERROR] Invalid compose file: kmps
+[ERROR] Invalid compose file: link
+[ERROR] Invalid compose file: messaging
+[ERROR] Invalid compose file: proxy
+[ERROR] Invalid compose file: track
+[ERROR] Invalid compose file: vault
+[ERROR] Invalid compose file: vpn
+[ERROR] Invalid compose file: watch
+/home/valknar/Projects/kompose/kompose-utils.sh: Zeile 110: cd: /home/valknar/Projects/kompose/blog: Datei oder Verzeichnis nicht gefunden

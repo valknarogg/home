@@ -1,6 +1,6 @@
 \033[0;36mkompose.sh\033[0m - Docker Compose Stack Manager
 Version: 2.0.0 (Modular)
-Built: 2025-10-13
+Built: 2025-10-14
 Components:
   • kompose-stack.sh  - Stack management
   • kompose-db.sh     - Database operations

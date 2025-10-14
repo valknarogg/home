@@ -1,8 +1,8 @@
-\033[0;36m╔════════════════════════════════════════════════════════════════╗\033[0m
-\033[0;36m║              KOMPOSE - Docker Compose Stack Manager            ║\033[0m
-\033[0;36m║                      Modular Edition 2.0                       ║\033[0m
-\033[0;36m╚════════════════════════════════════════════════════════════════╝\033[0m
-\033[0;34mSTACK MANAGEMENT COMMANDS:\033[0m
+╔════════════════════════════════════════════════════════════════╗
+║              KOMPOSE - Docker Compose Stack Manager            ║
+║                      Modular Edition 2.0                       ║
+╚════════════════════════════════════════════════════════════════╝
+STACK MANAGEMENT COMMANDS:
     up [STACK]           Start a stack (or all if no stack specified)
     down [STACK]         Stop a stack (or all if no stack specified)
     restart [STACK]      Restart a stack
@@ -15,12 +15,12 @@
     validate [STACK]     Validate compose file(s)
     exec [STACK] [CMD]   Execute command in stack container
     ps                   Show all running containers
-\033[0;35mREST API SERVER COMMANDS:\033[0m
+REST API SERVER COMMANDS:
     api start [PORT]     Start REST API server (default: http://127.0.0.1:8080)
     api stop             Stop REST API server
     api status           Check API server status
     api logs             View API server logs
-\033[0;35mGIT TAG DEPLOYMENT COMMANDS:\033[0m
+GIT TAG DEPLOYMENT COMMANDS:
     tag create           Create and push a new deployment tag
     tag move             Move an existing tag to a new commit
     tag delete           Delete a tag (local and remote)
@@ -28,7 +28,7 @@
     tag deploy           Create tag and trigger deployment
     tag rollback         Rollback to a previous tag
     tag status           Show deployment status
-\033[1;33mDATABASE COMMANDS:\033[0m
+DATABASE COMMANDS:
     db backup            Create database backup
     db restore           Restore database from backup
     db list              List available backups
@@ -37,19 +37,65 @@
     db shell             Open database shell
     db migrate           Run database migrations
     db reset             Reset database (WARNING: deletes all data)
-\033[0;34mUTILITY COMMANDS:\033[0m
-    init                 Initialize kompose environment
+SECRETS MANAGEMENT COMMANDS:
+    secrets generate     Generate all secrets or a specific secret
+    secrets validate     Validate secrets configuration
+    secrets list         List all secrets and their status
+    secrets rotate       Rotate a specific secret (generate new value)
+    secrets set          Set a specific secret value
+    secrets backup       Create backup of secrets.env
+    secrets export       Export secrets to JSON file
+PROFILE MANAGEMENT COMMANDS:
+    profile list         List all available profiles
+    profile create       Create a new profile interactively
+    profile use          Switch to a profile
+    profile show         Show profile details
+    profile edit         Edit a profile
+    profile delete       Delete a profile
+    profile copy         Copy/clone a profile
+    profile export       Export profile to file
+    profile import       Import profile from file
+    profile up           Start stacks defined in current profile
+    profile current      Show current active profile
+ENVIRONMENT MANAGEMENT COMMANDS:
+    env list [STACK]     List environment variables for all or specific stack
+    env generate [STACK] Generate .env.example files for all or specific stack
+    env export [STACK]   Export environment variables to JSON
+    env stacks           List all stacks with environment definitions
+    env help             Show environment management help
+STACK GENERATOR COMMANDS:
+    generate <name>      Generate a new custom stack with templates
+    generate list        List all custom stacks
+    generate show <n>    Show custom stack information
+    generate delete <n>  Delete a custom stack
+TEST COMMANDS:
+    test                 Run all tests
+    test [SUITE]         Run specific test suite
+    test -u              Update snapshots
+    test -i              Run integration tests (requires Docker)
+    test -t SUITE        Run specific test by name
+    test -v              Verbose output
+    test -h              Show test help
+SETUP & INITIALIZATION:
+    init                 Interactive project initialization (guided setup)
+    setup <command>      Manage local/production configuration
+        local            Switch to local development mode
+        prod             Switch to production mode
+        status           Show current configuration mode
+        save-prod        Save current config as production
+        backup           Backup current configuration
+UTILITY COMMANDS:
     cleanup              Clean up backup and temporary files
     validate             Validate entire configuration
     version              Show version information
     help                 Show this help message
-\033[0;34mSTACK OPTIONS:\033[0m
+STACK OPTIONS:
     -d, --detach        Run in detached mode
     -f, --force         Force operation (remove volumes, etc.)
     --no-cache          Build without cache
     --scale SERVICE=N   Scale service to N replicas
     -v, --verbose       Verbose output
-\033[0;35mTAG OPTIONS:\033[0m
+TAG OPTIONS:
     -s, --service SERVICE       Service name (frontend|backend|api|worker)
     -e, --env ENV              Environment (dev|staging|prod)
     -v, --version VERSION      Version number (e.g., 1.2.3)
@@ -57,28 +103,33 @@
     -m, --message MESSAGE      Tag message
     -f, --force               Force operation
     -d, --dry-run             Show what would be done
-\033[1;33mDATABASE OPTIONS:\033[0m
+DATABASE OPTIONS:
     -d, --database NAME         Database name (default: all)
     -f, --file FILE            Backup file path
     -t, --timestamp            Add timestamp to backup
     --compress                 Compress backup with gzip
-\033[0;34mAVAILABLE STACKS:\033[0m
+BUILT-IN STACKS:
     auth            - Authentication - Keycloak SSO, OAuth2 Proxy
     chain           - Automation Platform - n8n workflows, Semaphore/Ansible tasks
     code            - Git Repository & CI/CD - Gitea with Actions runner
     core            - Core services - MQTT, Redis, Postgres
+    _docs           - Kompose Docs - Full documentation
     home            - Smart Home - Home Assistant, Matter, Zigbee, ESPHome
     kmps            - Management Portal - User & SSO Administration
     link            - Link Management - Linkwarden bookmark manager
     messaging       - Communication - Gotify notifications, Mailhog
-    news            - Newsletter - Letterspace app
     proxy           - Reverse Proxy - Traefik with SSL
     track           - Activity Tracking - Umami analytics
     vault           - Password Manager - Vaultwarden
     vpn             - VPN - WireGuard remote access (wg-easy)
     watch           - Monitoring & Observability - Uptime Kuma, Grafana
-\033[0;34mEXAMPLES:\033[0m
-    \033[0;32m# Stack Management\033[0m
+CUSTOM STACKS:
+    blog            - BLOG Stack Configuration
+    news            - Custom stack
+    sexy            - SEXY Stack Configuration
+    testapp         - TESTAPP Stack Configuration
+EXAMPLES:
+    # Stack Management
     kompose up home                    # Start home stack
     kompose up                          # Start all stacks
     kompose down frontend              # Stop frontend stack
@@ -86,18 +137,54 @@
     kompose deploy backend 1.2.3       # Deploy backend version 1.2.3
     kompose restart api                # Restart api stack
     kompose status                     # Show status of all stacks
-    \033[0;35m# Git Tag Deployments\033[0m
+    # Git Tag Deployments
     kompose tag create -s frontend -e dev -v 1.2.3
     kompose tag deploy -s backend -e staging -v 2.0.0
     kompose tag list -s frontend
-    \033[1;33m# Database Management\033[0m
+    # Database Management
     kompose db backup -d postgres      # Backup PostgreSQL
     kompose db restore -f backup.sql   # Restore from file
     kompose db shell -d gitea          # Open gitea database shell
-    \033[0;35m# REST API Server\033[0m
+    # Secrets Management
+    kompose secrets generate           # Generate all secrets
+    kompose secrets validate           # Check secrets configuration
+    kompose secrets list -s auth       # List auth stack secrets
+    kompose secrets rotate DB_PASSWORD # Rotate database password
+    # Profile Management
+    kompose profile list               # List all profiles
+    kompose profile create dev         # Create new profile
+    kompose profile use production     # Switch to production profile
+    kompose profile up                 # Start all stacks in current profile
+    kompose profile current            # Show active profile
+    # Environment Management
+    kompose env list                   # List all stacks with env vars
+    kompose env list core              # List core stack environment variables
+    kompose env generate all           # Generate all .env.example files
+    kompose env generate auth --force  # Force regenerate auth .env.example
+    kompose env export all config.json # Export all variables to JSON
+    # REST API Server
     kompose api start                  # Start API server on default port
     kompose api status                 # Check API server status
-    \033[0;34m# Utilities\033[0m
-    kompose init                       # Initialize environment
+    # Setup & Initialization
+    kompose init                       # Interactive guided setup
+    kompose setup local                # Switch to local development
+    kompose setup prod                 # Switch to production
+    kompose setup status               # Check current mode
+    # Stack Generator
+    kompose generate myapp             # Create new custom stack
+    kompose generate list              # List all custom stacks
+    kompose generate show myapp        # Show stack information
+    kompose generate delete myapp      # Delete custom stack
+    # Custom Stack Management
+    kompose up blog                    # Start custom blog stack
+    kompose status sexy                # Check custom sexy stack status
+    kompose logs myapp -f              # Follow logs for custom stack
+    # Note: Custom stacks in +custom/ are auto-discovered
+    # Testing
+    kompose test                       # Run all tests
+    kompose test -t basic-commands     # Run specific test suite
+    kompose test -u                    # Update snapshots
+    kompose test -i                    # Run integration tests
+    # Utilities
     kompose validate                   # Validate configuration
     kompose cleanup                    # Clean up project

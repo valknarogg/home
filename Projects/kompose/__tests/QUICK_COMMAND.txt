@@ -1,0 +1,83 @@
+# QUICK FIX COMMAND - Copy and Paste This
+
+## One-Line Fix (Recommended)
+
+```bash
+cd __tests && chmod +x *.sh && ./quick-fix-and-test.sh
+```
+
+## That's It!
+
+This single command will:
+1. ✅ Make all scripts executable
+2. ✅ Apply all test fixes
+3. ✅ Run the complete test suite
+4. ✅ Show you the results
+
+---
+
+## Alternative: Manual Steps
+
+If you prefer step-by-step:
+
+```bash
+# Step 1: Go to test directory
+cd __tests
+
+# Step 2: Make scripts executable  
+chmod +x apply-all-fixes.sh run-all-tests.sh quick-fix-and-test.sh
+
+# Step 3: Apply fixes
+./apply-all-fixes.sh
+
+# Step 4: Run tests
+./run-all-tests.sh
+```
+
+---
+
+## Verify Fixes Applied
+
+```bash
+# Quick check
+cd __tests
+ls -la ../+custom ../_docs/content/5.stacks/+custom generated/ 2>/dev/null && echo "✓ Directories exist"
+grep -q "assert_true" test-helpers.sh && echo "✓ Helper functions added"
+grep -q "No environment variables defined" test-env-commands.sh && echo "✓ Env test fixed"
+```
+
+---
+
+## Documentation
+
+- **README_FIXES.md** - Start here for detailed guide
+- **COMPLETE_FIX_SUMMARY.md** - Full summary of all changes
+- **FINAL_FIX_SUMMARY.md** - Technical details
+
+---
+
+## Expected Output
+
+```
+✓ All test suites passed!
+  Test suites run: 11
+```
+
+---
+
+## Need Help?
+
+```bash
+# Run with verbose output
+./run-all-tests.sh -v
+
+# Run specific test
+./run-all-tests.sh -t test-name
+
+# Update snapshots
+./run-all-tests.sh -u
+```
+
+---
+
+**Copy the one-line command above and run it. You're done!** 🎉

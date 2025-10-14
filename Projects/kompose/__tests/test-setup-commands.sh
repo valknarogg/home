@@ -30,16 +30,14 @@ test_setup_no_subcommand() {
     exit_code=$?
     set -e
     
-    # Should show usage or error
-    # Check if command is recognized
+    # Command should be recognized
     assert_not_contains "$output" "Unknown command" \
         "Setup command is recognized"
     
-    # Should show available subcommands
-    if [ $exit_code -ne 0 ]; then
-        assert_contains "$output" "local\|prod\|status\|save-prod\|backup" \
-            "Setup shows available subcommands"
-    fi
+    # Setup defaults to showing status when no subcommand provided
+    # This is user-friendly behavior, so we accept either status output or help
+    assert_contains "$output" "local\|prod\|status\|mode\|Mode\|configuration\|Configuration" \
+        "Setup shows status or available subcommands"
 }
 
 # ============================================================================
