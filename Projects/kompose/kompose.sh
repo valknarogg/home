@@ -205,6 +205,12 @@ test_run_suite() {
     # Change to test directory and run
     cd "$test_dir"
     bash "./run-all-tests.sh" "$@"
+    local exit_code=$?
+    
+    # Return to original directory
+    cd "${SCRIPT_DIR}"
+    
+    return $exit_code
 }
 
 # ============================================================================
@@ -771,9 +777,8 @@ main() {
     
     # Handle test command
     if [ "$command" = "test" ]; then
-        shift
         test_run_suite "$@"
-        return 0
+        exit $?
     fi
     
     # Handle utility commands
