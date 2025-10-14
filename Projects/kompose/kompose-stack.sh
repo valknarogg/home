@@ -67,6 +67,26 @@ run_compose() {
     local stack=$1
     shift
     
+    # Check if required configuration files exist
+    if [ ! -f "${STACKS_ROOT}/.env" ]; then
+        log_error "Configuration file not found: .env"
+        echo ""
+        log_info "You need to set up your environment first. Choose one:"
+        echo ""
+        echo -e "  ${CYAN}Option 1: Run the init wizard (recommended)${NC}"
+        echo -e "    ./kompose.sh init"
+        echo ""
+        echo -e "  ${CYAN}Option 2: Copy local development template${NC}"
+        echo -e "    cp .env.local .env"
+        echo -e "    cp domain.env.local domain.env"
+        echo ""
+        echo -e "  ${CYAN}Option 3: Use setup command${NC}"
+        echo -e "    ./kompose.sh setup local    # For local development"
+        echo -e "    ./kompose.sh setup prod     # For production"
+        echo ""
+        return 1
+    fi
+    
     # Determine stack directory (check built-in first, then custom)
     local stack_dir="${STACKS_ROOT}/${stack}"
     if [ ! -d "$stack_dir" ] || [ ! -f "${stack_dir}/${COMPOSE_FILE}" ]; then
