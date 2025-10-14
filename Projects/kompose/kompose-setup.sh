@@ -482,6 +482,209 @@ ensure_all_compose_project_names() {
 }
 
 # ============================================================================
+# ENVIRONMENT FILE GENERATION
+# ============================================================================
+
+# Generate comprehensive environment configuration for all stacks
+generate_environment_files() {
+    log_info "Generating environment configuration files..."
+    echo -e ""
+    
+    # Generate .env.example files for all stacks
+    log_info "Creating .env.example files for each stack..."
+    if command -v handle_env_command &> /dev/null 2>&1; then
+        handle_env_command "generate" "all" "--force" 2>&1 | grep -E "(Generated|SUCCESS|Skipped)" || true
+    else
+        log_warning "Environment generation not available yet"
+    fi
+    
+    echo -e ""
+    log_info "Consolidating environment variables into root .env..."
+    
+    # Determine which .env file to update
+    local target_env=".env"
+    if [ ! -f "$target_env" ]; then
+        log_error "No .env file found. Please run setup first."
+        return 1
+    fi
+    
+    # Create backup of current .env
+    local backup_file="${target_env}.backup.$(date +%Y%m%d_%H%M%S)"
+    cp "$target_env" "$backup_file"
+    log_info "Created backup: $backup_file"
+    
+    # Add environment variables section header if not present
+    if ! grep -q "# ===== STACK ENVIRONMENT VARIABLES =====" "$target_env"; then
+        cat >> "$target_env" << 'EOF'
+
+# =============================================================================
+# STACK ENVIRONMENT VARIABLES
+# =============================================================================
+# Auto-generated environment variables for all stacks.
+# These are non-secret configuration values with sensible defaults.
+# To customize, edit the values below or create stack-specific .env files.
+# 
+# For secrets (passwords, tokens, keys), use secrets.env instead.
+# =============================================================================
+
+EOF
+    fi
+    
+    # Generate consolidated environment variables
+    generate_consolidated_env_vars >> "$target_env"
+    
+    log_success "Root .env file updated with all stack variables"
+    echo -e ""
+    log_info "Generated files:"
+    echo -e "  • Root .env file with all non-secret variables"
+    echo -e "  • Individual .env.example files in each stack directory"
+    echo -e ""
+    log_info "You can customize variables in:"
+    echo -e "  • Root .env - For global changes"
+    echo -e "  • <stack>/.env - For stack-specific overrides"
+    echo -e "  • secrets.env - For all sensitive credentials"
+}
+
+# Generate consolidated environment variables from all stack definitions
+generate_consolidated_env_vars() {
+    # Check if ENV_VARS is available
+    if [ -z "${ENV_VARS[*]}" ]; then
+        log_warning "Environment variable definitions not loaded"
+        return 1
+    fi
+    
+    # Generate variables by category
+    echo -e ""
+    echo -e "# -----------------------------------------------------------------------------"
+    echo -e "# GLOBAL CONFIGURATION"
+    echo -e "# -----------------------------------------------------------------------------"
+    generate_stack_vars_for_env "global"
+    
+    echo -e ""
+    echo -e "# -----------------------------------------------------------------------------"
+    echo -e "# CORE STACK - Database, Cache, Message Broker"
+    echo -e "# -----------------------------------------------------------------------------"
+    generate_stack_vars_for_env "core"
+    
+    echo -e ""
+    echo -e "# -----------------------------------------------------------------------------"
+    echo -e "# PROXY STACK - Traefik Reverse Proxy"
+    echo -e "# -----------------------------------------------------------------------------"
+    generate_stack_vars_for_env "proxy"
+    
+    echo -e ""
+    echo -e "# -----------------------------------------------------------------------------"
+    echo -e "# AUTH STACK - Keycloak SSO & OAuth2"
+    echo -e "# -----------------------------------------------------------------------------"
+    generate_stack_vars_for_env "auth"
+    
+    echo -e ""
+    echo -e "# -----------------------------------------------------------------------------"
+    echo -e "# CODE STACK - Gitea Git Repository"
+    echo -e "# -----------------------------------------------------------------------------"
+    generate_stack_vars_for_env "code"
+    
+    echo -e ""
+    echo -e "# -----------------------------------------------------------------------------"
+    echo -e "# KMPS STACK - Management Portal"
+    echo -e "# -----------------------------------------------------------------------------"
+    generate_stack_vars_for_env "kmps"
+    
+    echo -e ""
+    echo -e "# -----------------------------------------------------------------------------"
+    echo -e "# MESSAGING STACK - Gotify & Mailhog"
+    echo -e "# -----------------------------------------------------------------------------"
+    generate_stack_vars_for_env "messaging"
+    
+    echo -e ""
+    echo -e "# -----------------------------------------------------------------------------"
+    echo -e "# TRACK STACK - Umami Analytics"
+    echo -e "# -----------------------------------------------------------------------------"
+    generate_stack_vars_for_env "track"
+    
+    echo -e ""
+    echo -e "# -----------------------------------------------------------------------------"
+    echo -e "# VPN STACK - WireGuard"
+    echo -e "# -----------------------------------------------------------------------------"
+    generate_stack_vars_for_env "vpn"
+    
+    echo -e ""
+    echo -e "# -----------------------------------------------------------------------------"
+    echo -e "# CHAIN STACK - n8n & Semaphore Automation"
+    echo -e "# -----------------------------------------------------------------------------"
+    generate_stack_vars_for_env "chain"
+    
+    echo -e ""
+    echo -e "# -----------------------------------------------------------------------------"
+    echo -e "# HOME STACK - Home Assistant"
+    echo -e "# -----------------------------------------------------------------------------"
+    generate_stack_vars_for_env "home"
+    
+    echo -e ""
+    echo -e "# -----------------------------------------------------------------------------"
+    echo -e "# LINK STACK - Linkwarden Bookmarks"
+    echo -e "# -----------------------------------------------------------------------------"
+    generate_stack_vars_for_env "link"
+    
+    echo -e ""
+    echo -e "# -----------------------------------------------------------------------------"
+    echo -e "# VAULT STACK - Vaultwarden Password Manager"
+    echo -e "# -----------------------------------------------------------------------------"
+    generate_stack_vars_for_env "vault"
+    
+    echo -e ""
+    echo -e "# -----------------------------------------------------------------------------"
+    echo -e "# WATCH STACK - Monitoring & Observability"
+    echo -e "# -----------------------------------------------------------------------------"
+    generate_stack_vars_for_env "watch"
+    
+    echo -e ""
+    echo -e "# -----------------------------------------------------------------------------"
+    echo -e "# DOCS STACK - Documentation Site"
+    echo -e "# -----------------------------------------------------------------------------"
+    generate_stack_vars_for_env "_docs"
+}
+
+# Generate environment variables for a specific stack
+generate_stack_vars_for_env() {
+    local stack="$1"
+    
+    # Skip if no variables defined for this stack
+    if [ -z "${ENV_VARS[$stack]}" ]; then
+        echo -e "# No predefined variables for $stack stack"
+        return 0
+    fi
+    
+    # Parse and output each variable
+    while IFS= read -r line; do
+        [ -z "$line" ] && continue
+        
+        local parsed=$(parse_env_line "$line")
+        local var_name=$(echo "$parsed" | cut -d'|' -f1)
+        local default_value=$(echo "$parsed" | cut -d'|' -f2)
+        local description=$(echo "$parsed" | cut -d'|' -f3)
+        local required=$(echo "$parsed" | cut -d'|' -f4)
+        
+        # Add comment with description
+        echo -e "# $description"
+        
+        # Add required marker
+        if [ "$required" = "yes" ]; then
+            echo -e "# [REQUIRED]"
+        fi
+        
+        # Output variable with default value
+        if [ -n "$default_value" ]; then
+            echo -e "${var_name}=${default_value}"
+        else
+            echo -e "${var_name}="
+        fi
+        
+        echo -e ""
+    done <<< "${ENV_VARS[$stack]}"
+}
+
+# ============================================================================
 # PROJECT INITIALIZATION
 # ============================================================================
 
@@ -572,9 +775,15 @@ init_project() {
     log_info "────────────────────────────────────────────────────────────"
     ensure_all_compose_project_names
     
+    # Generate environment variable files
+    echo -e ""
+    log_info "Step 6: Generating environment configuration"
+    log_info "────────────────────────────────────────────────────────────"
+    generate_environment_files
+    
     # Create Docker network
     echo -e ""
-    log_info "Step 6: Setting up Docker network"
+    log_info "Step 7: Setting up Docker network"
     log_info "────────────────────────────────────────────────────────────"
     if ! docker network inspect kompose &>/dev/null; then
         docker network create kompose
@@ -585,7 +794,7 @@ init_project() {
     
     # Create necessary directories
     echo -e ""
-    log_info "Step 7: Creating project directories"
+    log_info "Step 8: Creating project directories"
     log_info "────────────────────────────────────────────────────────────"
     mkdir -p backups/database backups/config
     log_success "Project directories created"
