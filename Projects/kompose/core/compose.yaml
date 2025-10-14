@@ -100,16 +100,26 @@ services:
       redis:
         condition: service_healthy
     labels:
-      - 'traefik.enable=true'
-      - 'traefik.http.middlewares.${CORE_COMPOSE_PROJECT_NAME}-redis-api-redirect-web-secure.redirectscheme.scheme=https'
+      # Traefik enabled/disabled per service
+      - 'traefik.enable=${TRAEFIK_ENABLED_CORE_REDIS_API:-false}'
+      
+      # HTTP to HTTPS redirect (only for production when PROTOCOL=https)
+      - 'traefik.http.middlewares.${CORE_COMPOSE_PROJECT_NAME}-redis-api-redirect-web-secure.redirectscheme.scheme=${PROTOCOL}'
       - 'traefik.http.routers.${CORE_COMPOSE_PROJECT_NAME}-redis-api-web.middlewares=${CORE_COMPOSE_PROJECT_NAME}-redis-api-redirect-web-secure'
-      - 'traefik.http.routers.${CORE_COMPOSE_PROJECT_NAME}-redis-api-web.rule=Host(`${CORE_REDIS_API_TRAEFIK_HOST}`)'
+      - 'traefik.http.routers.${CORE_COMPOSE_PROJECT_NAME}-redis-api-web.rule=Host(`${SUBDOMAIN_CORE_REDIS_API}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}`)'
       - 'traefik.http.routers.${CORE_COMPOSE_PROJECT_NAME}-redis-api-web.entrypoints=web'
-      - 'traefik.http.routers.${CORE_COMPOSE_PROJECT_NAME}-redis-api-web-secure.rule=Host(`${CORE_REDIS_API_TRAEFIK_HOST}`)'
-      - 'traefik.http.routers.${CORE_COMPOSE_PROJECT_NAME}-redis-api-web-secure.tls.certresolver=resolver'
+      
+      # Secure configuration (HTTPS in production, HTTP in local)
+      - 'traefik.http.routers.${CORE_COMPOSE_PROJECT_NAME}-redis-api-web-secure.rule=Host(`${SUBDOMAIN_CORE_REDIS_API}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}`)'
+      - 'traefik.http.routers.${CORE_COMPOSE_PROJECT_NAME}-redis-api-web-secure.tls.certresolver=${PROTOCOL:+resolver}'
+      - 'traefik.http.routers.${CORE_COMPOSE_PROJECT_NAME}-redis-api-web-secure.tls=${PROTOCOL:+true}'
       - 'traefik.http.routers.${CORE_COMPOSE_PROJECT_NAME}-redis-api-web-secure.entrypoints=web-secure'
+      
+      # Middlewares
       - 'traefik.http.middlewares.${CORE_COMPOSE_PROJECT_NAME}-redis-api-web-secure-compress.compress=true'
       - 'traefik.http.routers.${CORE_COMPOSE_PROJECT_NAME}-redis-api-web-secure.middlewares=${CORE_COMPOSE_PROJECT_NAME}-redis-api-web-secure-compress'
+      
+      # Load balancer configuration
       - 'traefik.http.services.${CORE_COMPOSE_PROJECT_NAME}-redis-api-web-secure.loadbalancer.server.port=8081'
       - 'traefik.docker.network=${NETWORK_NAME:-kompose}'
 
