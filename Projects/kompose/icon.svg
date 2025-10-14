@@ -30,7 +30,6 @@
 
           <!-- Stylized K -->
           <g transform="translate(48, 48)">
-            <line x1="0" y1="0" x2="0" y2="96" stroke="url(#primaryGrad192)" stroke-width="15" stroke-linecap="round" filter="url(#glow192)"></line>
             <line x1="0" y1="48" x2="57.599999999999994" y2="0" stroke="url(#primaryGrad192)" stroke-width="15" stroke-linecap="round" filter="url(#glow192)"></line>
             <line x1="0" y1="48" x2="57.599999999999994" y2="96" stroke="url(#primaryGrad192)" stroke-width="15" stroke-linecap="round" filter="url(#glow192)"></line>
           </g>

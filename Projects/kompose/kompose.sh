@@ -37,7 +37,7 @@ declare -A STACKS=(
     ["core"]="Core services - MQTT, Redis, Postgres"
     ["auth"]="Authentication - Keycloak SSO, OAuth2 Proxy"
     ["kmps"]="Management Portal - User & SSO Administration"
-    ["home"]="Smart Home - Home Assistant, Matter, Zigbee, ESPHome"
+
     ["vpn"]="VPN - WireGuard remote access (wg-easy)"
 
 
@@ -361,7 +361,6 @@ fi)
 
 ${BLUE}EXAMPLES:${NC}
     ${GREEN}# Stack Management${NC}
-    kompose up home                    # Start home stack
     kompose up                          # Start all stacks
     kompose down frontend              # Stop frontend stack
     kompose logs chain -f              # Follow logs for chain stack

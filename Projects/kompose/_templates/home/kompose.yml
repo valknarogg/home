@@ -1,0 +1,402 @@
+# ============================================================================
+# Kompose Template Configuration - Home Stack
+# ============================================================================
+# This file defines all environment variables and secrets used by the stack
+# Used by kompose-generate.sh to create a complete, working stack
+# ============================================================================
+
+name: home
+description: Smart home automation stack with Home Assistant, Matter, Zigbee2MQTT, and ESPHome
+version: 1.0.0
+
+# ============================================================================
+# Environment Variables
+# ============================================================================
+environment:
+  # Project Configuration
+  - name: HOME_COMPOSE_PROJECT_NAME
+    default: home
+    description: Home stack project name
+    required: yes
+  
+  # Home Assistant Configuration
+  - name: HOME_HOMEASSISTANT_IMAGE
+    default: ghcr.io/home-assistant/home-assistant:stable
+    description: Home Assistant Docker image
+    required: no
+  
+  - name: HOME_HOMEASSISTANT_PORT
+    default: 8123
+    description: Home Assistant web UI port
+    required: no
+  
+  # Matter Server Configuration
+  - name: HOME_MATTER_SERVER_IMAGE
+    default: ghcr.io/home-assistant-libs/python-matter-server:stable
+    description: Matter server Docker image
+    required: no
+  
+  # Zigbee2MQTT Configuration
+  - name: HOME_ZIGBEE2MQTT_IMAGE
+    default: koenkk/zigbee2mqtt:latest
+    description: Zigbee2MQTT Docker image
+    required: no
+  
+  - name: HOME_ZIGBEE2MQTT_PORT
+    default: 8080
+    description: Zigbee2MQTT web UI port
+    required: no
+  
+  # ESPHome Configuration
+  - name: HOME_ESPHOME_IMAGE
+    default: ghcr.io/esphome/esphome:stable
+    description: ESPHome Docker image
+    required: no
+  
+  # Domain Configuration
+  - name: PROTOCOL
+    default: https
+    description: Protocol (http or https)
+    required: yes
+  
+  - name: SUBDOMAIN_HOME
+    default: home
+    description: Home Assistant subdomain
+    required: yes
+  
+  - name: SUBDOMAIN_ZIGBEE
+    default: zigbee
+    description: Zigbee2MQTT subdomain
+    required: yes
+  
+  - name: ROOT_DOMAIN
+    default: ""
+    description: Root domain for all services (e.g., example.com)
+    required: yes
+  
+  # Network Configuration
+  - name: NETWORK_NAME
+    default: kompose
+    description: Docker network name for inter-service communication
+    required: yes
+  
+  # Traefik Configuration
+  - name: TRAEFIK_ENABLED_HOME
+    default: false
+    description: Enable Traefik routing for Home Assistant
+    required: no
+  
+  - name: TRAEFIK_ENABLED_ZIGBEE
+    default: false
+    description: Enable Traefik routing for Zigbee2MQTT
+    required: no
+  
+  # System Configuration
+  - name: TIMEZONE
+    default: Europe/Amsterdam
+    description: System timezone for containers
+    required: no
+
+# ============================================================================
+# Secrets
+# ============================================================================
+secrets: []
+# Home stack does not require any secrets in the configuration
+# Home Assistant manages its own authentication internally
+
+# ============================================================================
+# Dependencies
+# ============================================================================
+dependencies:
+  # Required stacks that must be running
+  required:
+    - core  # For MQTT (Mosquitto)
+    - proxy # Traefik for routing
+  
+  # Optional stacks that enhance functionality
+  optional: []
+
+# ============================================================================
+# Ports
+# ============================================================================
+ports:
+  # Home Assistant
+  - container: 8123
+    host: 8123
+    description: Home Assistant web UI
+    exposed: true
+  
+  # Zigbee2MQTT
+  - container: 8080
+    host: 8080
+    description: Zigbee2MQTT web UI (profile: zigbee)
+    exposed: true
+
+# ============================================================================
+# Volumes
+# ============================================================================
+volumes:
+  - name: homeassistant_config
+    description: Home Assistant configuration and database
+    type: named
+  
+  - name: matter_data
+    description: Matter server data and configuration
+    type: named
+  
+  - name: zigbee2mqtt_data
+    description: Zigbee2MQTT configuration and database (profile: zigbee)
+    type: named
+  
+  - name: esphome_config
+    description: ESPHome device configurations (profile: esphome)
+    type: named
+
+# ============================================================================
+# Health Checks
+# ============================================================================
+healthchecks:
+  homeassistant:
+    test: 'curl -f http://localhost:8123/'
+    interval: 30s
+    timeout: 10s
+    retries: 3
+    start_period: 60s
+
+# ============================================================================
+# Notes & Documentation
+# ============================================================================
+notes: |
+  # Home Stack - Smart Home Automation
+  
+  This stack provides comprehensive smart home automation using Home Assistant
+  with support for Matter, Zigbee, Z-Wave, and ESPHome devices.
+  
+  ## Components
+  
+  ### Home Assistant
+  - Open-source home automation platform
+  - Supports 2000+ integrations
+  - Local control and privacy-focused
+  - Advanced automation engine
+  - Beautiful, customizable UI
+  
+  ### Matter Server
+  - Next-generation smart home standard
+  - Supports Matter-certified devices
+  - Local network communication
+  - No cloud dependencies
+  
+  ### Zigbee2MQTT (Optional)
+  - Zigbee device integration via MQTT
+  - Works with most Zigbee coordinators
+  - 3000+ supported devices
+  - Enable with docker compose profile: zigbee
+  
+  ### ESPHome (Optional)
+  - Custom firmware for ESP8266/ESP32
+  - YAML-based device configuration
+  - Native Home Assistant integration
+  - Enable with docker compose profile: esphome
+  
+  ## Setup Instructions
+  
+  1. **Generate the stack:**
+     ```bash
+     ./kompose-generate.sh home
+     ```
+  
+  2. **Start required dependencies:**
+     ```bash
+     docker compose -f core/compose.yaml up -d
+     docker compose -f proxy/compose.yaml up -d
+     ```
+  
+  3. **Start the home stack:**
+     ```bash
+     docker compose -f home/compose.yaml up -d
+     ```
+  
+  4. **Access Home Assistant:**
+     - URL: http://localhost:8123 or https://home.yourdomain.com
+     - Follow the onboarding wizard to create your first user
+  
+  5. **Configure MQTT integration (optional):**
+     - Home Assistant > Settings > Devices & Services > Add Integration
+     - Search for "MQTT"
+     - Broker: core_mqtt
+     - Port: 1883
+     - Username: (from core stack)
+     - Password: (from core stack)
+  
+  6. **Enable Zigbee2MQTT (optional):**
+     ```bash
+     # Edit your USB device mapping in compose.yaml
+     # Then start with zigbee profile
+     docker compose -f home/compose.yaml --profile zigbee up -d
+     ```
+     - Configure Zigbee adapter in zigbee2mqtt_data/configuration.yaml
+     - Access UI: http://localhost:8080 or https://zigbee.yourdomain.com
+  
+  7. **Enable ESPHome (optional):**
+     ```bash
+     docker compose -f home/compose.yaml --profile esphome up -d
+     ```
+     - Access UI: http://localhost:6052
+  
+  ## USB Device Configuration
+  
+  For Zigbee/Z-Wave dongles, uncomment and adjust device mappings:
+  
+  ```yaml
+  devices:
+    - /dev/ttyUSB0:/dev/ttyUSB0  # Zigbee coordinator
+    - /dev/ttyACM0:/dev/ttyACM0  # Z-Wave stick
+  ```
+  
+  Find your device:
+  ```bash
+  ls -la /dev/tty*
+  # or
+  dmesg | grep tty
+  ```
+  
+  ## Environment Variables
+  
+  Key configuration variables:
+  - `SUBDOMAIN_HOME`: Home Assistant subdomain (default: home)
+  - `SUBDOMAIN_ZIGBEE`: Zigbee2MQTT subdomain (default: zigbee)
+  - `HOME_HOMEASSISTANT_PORT`: Home Assistant port (default: 8123)
+  - `HOME_ZIGBEE2MQTT_PORT`: Zigbee2MQTT port (default: 8080)
+  
+  ## Network Configuration
+  
+  ### Host Network Mode (Matter Server)
+  The Matter server requires `network_mode: host` for:
+  - mDNS discovery
+  - Matter device commissioning
+  - Bluetooth LE communication
+  
+  ### ESPHome Host Network
+  ESPHome uses `network_mode: host` for:
+  - mDNS device discovery
+  - Easy device flashing
+  - API communication
+  
+  ## Integrations Setup
+  
+  ### Popular Integrations
+  - **MQTT**: Connect to core_mqtt (Mosquitto)
+  - **Matter**: Automatically connected via Matter server
+  - **Zigbee**: Via Zigbee2MQTT integration
+  - **ESPHome**: Automatic discovery
+  - **Google Home/Alexa**: Cloud integrations
+  - **Mobile App**: iOS and Android apps
+  
+  ## Troubleshooting
+  
+  ### Home Assistant won't start
+  - Check volume permissions
+  - Verify MQTT is running (if using MQTT integration)
+  - Check logs: `docker logs home_homeassistant`
+  
+  ### Matter devices won't pair
+  - Ensure matter-server is running
+  - Check network connectivity
+  - Verify Bluetooth is available (for BLE commissioning)
+  - Restart matter-server: `docker restart home_matter`
+  
+  ### Zigbee devices won't pair
+  - Check USB device mapping is correct
+  - Verify coordinator is recognized: `docker logs home_zigbee2mqtt`
+  - Ensure coordinator firmware is up to date
+  - Check for USB permission issues
+  
+  ### ESPHome devices not discovered
+  - Ensure devices are on the same network
+  - Check mDNS is working
+  - Manually add device by IP address
+  
+  ### USB device not accessible
+  - Add user to dialout group: `sudo usermod -aG dialout $USER`
+  - Check device permissions: `ls -la /dev/ttyUSB0`
+  - Restart Docker service after group changes
+  
+  ## Security Considerations
+  
+  - Home Assistant manages its own user authentication
+  - Enable MFA in Home Assistant settings
+  - Use strong passwords for user accounts
+  - Consider enabling Traefik for SSL/TLS
+  - Restrict network access to trusted IPs
+  - Keep Home Assistant and integrations updated
+  - Review and limit exposed services
+  
+  ## Backup and Restore
+  
+  ### Home Assistant Backups
+  Home Assistant includes built-in backup functionality:
+  - Settings > System > Backups
+  - Automatic scheduled backups
+  - Full system snapshots
+  - Addon-specific backups
+  
+  ### Manual Volume Backups
+  ```bash
+  # Backup Home Assistant config
+  docker run --rm -v home_homeassistant_config:/data -v $(pwd):/backup \
+    alpine tar czf /backup/homeassistant-backup.tar.gz /data
+  
+  # Backup Zigbee2MQTT data
+  docker run --rm -v home_zigbee2mqtt_data:/data -v $(pwd):/backup \
+    alpine tar czf /backup/zigbee2mqtt-backup.tar.gz /data
+  ```
+  
+  ## Performance Optimization
+  
+  - Use SSD storage for volumes
+  - Allocate sufficient resources (2GB+ RAM)
+  - Enable recorder purge in Home Assistant
+  - Use MariaDB/PostgreSQL for large installations
+  - Optimize automation triggers
+  - Disable unused integrations
+  
+  ## Monitoring
+  
+  Health endpoints:
+  - Home Assistant: http://localhost:8123/
+  
+  Logs:
+  ```bash
+  docker logs home_homeassistant
+  docker logs home_matter
+  docker logs home_zigbee2mqtt
+  docker logs home_esphome
+  ```
+  
+  ## Advanced Configuration
+  
+  ### Custom Components
+  Install via HACS (Home Assistant Community Store):
+  1. Install HACS integration
+  2. Browse and install custom components
+  3. Restart Home Assistant
+  
+  ### Themes
+  - Install themes via HACS or manual YAML
+  - Customize UI appearance
+  - Create dark/light mode variants
+  
+  ### Automations
+  - Visual automation editor
+  - YAML-based advanced automations
+  - Node-RED integration for complex flows
+  
+  ## Resources
+  
+  - Home Assistant Docs: https://www.home-assistant.io/docs/
+  - Community Forum: https://community.home-assistant.io/
+  - HACS: https://hacs.xyz/
+  - Matter Docs: https://buildwithmatter.com/
+  - Zigbee2MQTT Docs: https://www.zigbee2mqtt.io/
+  - ESPHome Docs: https://esphome.io/

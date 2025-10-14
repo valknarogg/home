@@ -307,7 +307,6 @@ get_ordered_stacks() {
             "core"        # Database, Redis, MQTT - foundational services
 
             "watch"       # Monitoring - should start early to capture metrics
-            "home"        # Smart home platform
             "kmps"        # Management portal
             "track"       # Analytics tracking
             "vault"       # Password manager
