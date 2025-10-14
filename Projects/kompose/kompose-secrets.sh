@@ -137,10 +137,11 @@ generate_htpasswd() {
         echo $(htpasswd -nb ${username} ${password})
     else
         # Fallback: use openssl for basic MD5 (not as secure but works)
-        log_warning "htpasswd not found, using openssl fallback"
+        # Redirect warning to stderr so it doesn't get captured in the output
+        log_warning "htpasswd not found, using openssl fallback" >&2
         local salt=$(openssl rand -base64 8 | tr -d "=")
         local hash=$(echo -n "${password}${salt}" | openssl md5 -binary | openssl base64)
-        echo "${username}:\$apr1\$${salt}\$${hash}"
+        echo "${username}:\$apr1\${salt}\${hash}"
     fi
 }
 
