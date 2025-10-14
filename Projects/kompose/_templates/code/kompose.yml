@@ -1,0 +1,515 @@
+# ============================================================================
+# Kompose Template Configuration - Code Stack
+# ============================================================================
+# This file defines all environment variables and secrets used by the stack
+# Used by kompose-generate.sh to create a complete, working stack
+# ============================================================================
+
+name: code
+description: Git Repository & CI/CD - Gitea with Actions runner
+version: 1.0.0
+
+# ============================================================================
+# Environment Variables
+# ============================================================================
+environment:
+  # Project Configuration
+  - name: CODE_COMPOSE_PROJECT_NAME
+    default: code
+    description: Code stack project name
+    required: yes
+  
+  - name: CODE_GITEA_IMAGE
+    default: gitea/gitea:latest
+    description: Gitea Docker image
+    required: no
+  
+  - name: CODE_GITEA_RUNNER_IMAGE
+    default: gitea/act_runner:latest
+    description: Gitea Actions runner Docker image
+    required: no
+  
+  # User Configuration
+  - name: CODE_GITEA_UID
+    default: 1000
+    description: Gitea user ID
+    required: no
+  
+  - name: CODE_GITEA_GID
+    default: 1000
+    description: Gitea group ID
+    required: no
+  
+  # Database Configuration
+  - name: CODE_GITEA_DB_NAME
+    default: gitea
+    description: Gitea database name
+    required: yes
+  
+  - name: DB_USER
+    default: kompose
+    description: PostgreSQL database user
+    required: yes
+  
+  - name: CORE_DB_HOST
+    default: core_postgres
+    description: PostgreSQL host (container name)
+    required: yes
+  
+  - name: CORE_DB_PORT
+    default: 5432
+    description: PostgreSQL port
+    required: yes
+  
+  # Redis Configuration
+  - name: CORE_REDIS_HOST
+    default: core_redis
+    description: Redis host (container name)
+    required: yes
+  
+  - name: CORE_REDIS_PORT
+    default: 6379
+    description: Redis port
+    required: yes
+  
+  # Domain Configuration
+  - name: PROTOCOL
+    default: https
+    description: Protocol (http or https)
+    required: yes
+  
+  - name: SUBDOMAIN_CODE
+    default: git
+    description: Gitea subdomain
+    required: yes
+  
+  - name: ROOT_DOMAIN
+    default: ""
+    description: Root domain for all services (e.g., example.com)
+    required: yes
+  
+  - name: GITEA_SSH_DOMAIN
+    default: "${SUBDOMAIN_CODE}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}"
+    description: Gitea SSH domain (override if needed)
+    required: no
+  
+  - name: GITEA_ROOT_URL
+    default: "${PROTOCOL}://${SUBDOMAIN_CODE}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}/"
+    description: Gitea root URL (override if needed)
+    required: no
+  
+  - name: GITEA_INSTANCE_URL
+    default: "${PROTOCOL}://${SUBDOMAIN_CODE}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}"
+    description: Gitea instance URL for Actions runner
+    required: no
+  
+  # Network Configuration
+  - name: NETWORK_NAME
+    default: kompose
+    description: Docker network name for inter-service communication
+    required: yes
+  
+  # Traefik Configuration
+  - name: TRAEFIK_ENABLED_CODE
+    default: false
+    description: Enable Traefik routing for Gitea
+    required: no
+  
+  # Port Configuration
+  - name: CODE_GITEA_PORT_SSH
+    default: 2222
+    description: Gitea SSH port for git operations
+    required: yes
+  
+  - name: CODE_GITEA_PORT_HTTP
+    default: 3001
+    description: Gitea HTTP port (internal)
+    required: no
+  
+  # Email Configuration (Mailhog from messaging stack)
+  - name: EMAIL_SMTP_HOST
+    default: messaging_mailhog
+    description: SMTP host for email notifications
+    required: no
+  
+  - name: EMAIL_SMTP_PORT
+    default: 1025
+    description: SMTP port
+    required: no
+  
+  - name: EMAIL_FROM
+    default: gitea@localhost
+    description: From address for emails
+    required: no
+  
+  - name: EMAIL_SMTP_USER
+    default: ""
+    description: SMTP username (optional)
+    required: no
+  
+  - name: EMAIL_SMTP_PASSWORD
+    default: ""
+    description: SMTP password (optional)
+    required: no
+  
+  - name: EMAIL_SMTP_PROTOCOL
+    default: smtp
+    description: SMTP protocol (smtp or smtps)
+    required: no
+  
+  # Service Configuration
+  - name: CODE_GITEA_DISABLE_REGISTRATION
+    default: false
+    description: Disable user registration
+    required: no
+  
+  - name: CODE_GITEA_REQUIRE_SIGNIN
+    default: false
+    description: Require sign-in to view content
+    required: no
+  
+  - name: CODE_GITEA_EMAIL_CONFIRM
+    default: false
+    description: Require email confirmation for registration
+    required: no
+  
+  # Webhook Configuration
+  - name: CODE_GITEA_WEBHOOK_ALLOWED_HOSTS
+    default: "*"
+    description: Allowed hosts for webhooks
+    required: no
+  
+  - name: CODE_GITEA_WEBHOOK_SKIP_TLS
+    default: false
+    description: Skip TLS verification for webhooks
+    required: no
+  
+  # Log Configuration
+  - name: CODE_GITEA_LOG_LEVEL
+    default: Info
+    description: Gitea log level (Trace, Debug, Info, Warn, Error)
+    required: no
+  
+  # Actions Runner Configuration
+  - name: CODE_GITEA_RUNNER_NAME
+    default: kompose-runner-1
+    description: Gitea Actions runner name
+    required: no
+  
+  - name: CODE_GITEA_RUNNER_LABELS
+    default: ubuntu-latest:docker://node:16-bullseye
+    description: Runner labels for Actions
+    required: no
+  
+  # System Configuration
+  - name: TIMEZONE
+    default: Europe/Amsterdam
+    description: System timezone for containers
+    required: no
+
+# ============================================================================
+# Secrets
+# ============================================================================
+secrets:
+  # Shared Database Secrets
+  - name: DB_PASSWORD
+    description: PostgreSQL password for database connections
+    required: yes
+    type: password
+    length: 32
+    stacks:
+      - core
+      - auth
+      - chain
+      - code
+      - kmps
+      - link
+      - track
+      - watch
+  
+  - name: REDIS_PASSWORD
+    description: Redis password for cache and session storage
+    required: yes
+    type: password
+    length: 32
+    stacks:
+      - core
+      - code
+      - auth
+  
+  # Code Stack Secrets
+  - name: CODE_GITEA_SECRET_KEY
+    description: Gitea secret key for security features
+    required: yes
+    type: password
+    length: 64
+    stacks:
+      - code
+  
+  - name: CODE_GITEA_INTERNAL_TOKEN
+    description: Gitea internal token for authentication
+    required: yes
+    type: password
+    length: 64
+    stacks:
+      - code
+  
+  - name: CODE_GITEA_OAUTH2_JWT_SECRET
+    description: Gitea OAuth2 JWT secret for token signing
+    required: yes
+    type: password
+    length: 32
+    stacks:
+      - code
+  
+  - name: CODE_GITEA_METRICS_TOKEN
+    description: Gitea metrics token for monitoring access
+    required: yes
+    type: password
+    length: 32
+    stacks:
+      - code
+  
+  - name: CODE_GITEA_RUNNER_TOKEN
+    description: Gitea Actions runner registration token (generate in Gitea UI)
+    required: yes
+    type: password
+    length: 32
+    stacks:
+      - code
+    notes: Generate this in Gitea UI under Site Administration > Actions > Runners
+
+# ============================================================================
+# Dependencies
+# ============================================================================
+dependencies:
+  # Required stacks that must be running
+  required:
+    - core  # PostgreSQL and Redis
+    - proxy # Traefik for routing
+  
+  # Optional stacks that enhance functionality
+  optional:
+    - messaging # Email notifications via Mailhog
+
+# ============================================================================
+# Ports
+# ============================================================================
+ports:
+  # Gitea SSH (exposed for git operations)
+  - container: 2222
+    host: 2222
+    description: Gitea SSH port for git operations
+    exposed: true
+  
+  # Gitea HTTP (internal only, accessed via Traefik)
+  - container: 3000
+    host: 3001
+    description: Gitea HTTP port (internal)
+    exposed: false
+
+# ============================================================================
+# Volumes
+# ============================================================================
+volumes:
+  - name: gitea_data
+    description: Gitea application data (repositories, database, etc.)
+    backup: true
+  
+  - name: gitea_config
+    description: Gitea configuration files
+    backup: true
+  
+  - name: gitea_runner_data
+    description: Gitea Actions runner data
+    backup: false
+
+# ============================================================================
+# Health Checks
+# ============================================================================
+healthchecks:
+  gitea:
+    test: 'curl -f http://localhost:3000/api/healthz'
+    interval: 30s
+    timeout: 10s
+    retries: 3
+    start_period: 60s
+
+# ============================================================================
+# Notes & Documentation
+# ============================================================================
+notes: |
+  # Code Stack - Git Repository & CI/CD
+  
+  This stack provides self-hosted Git repository management and CI/CD 
+  capabilities using Gitea with integrated Actions runners.
+  
+  ## Components
+  
+  ### Gitea
+  - Self-hosted Git service with GitHub-like interface
+  - Built-in Actions for CI/CD workflows
+  - OAuth2 provider for SSO integration
+  - Webhook support for external integrations
+  - Repository mirroring and federation
+  
+  ### Gitea Actions Runner
+  - Docker-based CI/CD runner
+  - Compatible with GitHub Actions syntax
+  - Supports custom Docker images
+  - Parallel job execution
+  
+  ## Setup Instructions
+  
+  1. **Generate the stack:**
+     ```bash
+     ./kompose-generate.sh code
+     ```
+  
+  2. **Start required dependencies:**
+     ```bash
+     docker compose -f core/compose.yaml up -d
+     docker compose -f proxy/compose.yaml up -d
+     ```
+  
+  3. **Start the code stack:**
+     ```bash
+     docker compose -f code/compose.yaml up -d
+     ```
+  
+  4. **Access Gitea:**
+     - URL: https://git.yourdomain.com
+     - Complete initial setup wizard
+     - Create admin account
+  
+  5. **Configure Actions Runner:**
+     - Login to Gitea as admin
+     - Navigate to Site Administration > Actions > Runners
+     - Click "Create new Runner"
+     - Copy the registration token
+     - Set CODE_GITEA_RUNNER_TOKEN in secrets.env
+     - Restart the stack to register runner
+  
+  6. **Setup SSH for Git operations:**
+     - SSH is available on port 2222 (customizable)
+     - Add your SSH key in Gitea user settings
+     - Clone repositories via SSH: git@git.yourdomain.com:user/repo.git
+  
+  ## Environment Variables
+  
+  Key configuration variables:
+  - `SUBDOMAIN_CODE`: Gitea subdomain (default: git)
+  - `CODE_GITEA_PORT_SSH`: SSH port for git operations (default: 2222)
+  - `CODE_GITEA_DISABLE_REGISTRATION`: Disable public registration
+  - `CODE_GITEA_REQUIRE_SIGNIN`: Require login to view content
+  
+  ## Secrets
+  
+  Required secrets:
+  - `CODE_GITEA_SECRET_KEY`: Security encryption key
+  - `CODE_GITEA_INTERNAL_TOKEN`: Internal authentication token
+  - `CODE_GITEA_OAUTH2_JWT_SECRET`: OAuth2 JWT signing secret
+  - `CODE_GITEA_METRICS_TOKEN`: Metrics access token
+  - `CODE_GITEA_RUNNER_TOKEN`: Actions runner registration token
+  - `DB_PASSWORD`: Shared database password
+  - `REDIS_PASSWORD`: Redis cache password
+  
+  ## Integration Examples
+  
+  ### CI/CD with Gitea Actions
+  Create `.gitea/workflows/ci.yaml` in your repository:
+  ```yaml
+  name: CI
+  on: [push, pull_request]
+  jobs:
+    test:
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v3
+        - name: Run tests
+          run: npm test
+  ```
+  
+  ### Webhook Integration with n8n
+  1. Create webhook in n8n
+  2. Add webhook URL in Gitea repository settings
+  3. Select events to trigger (push, pull request, etc.)
+  
+  ### OAuth2 Authentication
+  Gitea can act as OAuth2 provider for other services:
+  1. Settings > Applications > OAuth2 Applications
+  2. Create new application
+  3. Use client credentials in other services
+  
+  ## Troubleshooting
+  
+  ### Gitea won't start
+  - Check database connection (core stack must be running)
+  - Verify DB_PASSWORD is set correctly
+  - Check logs: `docker logs code_gitea`
+  
+  ### SSH not working
+  - Verify port 2222 is not in use
+  - Check firewall rules allow port 2222
+  - Ensure SSH key is added in Gitea user settings
+  - Test connection: `ssh -T -p 2222 git@git.yourdomain.com`
+  
+  ### Actions runner not registering
+  - Verify CODE_GITEA_RUNNER_TOKEN is set correctly
+  - Check runner token hasn't expired
+  - Ensure Gitea is accessible from runner container
+  - Check logs: `docker logs code_gitea_runner`
+  
+  ### Webhooks failing
+  - Verify webhook URL is accessible from Gitea
+  - Check CODE_GITEA_WEBHOOK_ALLOWED_HOSTS setting
+  - For self-signed certs, set CODE_GITEA_WEBHOOK_SKIP_TLS=true
+  - Test webhook delivery in repository settings
+  
+  ## Security Considerations
+  
+  - Always use HTTPS in production (set PROTOCOL=https)
+  - Change default SSH port if exposed to internet
+  - Enable CODE_GITEA_DISABLE_REGISTRATION in production
+  - Enable CODE_GITEA_REQUIRE_SIGNIN for private repositories
+  - Keep CODE_GITEA_SECRET_KEY and other secrets secure
+  - Regularly update Gitea to latest version
+  - Enable 2FA for admin accounts
+  - Review and limit webhook allowed hosts
+  
+  ## Backup & Recovery
+  
+  Important data locations:
+  - Repositories: gitea_data volume (/data/git/repositories)
+  - Database: PostgreSQL in core stack
+  - Configuration: gitea_config volume
+  
+  Backup commands:
+  ```bash
+  # Backup repositories and data
+  docker run --rm -v code_gitea_data:/data -v $(pwd):/backup \
+    alpine tar czf /backup/gitea-data.tar.gz /data
+  
+  # Backup database
+  ./kompose.sh db backup -d gitea
+  ```
+  
+  ## Monitoring
+  
+  Health endpoints:
+  - Gitea: http://localhost:3000/api/healthz
+  - Metrics: http://localhost:3000/metrics (requires token)
+  
+  Metrics:
+  - Gitea exposes Prometheus metrics at /metrics
+  - Configure CODE_GITEA_METRICS_TOKEN for access
+  - Integrate with watch stack for monitoring
+  
+  ## Performance Tuning
+  
+  For high-traffic installations:
+  - Increase Redis cache size
+  - Enable Git LFS for large files
+  - Configure repository indexing
+  - Use object storage for repositories
+  - Scale Actions runners horizontally

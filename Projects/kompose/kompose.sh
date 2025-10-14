@@ -40,7 +40,7 @@ declare -A STACKS=(
     ["home"]="Smart Home - Home Assistant, Matter, Zigbee, ESPHome"
     ["vpn"]="VPN - WireGuard remote access (wg-easy)"
 
-    ["code"]="Git Repository & CI/CD - Gitea with Actions runner"
+
     ["proxy"]="Reverse Proxy - Traefik with SSL"
     ["link"]="Link Management - Linkwarden bookmark manager"
     ["track"]="Activity Tracking - Umami analytics"
