@@ -24,7 +24,7 @@ services:
       
       # Authentication
       NEXTAUTH_SECRET: ${LINK_NEXTAUTH_SECRET}
-      NEXTAUTH_URL: https://${TRAEFIK_HOST_LINK}
+      NEXTAUTH_URL: ${PROTOCOL}://${SUBDOMAIN_LINK}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}
       
       # Redis Cache Integration
       REDIS_URL: redis://${CORE_REDIS_HOST}:${CORE_REDIS_PORT}
@@ -62,20 +62,23 @@ services:
       - kompose_network
       
     labels:
-      # Traefik Configuration
-      - 'traefik.enable=true'
+      # Traefik enabled/disabled per service
+      - 'traefik.enable=${TRAEFIK_ENABLED_LINK:-false}'
       
-      # HTTP to HTTPS redirect
-      - 'traefik.http.middlewares.${LINK_COMPOSE_PROJECT_NAME}-redirect-web-secure.redirectscheme.scheme=https'
+      # HTTP to HTTPS redirect (only for production when PROTOCOL=https)
+      - 'traefik.http.middlewares.${LINK_COMPOSE_PROJECT_NAME}-redirect-web-secure.redirectscheme.scheme=${PROTOCOL}'
       - 'traefik.http.routers.${LINK_COMPOSE_PROJECT_NAME}-web.middlewares=${LINK_COMPOSE_PROJECT_NAME}-redirect-web-secure'
-      - 'traefik.http.routers.${LINK_COMPOSE_PROJECT_NAME}-web.rule=Host(`${TRAEFIK_HOST_LINK}`)'
+      - 'traefik.http.routers.${LINK_COMPOSE_PROJECT_NAME}-web.rule=Host(`${SUBDOMAIN_LINK}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}`)'
       - 'traefik.http.routers.${LINK_COMPOSE_PROJECT_NAME}-web.entrypoints=web'
       
-      # HTTPS with SSO, Security Headers, and Compression
-      - 'traefik.http.routers.${LINK_COMPOSE_PROJECT_NAME}-web-secure.rule=Host(`${TRAEFIK_HOST_LINK}`)'
-      - 'traefik.http.routers.${LINK_COMPOSE_PROJECT_NAME}-web-secure.tls.certresolver=resolver'
+      # Secure configuration (HTTPS in production, HTTP in local)
+      - 'traefik.http.routers.${LINK_COMPOSE_PROJECT_NAME}-web-secure.rule=Host(`${SUBDOMAIN_LINK}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}`)'
+      - 'traefik.http.routers.${LINK_COMPOSE_PROJECT_NAME}-web-secure.tls.certresolver=${PROTOCOL:+resolver}'
+      - 'traefik.http.routers.${LINK_COMPOSE_PROJECT_NAME}-web-secure.tls=${PROTOCOL:+true}'
       - 'traefik.http.routers.${LINK_COMPOSE_PROJECT_NAME}-web-secure.entrypoints=web-secure'
       - 'traefik.http.routers.${LINK_COMPOSE_PROJECT_NAME}-web-secure.middlewares=sso-secure'
+      
+      # Load balancer configuration
       - 'traefik.http.services.${LINK_COMPOSE_PROJECT_NAME}-web-secure.loadbalancer.server.port=${LINK_APP_PORT}'
       - 'traefik.docker.network=${NETWORK_NAME}'
       

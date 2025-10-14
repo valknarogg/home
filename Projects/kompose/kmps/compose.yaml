@@ -39,7 +39,7 @@ services:
       NODE_ENV: ${NODE_ENV:-production}
       
       # Keycloak Admin API Configuration
-      KEYCLOAK_URL: https://${TRAEFIK_HOST_AUTH}
+      KEYCLOAK_URL: ${PROTOCOL}://${SUBDOMAIN_AUTH}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}
       KEYCLOAK_REALM: ${KMPS_REALM:-kompose}
       KEYCLOAK_CLIENT_ID: ${KMPS_CLIENT_ID:-kmps-admin}
       KEYCLOAK_CLIENT_SECRET: ${KMPS_CLIENT_SECRET}
@@ -52,11 +52,11 @@ services:
       
       # App Configuration
       NEXT_PUBLIC_APP_NAME: "Kompose Management Portal"
-      NEXT_PUBLIC_SSO_URL: https://${TRAEFIK_HOST_OAUTH2}
-      NEXT_PUBLIC_AUTH_URL: https://${TRAEFIK_HOST_AUTH}
+      NEXT_PUBLIC_SSO_URL: ${PROTOCOL}://${SUBDOMAIN_OAUTH2}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}
+      NEXT_PUBLIC_AUTH_URL: ${PROTOCOL}://${SUBDOMAIN_AUTH}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}
       
       # Session & Security
-      NEXTAUTH_URL: https://${TRAEFIK_HOST_MANAGE}
+      NEXTAUTH_URL: ${PROTOCOL}://${SUBDOMAIN_MANAGE}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}
       NEXTAUTH_SECRET: ${KMPS_NEXTAUTH_SECRET}
       
       # App Port
@@ -79,19 +79,23 @@ services:
     networks:
       - kompose_network
     labels:
-      - 'traefik.enable=true'
+      # Traefik enabled/disabled per service
+      - 'traefik.enable=${TRAEFIK_ENABLED_MANAGE:-false}'
       
-      # HTTP to HTTPS redirect
-      - 'traefik.http.middlewares.${KMPS_COMPOSE_PROJECT_NAME}-redirect-web-secure.redirectscheme.scheme=https'
+      # HTTP to HTTPS redirect (only for production when PROTOCOL=https)
+      - 'traefik.http.middlewares.${KMPS_COMPOSE_PROJECT_NAME}-redirect-web-secure.redirectscheme.scheme=${PROTOCOL}'
       - 'traefik.http.routers.${KMPS_COMPOSE_PROJECT_NAME}-web.middlewares=${KMPS_COMPOSE_PROJECT_NAME}-redirect-web-secure'
-      - 'traefik.http.routers.${KMPS_COMPOSE_PROJECT_NAME}-web.rule=Host(`${TRAEFIK_HOST_MANAGE}`)'
+      - 'traefik.http.routers.${KMPS_COMPOSE_PROJECT_NAME}-web.rule=Host(`${SUBDOMAIN_MANAGE}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}`)'
       - 'traefik.http.routers.${KMPS_COMPOSE_PROJECT_NAME}-web.entrypoints=web'
       
-      # HTTPS configuration with SSO middleware
-      - 'traefik.http.routers.${KMPS_COMPOSE_PROJECT_NAME}-web-secure.rule=Host(`${TRAEFIK_HOST_MANAGE}`)'
-      - 'traefik.http.routers.${KMPS_COMPOSE_PROJECT_NAME}-web-secure.tls.certresolver=resolver'
+      # Secure configuration with SSO middleware (HTTPS in production, HTTP in local)
+      - 'traefik.http.routers.${KMPS_COMPOSE_PROJECT_NAME}-web-secure.rule=Host(`${SUBDOMAIN_MANAGE}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}`)'
+      - 'traefik.http.routers.${KMPS_COMPOSE_PROJECT_NAME}-web-secure.tls.certresolver=${PROTOCOL:+resolver}'
+      - 'traefik.http.routers.${KMPS_COMPOSE_PROJECT_NAME}-web-secure.tls=${PROTOCOL:+true}'
       - 'traefik.http.routers.${KMPS_COMPOSE_PROJECT_NAME}-web-secure.entrypoints=web-secure'
       - 'traefik.http.routers.${KMPS_COMPOSE_PROJECT_NAME}-web-secure.middlewares=sso-secure'
+      
+      # Load balancer configuration
       - 'traefik.http.services.${KMPS_COMPOSE_PROJECT_NAME}-web-secure.loadbalancer.server.port=${KMPS_APP_PORT:-3100}'
       - 'traefik.docker.network=${NETWORK_NAME}'
 

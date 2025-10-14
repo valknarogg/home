@@ -41,16 +41,26 @@ services:
         ipv6_address: fdcc:ad94:bacf:61a3::2a
       kompose_network:
     labels:
-      - 'traefik.enable=true'
-      - 'traefik.http.middlewares.${VPN_COMPOSE_PROJECT_NAME}-redirect-web-secure.redirectscheme.scheme=https'
+      # Traefik enabled/disabled per service
+      - 'traefik.enable=${TRAEFIK_ENABLED_VPN:-false}'
+      
+      # HTTP to HTTPS redirect (only for production when PROTOCOL=https)
+      - 'traefik.http.middlewares.${VPN_COMPOSE_PROJECT_NAME}-redirect-web-secure.redirectscheme.scheme=${PROTOCOL}'
       - 'traefik.http.routers.${VPN_COMPOSE_PROJECT_NAME}-web.middlewares=${VPN_COMPOSE_PROJECT_NAME}-redirect-web-secure'
-      - 'traefik.http.routers.${VPN_COMPOSE_PROJECT_NAME}-web.rule=Host(`${TRAEFIK_HOST_VPN}`)'
+      - 'traefik.http.routers.${VPN_COMPOSE_PROJECT_NAME}-web.rule=Host(`${SUBDOMAIN_VPN}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}`)'
       - 'traefik.http.routers.${VPN_COMPOSE_PROJECT_NAME}-web.entrypoints=web'
-      - 'traefik.http.routers.${VPN_COMPOSE_PROJECT_NAME}-web-secure.rule=Host(`${TRAEFIK_HOST_VPN}`)'
-      - 'traefik.http.routers.${VPN_COMPOSE_PROJECT_NAME}-web-secure.tls.certresolver=resolver'
+      
+      # Secure configuration (HTTPS in production, HTTP in local)
+      - 'traefik.http.routers.${VPN_COMPOSE_PROJECT_NAME}-web-secure.rule=Host(`${SUBDOMAIN_VPN}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}`)'
+      - 'traefik.http.routers.${VPN_COMPOSE_PROJECT_NAME}-web-secure.tls.certresolver=${PROTOCOL:+resolver}'
+      - 'traefik.http.routers.${VPN_COMPOSE_PROJECT_NAME}-web-secure.tls=${PROTOCOL:+true}'
       - 'traefik.http.routers.${VPN_COMPOSE_PROJECT_NAME}-web-secure.entrypoints=web-secure'
+      
+      # Compression middleware
       - 'traefik.http.middlewares.${VPN_COMPOSE_PROJECT_NAME}-web-secure-compress.compress=true'
       - 'traefik.http.routers.${VPN_COMPOSE_PROJECT_NAME}-web-secure.middlewares=${VPN_COMPOSE_PROJECT_NAME}-web-secure-compress'
+      
+      # Load balancer configuration
       - 'traefik.http.services.${VPN_COMPOSE_PROJECT_NAME}-web-secure.loadbalancer.server.port=51821'
       - 'traefik.docker.network=kompose_network'
 

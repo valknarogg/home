@@ -58,24 +58,26 @@ services:
       start_period: 40s
       
     labels:
-      # Traefik Configuration
-      - 'traefik.enable=true'
+      # Traefik enabled/disabled per service
+      - 'traefik.enable=${TRAEFIK_ENABLED_TRACK:-false}'
       
-      # HTTP to HTTPS redirect
-      - 'traefik.http.middlewares.${TRACK_COMPOSE_PROJECT_NAME}-redirect-web-secure.redirectscheme.scheme=https'
+      # HTTP to HTTPS redirect (only for production when PROTOCOL=https)
+      - 'traefik.http.middlewares.${TRACK_COMPOSE_PROJECT_NAME}-redirect-web-secure.redirectscheme.scheme=${PROTOCOL}'
       - 'traefik.http.routers.${TRACK_COMPOSE_PROJECT_NAME}-web.middlewares=${TRACK_COMPOSE_PROJECT_NAME}-redirect-web-secure'
-      - 'traefik.http.routers.${TRACK_COMPOSE_PROJECT_NAME}-web.rule=Host(`${TRAEFIK_HOST_TRACK}`)'
+      - 'traefik.http.routers.${TRACK_COMPOSE_PROJECT_NAME}-web.rule=Host(`${SUBDOMAIN_TRACK}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}`)'
       - 'traefik.http.routers.${TRACK_COMPOSE_PROJECT_NAME}-web.entrypoints=web'
       
-      # HTTPS with SSO for admin interface
-      - 'traefik.http.routers.${TRACK_COMPOSE_PROJECT_NAME}-web-secure.rule=Host(`${TRAEFIK_HOST_TRACK}`)'
-      - 'traefik.http.routers.${TRACK_COMPOSE_PROJECT_NAME}-web-secure.tls.certresolver=resolver'
+      # Secure configuration (HTTPS in production, HTTP in local)
+      - 'traefik.http.routers.${TRACK_COMPOSE_PROJECT_NAME}-web-secure.rule=Host(`${SUBDOMAIN_TRACK}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}`)'
+      - 'traefik.http.routers.${TRACK_COMPOSE_PROJECT_NAME}-web-secure.tls.certresolver=${PROTOCOL:+resolver}'
+      - 'traefik.http.routers.${TRACK_COMPOSE_PROJECT_NAME}-web-secure.tls=${PROTOCOL:+true}'
       - 'traefik.http.routers.${TRACK_COMPOSE_PROJECT_NAME}-web-secure.entrypoints=web-secure'
       
       # Dual middleware: SSO for admin, public for tracking endpoint
       - 'traefik.http.routers.${TRACK_COMPOSE_PROJECT_NAME}-web-secure.middlewares=umami-auth-selector'
       - 'traefik.http.middlewares.umami-auth-selector.chain.middlewares=sso-secure'
       
+      # Load balancer configuration
       - 'traefik.http.services.${TRACK_COMPOSE_PROJECT_NAME}-web-secure.loadbalancer.server.port=3000'
       - 'traefik.docker.network=${NETWORK_NAME:-kompose}'
       

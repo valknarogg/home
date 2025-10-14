@@ -22,16 +22,26 @@ services:
     networks:
       - kompose_network
     labels:
-      - 'traefik.enable=true'
-      - 'traefik.http.middlewares.${MESSAGING_COMPOSE_PROJECT_NAME}-gotify-redirect-web-secure.redirectscheme.scheme=https'
+      # Traefik enabled/disabled per service
+      - 'traefik.enable=${TRAEFIK_ENABLED_CHAT:-false}'
+      
+      # HTTP to HTTPS redirect (only for production when PROTOCOL=https)
+      - 'traefik.http.middlewares.${MESSAGING_COMPOSE_PROJECT_NAME}-gotify-redirect-web-secure.redirectscheme.scheme=${PROTOCOL}'
       - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-gotify-web.middlewares=${MESSAGING_COMPOSE_PROJECT_NAME}-gotify-redirect-web-secure'
-      - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-gotify-web.rule=Host(`${TRAEFIK_HOST_CHAT}`)'
+      - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-gotify-web.rule=Host(`${SUBDOMAIN_CHAT}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}`)'
       - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-gotify-web.entrypoints=web'
-      - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-gotify-web-secure.rule=Host(`${TRAEFIK_HOST_CHAT}`)'
-      - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-gotify-web-secure.tls.certresolver=resolver'
+      
+      # Secure configuration (HTTPS in production, HTTP in local)
+      - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-gotify-web-secure.rule=Host(`${SUBDOMAIN_CHAT}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}`)'
+      - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-gotify-web-secure.tls.certresolver=${PROTOCOL:+resolver}'
+      - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-gotify-web-secure.tls=${PROTOCOL:+true}'
       - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-gotify-web-secure.entrypoints=web-secure'
+      
+      # Compression middleware
       - 'traefik.http.middlewares.${MESSAGING_COMPOSE_PROJECT_NAME}-gotify-web-secure-compress.compress=true'
       - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-gotify-web-secure.middlewares=${MESSAGING_COMPOSE_PROJECT_NAME}-gotify-web-secure-compress'
+      
+      # Load balancer configuration
       - 'traefik.http.services.${MESSAGING_COMPOSE_PROJECT_NAME}-gotify-web-secure.loadbalancer.server.port=80'
       - 'traefik.docker.network=${NETWORK_NAME:-kompose}'
 
@@ -56,16 +66,26 @@ services:
     networks:
       - kompose_network
     labels:
-      - 'traefik.enable=true'
-      - 'traefik.http.middlewares.${MESSAGING_COMPOSE_PROJECT_NAME}-mailhog-redirect-web-secure.redirectscheme.scheme=https'
+      # Traefik enabled/disabled per service
+      - 'traefik.enable=${TRAEFIK_ENABLED_MAIL:-false}'
+      
+      # HTTP to HTTPS redirect (only for production when PROTOCOL=https)
+      - 'traefik.http.middlewares.${MESSAGING_COMPOSE_PROJECT_NAME}-mailhog-redirect-web-secure.redirectscheme.scheme=${PROTOCOL}'
       - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-mailhog-web.middlewares=${MESSAGING_COMPOSE_PROJECT_NAME}-mailhog-redirect-web-secure'
-      - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-mailhog-web.rule=Host(`${TRAEFIK_HOST_MAIL}`)'
+      - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-mailhog-web.rule=Host(`${SUBDOMAIN_MAIL}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}`)'
       - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-mailhog-web.entrypoints=web'
-      - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-mailhog-web-secure.rule=Host(`${TRAEFIK_HOST_MAIL}`)'
-      - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-mailhog-web-secure.tls.certresolver=resolver'
+      
+      # Secure configuration (HTTPS in production, HTTP in local)
+      - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-mailhog-web-secure.rule=Host(`${SUBDOMAIN_MAIL}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}`)'
+      - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-mailhog-web-secure.tls.certresolver=${PROTOCOL:+resolver}'
+      - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-mailhog-web-secure.tls=${PROTOCOL:+true}'
       - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-mailhog-web-secure.entrypoints=web-secure'
+      
+      # Compression middleware
       - 'traefik.http.middlewares.${MESSAGING_COMPOSE_PROJECT_NAME}-mailhog-web-secure-compress.compress=true'
       - 'traefik.http.routers.${MESSAGING_COMPOSE_PROJECT_NAME}-mailhog-web-secure.middlewares=${MESSAGING_COMPOSE_PROJECT_NAME}-mailhog-web-secure-compress'
+      
+      # Load balancer configuration
       - 'traefik.http.services.${MESSAGING_COMPOSE_PROJECT_NAME}-mailhog-web-secure.loadbalancer.server.port=8025'
       - 'traefik.docker.network=${NETWORK_NAME:-kompose}'
 

@@ -32,7 +32,7 @@ services:
       # Application Settings
       WEBSOCKET_ENABLED: ${VAULT_WEBSOCKET_ENABLED}
       SIGNUPS_ALLOWED: ${VAULT_SIGNUPS_ALLOWED}
-      DOMAIN: ${TRAEFIK_HOST_VAULT}
+      DOMAIN: ${PROTOCOL}://${SUBDOMAIN_VAULT}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}
       
       # Email Configuration (via Mailhog)
       SMTP_HOST: messaging_mailhog
@@ -69,21 +69,24 @@ services:
       - kompose_network
       
     labels:
-      # Traefik Configuration
-      - 'traefik.enable=true'
+      # Traefik enabled/disabled per service
+      - 'traefik.enable=${TRAEFIK_ENABLED_VAULT:-false}'
       
-      # HTTP to HTTPS redirect
-      - 'traefik.http.middlewares.${VAULT_COMPOSE_PROJECT_NAME}-redirect-web-secure.redirectscheme.scheme=https'
+      # HTTP to HTTPS redirect (only for production when PROTOCOL=https)
+      - 'traefik.http.middlewares.${VAULT_COMPOSE_PROJECT_NAME}-redirect-web-secure.redirectscheme.scheme=${PROTOCOL}'
       - 'traefik.http.routers.${VAULT_COMPOSE_PROJECT_NAME}-web.middlewares=${VAULT_COMPOSE_PROJECT_NAME}-redirect-web-secure'
-      - 'traefik.http.routers.${VAULT_COMPOSE_PROJECT_NAME}-web.rule=Host(`${TRAEFIK_HOST_VAULT}`)'
+      - 'traefik.http.routers.${VAULT_COMPOSE_PROJECT_NAME}-web.rule=Host(`${SUBDOMAIN_VAULT}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}`)'
       - 'traefik.http.routers.${VAULT_COMPOSE_PROJECT_NAME}-web.entrypoints=web'
       
-      # HTTPS with Dual Authentication
+      # Secure configuration (HTTPS in production, HTTP in local)
       # Note: SSO provides access control, Vaultwarden handles vault unlocking
-      - 'traefik.http.routers.${VAULT_COMPOSE_PROJECT_NAME}-web-secure.rule=Host(`${TRAEFIK_HOST_VAULT}`)'
-      - 'traefik.http.routers.${VAULT_COMPOSE_PROJECT_NAME}-web-secure.tls.certresolver=resolver'
+      - 'traefik.http.routers.${VAULT_COMPOSE_PROJECT_NAME}-web-secure.rule=Host(`${SUBDOMAIN_VAULT}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}`)'
+      - 'traefik.http.routers.${VAULT_COMPOSE_PROJECT_NAME}-web-secure.tls.certresolver=${PROTOCOL:+resolver}'
+      - 'traefik.http.routers.${VAULT_COMPOSE_PROJECT_NAME}-web-secure.tls=${PROTOCOL:+true}'
       - 'traefik.http.routers.${VAULT_COMPOSE_PROJECT_NAME}-web-secure.entrypoints=web-secure'
       - 'traefik.http.routers.${VAULT_COMPOSE_PROJECT_NAME}-web-secure.middlewares=sso-secure'
+      
+      # Load balancer configuration
       - 'traefik.http.services.${VAULT_COMPOSE_PROJECT_NAME}-web-secure.loadbalancer.server.port=${VAULT_APP_PORT}'
       - 'traefik.docker.network=${NETWORK_NAME:-kompose}'
       

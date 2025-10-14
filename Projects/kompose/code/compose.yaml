@@ -12,9 +12,10 @@ services:
       USER_GID: ${CODE_GITEA_GID:-1000}
       
       # Application Configuration
-      GITEA__server__DOMAIN: ${GITEA_SSH_DOMAIN:-${TRAEFIK_HOST_CODE}}
-      GITEA__server__SSH_DOMAIN: ${GITEA_SSH_DOMAIN:-${TRAEFIK_HOST_CODE}}
-      GITEA__server__ROOT_URL: ${GITEA_ROOT_URL:-https://${TRAEFIK_HOST_CODE}/}
+      # Construct domain from SUBDOMAIN and ROOT_DOMAIN
+      GITEA__server__DOMAIN: ${GITEA_SSH_DOMAIN:-${SUBDOMAIN_CODE}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}}
+      GITEA__server__SSH_DOMAIN: ${GITEA_SSH_DOMAIN:-${SUBDOMAIN_CODE}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}}
+      GITEA__server__ROOT_URL: ${GITEA_ROOT_URL:-${PROTOCOL}://${SUBDOMAIN_CODE}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}/}
       GITEA__server__HTTP_PORT: 3000
       GITEA__server__SSH_PORT: 2222
       GITEA__server__START_SSH_SERVER: true
@@ -122,17 +123,19 @@ services:
       - gitea-init
     
     labels:
-      - 'traefik.enable=true'
+      # Traefik enabled/disabled per service
+      - 'traefik.enable=${TRAEFIK_ENABLED_CODE:-false}'
       
-      # HTTP to HTTPS redirect
-      - 'traefik.http.middlewares.${CODE_COMPOSE_PROJECT_NAME}-gitea-redirect-web-secure.redirectscheme.scheme=https'
+      # HTTP to HTTPS redirect (only for production when PROTOCOL=https)
+      - 'traefik.http.middlewares.${CODE_COMPOSE_PROJECT_NAME}-gitea-redirect-web-secure.redirectscheme.scheme=${PROTOCOL}'
       - 'traefik.http.routers.${CODE_COMPOSE_PROJECT_NAME}-gitea-web.middlewares=${CODE_COMPOSE_PROJECT_NAME}-gitea-redirect-web-secure'
-      - 'traefik.http.routers.${CODE_COMPOSE_PROJECT_NAME}-gitea-web.rule=Host(`${TRAEFIK_HOST_CODE}`)'
+      - 'traefik.http.routers.${CODE_COMPOSE_PROJECT_NAME}-gitea-web.rule=Host(`${SUBDOMAIN_CODE}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}`)'
       - 'traefik.http.routers.${CODE_COMPOSE_PROJECT_NAME}-gitea-web.entrypoints=web'
       
-      # HTTPS configuration
-      - 'traefik.http.routers.${CODE_COMPOSE_PROJECT_NAME}-gitea-web-secure.rule=Host(`${TRAEFIK_HOST_CODE}`)'
-      - 'traefik.http.routers.${CODE_COMPOSE_PROJECT_NAME}-gitea-web-secure.tls.certresolver=resolver'
+      # Secure configuration (HTTPS in production, HTTP in local)
+      - 'traefik.http.routers.${CODE_COMPOSE_PROJECT_NAME}-gitea-web-secure.rule=Host(`${SUBDOMAIN_CODE}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}`)'
+      - 'traefik.http.routers.${CODE_COMPOSE_PROJECT_NAME}-gitea-web-secure.tls.certresolver=${PROTOCOL:+resolver}'
+      - 'traefik.http.routers.${CODE_COMPOSE_PROJECT_NAME}-gitea-web-secure.tls=${PROTOCOL:+true}'
       - 'traefik.http.routers.${CODE_COMPOSE_PROJECT_NAME}-gitea-web-secure.entrypoints=web-secure'
       
       # Compression middleware
@@ -177,7 +180,7 @@ services:
     restart: unless-stopped
     environment:
       TZ: ${TIMEZONE:-Europe/Amsterdam}
-      GITEA_INSTANCE_URL: ${GITEA_INSTANCE_URL:-https://${TRAEFIK_HOST_CODE}}
+      GITEA_INSTANCE_URL: ${GITEA_INSTANCE_URL:-${PROTOCOL}://${SUBDOMAIN_CODE}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}}
       GITEA_RUNNER_REGISTRATION_TOKEN: ${CODE_GITEA_RUNNER_TOKEN}
       GITEA_RUNNER_NAME: ${CODE_GITEA_RUNNER_NAME:-kompose-runner-1}
       GITEA_RUNNER_LABELS: ${CODE_GITEA_RUNNER_LABELS:-ubuntu-latest:docker://node:16-bullseye}

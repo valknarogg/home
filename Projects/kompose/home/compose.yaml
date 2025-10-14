@@ -30,16 +30,26 @@ services:
     ports:
       - "${HOME_HOMEASSISTANT_PORT:-8123}:8123"
     labels:
-      - 'traefik.enable=true'
-      - 'traefik.http.middlewares.${HOME_COMPOSE_PROJECT_NAME}-homeassistant-redirect-web-secure.redirectscheme.scheme=https'
+      # Traefik enabled/disabled per service
+      - 'traefik.enable=${TRAEFIK_ENABLED_HOME:-false}'
+      
+      # HTTP to HTTPS redirect (only for production when PROTOCOL=https)
+      - 'traefik.http.middlewares.${HOME_COMPOSE_PROJECT_NAME}-homeassistant-redirect-web-secure.redirectscheme.scheme=${PROTOCOL}'
       - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-homeassistant-web.middlewares=${HOME_COMPOSE_PROJECT_NAME}-homeassistant-redirect-web-secure'
-      - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-homeassistant-web.rule=Host(`${TRAEFIK_HOST_HOME}`)'
+      - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-homeassistant-web.rule=Host(`${SUBDOMAIN_HOME}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}`)'
       - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-homeassistant-web.entrypoints=web'
-      - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-homeassistant-web-secure.rule=Host(`${TRAEFIK_HOST_HOME}`)'
-      - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-homeassistant-web-secure.tls.certresolver=resolver'
+      
+      # Secure configuration (HTTPS in production, HTTP in local)
+      - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-homeassistant-web-secure.rule=Host(`${SUBDOMAIN_HOME}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}`)'
+      - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-homeassistant-web-secure.tls.certresolver=${PROTOCOL:+resolver}'
+      - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-homeassistant-web-secure.tls=${PROTOCOL:+true}'
       - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-homeassistant-web-secure.entrypoints=web-secure'
+      
+      # Compression middleware
       - 'traefik.http.middlewares.${HOME_COMPOSE_PROJECT_NAME}-homeassistant-web-secure-compress.compress=true'
       - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-homeassistant-web-secure.middlewares=${HOME_COMPOSE_PROJECT_NAME}-homeassistant-web-secure-compress'
+      
+      # Load balancer configuration
       - 'traefik.http.services.${HOME_COMPOSE_PROJECT_NAME}-homeassistant-web-secure.loadbalancer.server.port=8123'
       - 'traefik.docker.network=${NETWORK_NAME:-kompose}'
     depends_on:
@@ -86,16 +96,26 @@ services:
     ports:
       - "${HOME_ZIGBEE2MQTT_PORT:-8080}:8080"
     labels:
-      - 'traefik.enable=true'
-      - 'traefik.http.middlewares.${HOME_COMPOSE_PROJECT_NAME}-zigbee2mqtt-redirect-web-secure.redirectscheme.scheme=https'
+      # Traefik enabled/disabled per service
+      - 'traefik.enable=${TRAEFIK_ENABLED_ZIGBEE:-false}'
+      
+      # HTTP to HTTPS redirect (only for production when PROTOCOL=https)
+      - 'traefik.http.middlewares.${HOME_COMPOSE_PROJECT_NAME}-zigbee2mqtt-redirect-web-secure.redirectscheme.scheme=${PROTOCOL}'
       - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-zigbee2mqtt-web.middlewares=${HOME_COMPOSE_PROJECT_NAME}-zigbee2mqtt-redirect-web-secure'
-      - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-zigbee2mqtt-web.rule=Host(`${TRAEFIK_HOST_ZIGBEE}`)'
+      - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-zigbee2mqtt-web.rule=Host(`${SUBDOMAIN_ZIGBEE}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}`)'
       - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-zigbee2mqtt-web.entrypoints=web'
-      - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-zigbee2mqtt-web-secure.rule=Host(`${TRAEFIK_HOST_ZIGBEE}`)'
-      - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-zigbee2mqtt-web-secure.tls.certresolver=resolver'
+      
+      # Secure configuration (HTTPS in production, HTTP in local)
+      - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-zigbee2mqtt-web-secure.rule=Host(`${SUBDOMAIN_ZIGBEE}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}`)'
+      - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-zigbee2mqtt-web-secure.tls.certresolver=${PROTOCOL:+resolver}'
+      - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-zigbee2mqtt-web-secure.tls=${PROTOCOL:+true}'
       - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-zigbee2mqtt-web-secure.entrypoints=web-secure'
+      
+      # Compression middleware
       - 'traefik.http.middlewares.${HOME_COMPOSE_PROJECT_NAME}-zigbee2mqtt-web-secure-compress.compress=true'
       - 'traefik.http.routers.${HOME_COMPOSE_PROJECT_NAME}-zigbee2mqtt-web-secure.middlewares=${HOME_COMPOSE_PROJECT_NAME}-zigbee2mqtt-web-secure-compress'
+      
+      # Load balancer configuration
       - 'traefik.http.services.${HOME_COMPOSE_PROJECT_NAME}-zigbee2mqtt-web-secure.loadbalancer.server.port=8080'
       - 'traefik.http.docker.network=${NETWORK_NAME:-kompose}'
     profiles:
