@@ -1,241 +1,168 @@
 #!/bin/bash
 
-# kompose-secrets.sh - Secrets management module
-# Handles generation, validation, rotation, and management of sensitive credentials
+# kompose-secrets.sh - Secrets Management Module
+# Part of kompose.sh - Docker Compose Stack Manager
+# Handles generation, validation, rotation, and management of secrets
 
 # ============================================================================
-# SECRET DEFINITIONS
+# SECRETS CONFIGURATION
 # ============================================================================
 
-# Define all required secrets per stack with their generation method
-declare -A REQUIRED_SECRETS=(
-    # Shared secrets
-    ["DB_PASSWORD"]="prompt"
-    ["ADMIN_PASSWORD"]="prompt"
-    ["EMAIL_SMTP_PASSWORD"]="manual"
+SECRETS_ENV_FILE="${SECRETS_ENV_FILE:-${SCRIPT_DIR}/secrets.env}"
+SECRETS_TEMPLATE_FILE="${SECRETS_TEMPLATE_FILE:-${SCRIPT_DIR}/secrets.env.template}"
+SECRETS_BACKUP_DIR="${SECRETS_BACKUP_DIR:-${SCRIPT_DIR}/backups/secrets}"
 
-    # Core stack
-    ["CORE_REDIS_API_PASSWORD"]="alias:ADMIN_PASSWORD"
+# Define all secrets and their generation methods
+declare -A SECRET_DEFINITIONS=(
+    # Shared Database Secrets
+    ["DB_PASSWORD"]="password:32"
+    ["REDIS_PASSWORD"]="password:32"
+    ["CORE_REDIS_API_PASSWORD"]="password:24"
     
-    # Auth stack
-    ["AUTH_KEYCLOAK_ADMIN_PASSWORD"]="alias:ADMIN_PASSWORD"
-    ["AUTH_OAUTH2_CLIENT_SECRET"]="base64:32"
+    # Shared Email Secrets
+    ["EMAIL_SMTP_PASSWORD"]="skip" # User-provided or empty for local development
+    
+    # Auth Stack Secrets
+    ["AUTH_KEYCLOAK_ADMIN_PASSWORD"]="password:24"
+    ["AUTH_OAUTH2_CLIENT_SECRET"]="password:32"
     ["AUTH_OAUTH2_COOKIE_SECRET"]="base64:32"
     
-    # Code stack (Gitea)
-    ["GITEA_SECRET_KEY"]="hex:64"
-    ["GITEA_INTERNAL_TOKEN"]="hex:105"
-    ["GITEA_OAUTH2_JWT_SECRET"]="base64:32"
-    ["GITEA_METRICS_TOKEN"]="hex:32"
-    ["CODE_RUNNER_TOKEN"]="manual"
+    # Code Stack Secrets (Gitea)
+    ["CODE_GITEA_SECRET_KEY"]="hex:64"
+    ["CODE_GITEA_INTERNAL_TOKEN"]="hex:105"
+    ["CODE_GITEA_OAUTH2_JWT_SECRET"]="base64:32"
+    ["CODE_GITEA_METRICS_TOKEN"]="hex:32"
+    ["CODE_GITEA_RUNNER_TOKEN"]="uuid"
     
-    # Chain stack (n8n + Semaphore)
-    ["N8N_ENCRYPTION_KEY"]="base64:32"
-    ["AUTO_ENCRYPTION_KEY"]="alias:N8N_ENCRYPTION_KEY"
-    ["CHAIN_N8N_ENCRYPTION_KEY"]="alias:N8N_ENCRYPTION_KEY"
-    ["N8N_BASIC_AUTH_PASSWORD"]="alias:ADMIN_PASSWORD"
-    ["CHAIN_N8N_BASIC_AUTH_PASSWORD"]="alias:ADMIN_PASSWORD"
-    ["SEMAPHORE_ADMIN_PASSWORD"]="alias:ADMIN_PASSWORD"
-    ["CHAIN_SEMAPHORE_ADMIN_PASSWORD"]="alias:ADMIN_PASSWORD"
-    ["SEMAPHORE_RUNNER_TOKEN"]="base64:32"
+    # Chain Stack Secrets
+    ["CHAIN_N8N_ENCRYPTION_KEY"]="password:32"
+    ["CHAIN_N8N_BASIC_AUTH_PASSWORD"]="password:24"
+    ["CHAIN_SEMAPHORE_ADMIN_PASSWORD"]="password:24"
+    ["CHAIN_SEMAPHORE_RUNNER_TOKEN"]="uuid"
     
-    # KMPS stack
-    ["KMPS_CLIENT_SECRET"]="manual"
-    ["KMPS_NEXTAUTH_SECRET"]="base64:32"
+    # KMPS Stack Secrets
+    ["KMPS_CLIENT_SECRET"]="skip" # Generated in Keycloak UI
+    ["KMPS_NEXTAUTH_SECRET"]="password:32"
     
-    # DASH stack
-    ["DASH_NEXTAUTH_SECRET"]="base64:32"
+    # Messaging Stack Secrets
+    ["MESSAGING_GOTIFY_DEFAULTUSER_PASS"]="password:24"
     
-    # NEWS stack
-    ["NEWS_JWT_SECRET"]="base64:32"
+    # Track Stack Secrets
+    ["TRACK_APP_SECRET"]="password:32"
     
-    # TRACK stack
-    ["TRACK_APP_SECRET"]="base64:32"
+    # VPN Stack Secrets
+    ["VPN_PASSWORD"]="password:24"
     
-    # VAULT stack
-    ["VAULT_ADMIN_TOKEN"]="base64:32"
+    # Vault Stack Secrets
+    ["VAULT_ADMIN_TOKEN"]="password:32"
     
-    # PROXY stack
-    ["TRAEFIK_DASHBOARD_AUTH"]="htpasswd"
+    # Link Stack Secrets
+    ["LINK_NEXTAUTH_SECRET"]="password:32"
+    
+    # Proxy Stack Secrets
+    ["PROXY_DASHBOARD_AUTH"]="htpasswd:admin"
+    
+    # Watch Stack Secrets
+    ["WATCH_GRAFANA_ADMIN_PASSWORD"]="password:24"
+    ["WATCH_GRAFANA_DB_PASSWORD"]="password:32"
+    ["WATCH_POSTGRES_EXPORTER_PASSWORD"]="password:32"
+    ["WATCH_REDIS_EXPORTER_PASSWORD"]="password:32"
+    ["WATCH_PROMETHEUS_AUTH"]="htpasswd:admin"
+    ["WATCH_LOKI_AUTH"]="htpasswd:admin"
+    ["WATCH_ALERTMANAGER_AUTH"]="htpasswd:admin"
 )
 
-# Map secrets to stacks for better organization
-declare -A SECRET_STACK_MAP=(
-    ["DB_PASSWORD"]="core,auth,chain,code,kmps"
-    ["ADMIN_PASSWORD"]="shared"
-    ["EMAIL_SMTP_PASSWORD"]="shared"
-    
-    ["CORE_REDIS_API_PASSWORD"]="core"
-    
-    ["AUTH_KEYCLOAK_ADMIN_PASSWORD"]="auth"
-    ["AUTH_OAUTH2_CLIENT_SECRET"]="auth"
-    ["AUTH_OAUTH2_COOKIE_SECRET"]="auth"
-    
-    ["GITEA_SECRET_KEY"]="code"
-    ["GITEA_INTERNAL_TOKEN"]="code"
-    ["GITEA_OAUTH2_JWT_SECRET"]="code"
-    ["GITEA_METRICS_TOKEN"]="code"
-    ["CODE_RUNNER_TOKEN"]="code"
-    
-    ["N8N_ENCRYPTION_KEY"]="chain"
-    ["AUTO_ENCRYPTION_KEY"]="chain"
-    ["CHAIN_N8N_ENCRYPTION_KEY"]="chain"
-    ["N8N_BASIC_AUTH_PASSWORD"]="chain"
-    ["CHAIN_N8N_BASIC_AUTH_PASSWORD"]="chain"
-    ["SEMAPHORE_ADMIN_PASSWORD"]="chain"
-    ["CHAIN_SEMAPHORE_ADMIN_PASSWORD"]="chain"
-    ["SEMAPHORE_RUNNER_TOKEN"]="chain"
-    
-    ["KMPS_CLIENT_SECRET"]="kmps"
-    ["KMPS_NEXTAUTH_SECRET"]="kmps"
-    
-    ["DASH_NEXTAUTH_SECRET"]="dash"
-    ["NEWS_JWT_SECRET"]="news"
-    ["TRACK_APP_SECRET"]="track"
-    ["VAULT_ADMIN_TOKEN"]="vault"
-    ["TRAEFIK_DASHBOARD_AUTH"]="proxy"
-)
-
-# Secret descriptions for documentation
-declare -A SECRET_DESCRIPTIONS=(
-    ["DB_PASSWORD"]="PostgreSQL password for all database connections"
-    ["ADMIN_PASSWORD"]="Default admin password for services"
-    ["CORE_REDIS_API_PASSWORD"]="Redis password for API access"
-    ["EMAIL_SMTP_PASSWORD"]="SMTP password for sending emails"
-    
-    ["KC_ADMIN_PASSWORD"]="Keycloak admin console password"
-    ["OAUTH2_CLIENT_SECRET"]="OAuth2 Proxy client secret"
-    ["OAUTH2_COOKIE_SECRET"]="OAuth2 Proxy cookie encryption key"
-    
-    ["GITEA_SECRET_KEY"]="Gitea secret key for encryption"
-    ["GITEA_INTERNAL_TOKEN"]="Gitea internal API token"
-    ["GITEA_OAUTH2_JWT_SECRET"]="Gitea OAuth2 JWT signing key"
-    ["GITEA_METRICS_TOKEN"]="Gitea metrics API token"
-    ["CODE_RUNNER_TOKEN"]="Gitea Actions runner registration token"
-    
-    ["N8N_ENCRYPTION_KEY"]="n8n workflow credentials encryption key"
-    ["CHAIN_N8N_ENCRYPTION_KEY"]="n8n workflow credentials encryption key (chain stack)"
-    ["N8N_BASIC_AUTH_PASSWORD"]="n8n basic auth password"
-    ["CHAIN_N8N_BASIC_AUTH_PASSWORD"]="n8n basic auth password (chain stack)"
-    ["SEMAPHORE_ADMIN_PASSWORD"]="Semaphore admin password"
-    ["CHAIN_SEMAPHORE_ADMIN_PASSWORD"]="Semaphore admin password (chain stack)"
-    ["SEMAPHORE_RUNNER_TOKEN"]="Semaphore runner token"
-    
-    ["KMPS_CLIENT_SECRET"]="KMPS Keycloak client secret"
-    ["KMPS_NEXTAUTH_SECRET"]="KMPS NextAuth session encryption key"
-    
-    ["DASH_NEXTAUTH_SECRET"]="Dashboard NextAuth session encryption key"
-    ["NEWS_JWT_SECRET"]="Newsletter JWT signing key"
-    ["TRACK_APP_SECRET"]="Umami application secret"
-    ["VAULT_ADMIN_TOKEN"]="Vaultwarden admin panel token (optional)"
-    ["TRAEFIK_DASHBOARD_AUTH"]="Traefik dashboard basic auth credentials"
+# Stack to secrets mapping
+declare -A STACK_SECRETS=(
+    ["shared"]="DB_PASSWORD REDIS_PASSWORD EMAIL_SMTP_PASSWORD"
+    ["core"]="DB_PASSWORD REDIS_PASSWORD CORE_REDIS_API_PASSWORD"
+    ["auth"]="DB_PASSWORD AUTH_KEYCLOAK_ADMIN_PASSWORD AUTH_OAUTH2_CLIENT_SECRET AUTH_OAUTH2_COOKIE_SECRET REDIS_PASSWORD"
+    ["code"]="DB_PASSWORD REDIS_PASSWORD CODE_GITEA_SECRET_KEY CODE_GITEA_INTERNAL_TOKEN CODE_GITEA_OAUTH2_JWT_SECRET CODE_GITEA_METRICS_TOKEN CODE_GITEA_RUNNER_TOKEN EMAIL_SMTP_PASSWORD"
+    ["chain"]="DB_PASSWORD CHAIN_N8N_ENCRYPTION_KEY CHAIN_N8N_BASIC_AUTH_PASSWORD CHAIN_SEMAPHORE_ADMIN_PASSWORD CHAIN_SEMAPHORE_RUNNER_TOKEN EMAIL_SMTP_PASSWORD"
+    ["kmps"]="DB_PASSWORD KMPS_CLIENT_SECRET KMPS_NEXTAUTH_SECRET"
+    ["messaging"]="MESSAGING_GOTIFY_DEFAULTUSER_PASS EMAIL_SMTP_PASSWORD"
+    ["track"]="DB_PASSWORD TRACK_APP_SECRET REDIS_PASSWORD"
+    ["vpn"]="VPN_PASSWORD"
+    ["vault"]="VAULT_ADMIN_TOKEN EMAIL_SMTP_PASSWORD"
+    ["link"]="DB_PASSWORD LINK_NEXTAUTH_SECRET REDIS_PASSWORD"
+    ["proxy"]="PROXY_DASHBOARD_AUTH"
+    ["watch"]="WATCH_GRAFANA_ADMIN_PASSWORD WATCH_GRAFANA_DB_PASSWORD WATCH_POSTGRES_EXPORTER_PASSWORD WATCH_REDIS_EXPORTER_PASSWORD WATCH_PROMETHEUS_AUTH WATCH_LOKI_AUTH WATCH_ALERTMANAGER_AUTH"
 )
 
 # ============================================================================
 # SECRET GENERATION FUNCTIONS
 # ============================================================================
 
+# Generate a random password
 generate_password() {
-    local length=${1:-32}
+    local length="${1:-32}"
     openssl rand -base64 48 | tr -d "=+/" | cut -c1-${length}
 }
 
+# Generate hex string
 generate_hex() {
-    local length=${1:-32}
-    openssl rand -hex $((length / 2))
+    local length="${1:-64}"
+    local bytes=$((length / 2))
+    if [ $((length % 2)) -ne 0 ]; then
+        bytes=$((bytes + 1))
+    fi
+    openssl rand -hex ${bytes} | cut -c1-${length}
 }
 
+# Generate base64 secret
 generate_base64() {
-    local length=${1:-32}
-    openssl rand -base64 ${length}
+    local bytes="${1:-32}"
+    openssl rand -base64 ${bytes}
 }
 
+# Generate UUID
 generate_uuid() {
     if command -v uuidgen &> /dev/null; then
         uuidgen | tr '[:upper:]' '[:lower:]'
     else
         # Fallback UUID generation
-        cat /proc/sys/kernel/random/uuid
+        cat /proc/sys/kernel/random/uuid 2>/dev/null || \
+        printf '%08x-%04x-%04x-%04x-%012x\n' \
+            $RANDOM$RANDOM $RANDOM $((RANDOM & 0x0fff | 0x4000)) \
+            $((RANDOM & 0x3fff | 0x8000)) $RANDOM$RANDOM$RANDOM
     fi
 }
 
+# Generate htpasswd entry
 generate_htpasswd() {
     local username="${1:-admin}"
-    local password="${2:-}"
-    
-    if [ -z "$password" ]; then
-        password=$(generate_password 16)
-        # log_info "Generated password for htpasswd: $password"
-    fi
+    local password="${2:-$(generate_password 24)}"
     
     if command -v htpasswd &> /dev/null; then
-        htpasswd -nb "$username" "$password" 2>/dev/null | tr -d '\n'
+        echo $(htpasswd -nb ${username} ${password})
     else
-        # Fallback using openssl
-        local hash=$(echo -n "${password}" | openssl dgst -binary -md5 | openssl base64)
-        echo "${username}:${hash}"
+        # Fallback: use openssl for basic MD5 (not as secure but works)
+        log_warning "htpasswd not found, using openssl fallback"
+        local salt=$(openssl rand -base64 8 | tr -d "=")
+        local hash=$(echo -n "${password}${salt}" | openssl md5 -binary | openssl base64)
+        echo "${username}:\$apr1\$${salt}\$${hash}"
     fi
 }
 
-prompt_for_password() {
-    local prompt_text="${1:-Enter password}"
-    local secret_name="${2:-}"
-    local hint="${3:-}"
-    local password=""
-    local password_confirm=""
-    
-    # Display context and requirements (to stderr so it's visible during command substitution)
-    echo "═══════════════════════════════════════════════════════" >&2
-    echo -e "${CYAN}Password Configuration Required${NC}" >&2
-    echo "═══════════════════════════════════════════════════════" >&2
-    echo "" >&2
-    
-    if [ -n "$hint" ]; then
-        echo -e "${YELLOW}Context:${NC}" >&2
-        echo -e "$hint" >&2
-        echo "" >&2
-    fi
-    
-    echo -e "${YELLOW}Password Requirements:${NC}" >&2
-    echo "• Minimum length: 8 characters" >&2
-    echo "• Recommended: Use a mix of letters, numbers, and special characters" >&2
-    echo "• This password will be stored securely in secrets.env" >&2
-    echo "" >&2
-    
-    while true; do
-        # Prompt for password (to stderr)
-        read -s -p "${prompt_text}: " password <&2
-        echo "" >&2
-        
-        # Check minimum length
-        if [ ${#password} -lt 8 ]; then
-            log_warning "Password must be at least 8 characters long. Please try again." >&2
-            echo "" >&2
-            continue
-        fi
-        
-        # Prompt for confirmation (to stderr)
-        read -s -p "Confirm password: " password_confirm <&2
-        echo "" >&2
-        
-        # Check if passwords match
-        if [ "$password" = "$password_confirm" ]; then
-            log_success "Password set successfully" >&2
-            echo "$password"
-            return 0
-        else
-            log_warning "Passwords do not match. Please try again." >&2
-            echo "" >&2
-        fi
-    done
-}
-
+# Generate a secret based on its type
 generate_secret_value() {
-    local method=$1
-    local param=$2
-    local secret_name=$3
+    local secret_name="$1"
+    local definition="${SECRET_DEFINITIONS[$secret_name]}"
     
-    case $method in
+    if [ -z "$definition" ]; then
+        log_error "Unknown secret: $secret_name"
+        return 1
+    fi
+    
+    if [ "$definition" = "skip" ]; then
+        echo ""
+        return 0
+    fi
+    
+    local type="${definition%%:*}"
+    local param="${definition##*:}"
+    
+    case $type in
         password)
             generate_password "$param"
             ;;
@@ -249,783 +176,520 @@ generate_secret_value() {
             generate_uuid
             ;;
         htpasswd)
-            generate_htpasswd "admin"
-            ;;
-        prompt)
-            local prompt_desc="${SECRET_DESCRIPTIONS[$secret_name]}"
-            local hint=""
-            
-            # Provide context-specific hints based on secret name
-            case $secret_name in
-                DB_PASSWORD)
-                    hint="DATABASE PASSWORD - PostgreSQL Master Credential\n\nThis password secures access to the central PostgreSQL database that stores\nall persistent application data across the Kompose platform.\n\nScope of Access:\n  • Core Stack: PostgreSQL database instance\n  • Auth Stack: Keycloak user and configuration data\n  • Chain Stack: n8n workflow definitions and credentials\n  • Code Stack: Gitea repositories and project data\n  • KMPS Stack: Management interface configurations\n\nConnection Details:\n  • Database User: kompose (default)\n  • Database Host: core-postgres (container name)\n  • Database Port: 5432 (internal)\n\nSecurity Considerations:\n  This is a critical infrastructure password. Database compromise would expose\n  all application data. Choose a strong, unique password with high entropy.\n  Consider using a password manager to generate and store this credential.\n\nRecommended Password Strength:\n  • Minimum: 16 characters\n  • Include: uppercase, lowercase, numbers, and special characters\n  • Avoid: dictionary words, personal information, common patterns"
-                    ;;
-                ADMIN_PASSWORD)
-                    hint="ADMIN PASSWORD - Unified Service Administrator Credential\n\nThis password provides administrative access to all Kompose service interfaces.\nRather than managing multiple passwords, this unified credential simplifies\nadministration while maintaining security across the platform.\n\nServices Using This Password:\n  • Redis Cache: Database caching layer authentication\n  • Redis Commander: Web-based Redis management interface\n  • Keycloak Admin: Identity and access management console\n  • n8n Workflows: Automation workflow designer interface\n  • Semaphore CI/CD: Deployment automation platform\n\nAccess Pattern:\n  • Default Username: admin (for most services)\n  • Access Method: Web interface basic authentication\n  • Session Management: Varies by service\n\nUse Cases:\n  • Service Configuration: Modify system settings and parameters\n  • User Management: Create and manage application users (Keycloak)\n  • Workflow Development: Design and deploy automation workflows (n8n)\n  • Deployment Control: Manage CI/CD pipelines (Semaphore)\n  • Cache Monitoring: View and manage cached data (Redis Commander)\n\nSecurity Considerations:\n  This password has broad access across multiple services. While it simplifies\n  management, compromise would affect multiple systems. Choose a strong password\n  and consider enabling additional security measures where available.\n\nRecommended Password Strength:\n  • Minimum: 12 characters\n  • Include: mix of character types for complexity\n  • Memorability: Balance security with practical usability"
-                    ;;
-                *)
-                    hint="$prompt_desc"
-                    ;;
-            esac
-            
-            prompt_for_password "Enter password" "$secret_name" "$hint"
-            ;;
-        manual)
-            echo "CHANGE_ME_MANUALLY"
-            ;;
-        alias)
-            echo "\${$param}"
+            generate_htpasswd "$param"
             ;;
         *)
-            log_error "Unknown generation method: $method"
+            log_error "Unknown secret type: $type"
             return 1
             ;;
     esac
 }
 
 # ============================================================================
-# SECRETS FILE MANAGEMENT
+# SECRETS MANAGEMENT FUNCTIONS
 # ============================================================================
 
-secrets_file_path() {
-    echo "${STACKS_ROOT}/secrets.env"
-}
-
-secrets_template_path() {
-    echo "${STACKS_ROOT}/secrets.env.template"
-}
-
-secrets_backup_path() {
-    local timestamp=$(date +%Y%m%d_%H%M%S)
-    echo "${STACKS_ROOT}/backups/secrets_${timestamp}.env"
-}
-
-ensure_secrets_file() {
-    local secrets_file=$(secrets_file_path)
-    
-    if [ ! -f "$secrets_file" ]; then
-        log_warning "secrets.env not found, creating from template..."
-        
-        local template=$(secrets_template_path)
-        if [ -f "$template" ]; then
-            cp "$template" "$secrets_file"
-            log_success "Created secrets.env from template"
-            return 0
+# Initialize secrets.env if it doesn't exist
+init_secrets_file() {
+    if [ ! -f "$SECRETS_ENV_FILE" ]; then
+        if [ -f "$SECRETS_TEMPLATE_FILE" ]; then
+            log_info "Creating secrets.env from template..."
+            cp "$SECRETS_TEMPLATE_FILE" "$SECRETS_ENV_FILE"
+            chmod 600 "$SECRETS_ENV_FILE"
+            log_success "Created $SECRETS_ENV_FILE"
         else
-            log_error "secrets.env.template not found!"
-            log_info "Cannot create secrets.env without template"
+            log_error "Template file not found: $SECRETS_TEMPLATE_FILE"
             return 1
         fi
     fi
-    
-    return 0
 }
 
-backup_secrets_file() {
-    local secrets_file=$(secrets_file_path)
+# Read current secret value from secrets.env
+get_secret_value() {
+    local secret_name="$1"
     
-    if [ ! -f "$secrets_file" ]; then
-        log_error "secrets.env not found, nothing to backup"
+    if [ ! -f "$SECRETS_ENV_FILE" ]; then
         return 1
     fi
     
-    local backup_path=$(secrets_backup_path)
-    mkdir -p "$(dirname "$backup_path")"
-    
-    cp "$secrets_file" "$backup_path"
-    log_success "Backed up secrets to: $backup_path"
-    
-    echo "$backup_path"
+    # Extract value, handling commented lines
+    grep "^${secret_name}=" "$SECRETS_ENV_FILE" 2>/dev/null | cut -d'=' -f2- | tr -d '"' | tr -d "'"
 }
 
-# ============================================================================
-# SECRET GENERATION COMMANDS
-# ============================================================================
-
-secrets_generate_all() {
-    local force=${1:-false}
-    local secrets_file=$(secrets_file_path)
+# Set a secret value in secrets.env
+set_secret_value() {
+    local secret_name="$1"
+    local secret_value="$2"
+    local update_only="${3:-false}"
     
-    log_info "Generating secrets for Kompose..."
-    echo ""
+    init_secrets_file || return 1
     
-    # Backup existing secrets if present
-    if [ -f "$secrets_file" ] && [ "$force" != "true" ]; then
-        log_warning "secrets.env already exists!"
-        read -p "Overwrite existing secrets? This cannot be undone! (y/N): " -r
-        echo ""
-        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-            log_info "Aborted"
-            return 1
-        fi
+    # Create a temporary file
+    local temp_file="${SECRETS_ENV_FILE}.tmp"
+    
+    # Check if secret exists
+    if grep -q "^${secret_name}=" "$SECRETS_ENV_FILE" 2>/dev/null; then
+        # Update existing secret using awk (more reliable than sed for special characters)
+        awk -v name="${secret_name}" -v value="${secret_value}" '
+            $0 ~ "^" name "=" { print name "=" value; next }
+            { print }
+        ' "$SECRETS_ENV_FILE" > "$temp_file"
         
-        backup_secrets_file
-        echo ""
-    fi
-    
-    # Create new secrets file
-    log_info "Generating new secrets..."
-    
-    cat > "$secrets_file" << 'EOF'
-# ===================================================================
-# KOMPOSE - Secrets Configuration
-# ===================================================================
-# GENERATED FILE - Keep this secure and do not commit to git!
-# Generated: $(date)
-# ===================================================================
-
-EOF
-    
-    # Generate each secret
-    local generated_count=0
-    local manual_count=0
-    local prompt_count=0
-    
-    # Group secrets by category
-    log_info "Generating shared secrets..."
-    echo ""
-    for secret in DB_PASSWORD REDIS_PASSWORD REDIS_API_PASSWORD ADMIN_PASSWORD EMAIL_SMTP_PASSWORD; do
-        local method=$(echo "${REQUIRED_SECRETS[$secret]}" | cut -d: -f1)
-        local param=$(echo "${REQUIRED_SECRETS[$secret]}" | cut -d: -f2)
-        
-        if [ "$method" = "manual" ]; then
-            echo "${secret}=CHANGE_ME_MANUALLY" >> "$secrets_file"
-            manual_count=$((manual_count+1))
-        elif [ "$method" = "prompt" ]; then
-            echo ""
-            local value=$(generate_secret_value "$method" "$param" "$secret")
-            echo "${secret}=${value}" >> "$secrets_file"
-            prompt_count=$((prompt_count+1))
-            echo ""
-        else
-            local value=$(generate_secret_value "$method" "$param" "$secret")
-            echo "${secret}=${value}" >> "$secrets_file"
-            generated_count=$((generated_count+1))
-        fi
-    done
-    echo "" >> "$secrets_file"
-    
-    log_info "Generating auth stack secrets..."
-    echo ""
-    echo "# Auth Stack Secrets" >> "$secrets_file"
-    for secret in KC_ADMIN_PASSWORD AUTH_KEYCLOAK_ADMIN_PASSWORD OAUTH2_CLIENT_SECRET OAUTH2_COOKIE_SECRET AUTH_OAUTH2_CLIENT_SECRET AUTH_OAUTH2_COOKIE_SECRET; do
-        local method=$(echo "${REQUIRED_SECRETS[$secret]}" | cut -d: -f1)
-        local param=$(echo "${REQUIRED_SECRETS[$secret]}" | cut -d: -f2)
-        
-        if [ "$method" = "prompt" ]; then
-            echo ""
-            local value=$(generate_secret_value "$method" "$param" "$secret")
-            echo "${secret}=${value}" >> "$secrets_file"
-            prompt_count=$((prompt_count+1))
-            echo ""
-        else
-            local value=$(generate_secret_value "$method" "$param" "$secret")
-            echo "${secret}=${value}" >> "$secrets_file"
-            generated_count=$((generated_count+1))
-        fi
-    done
-    echo "" >> "$secrets_file"
-    
-    log_info "Generating code stack secrets..."
-    echo "# Code Stack Secrets" >> "$secrets_file"
-    for secret in GITEA_SECRET_KEY GITEA_INTERNAL_TOKEN GITEA_OAUTH2_JWT_SECRET GITEA_METRICS_TOKEN CODE_RUNNER_TOKEN; do
-        local method=$(echo "${REQUIRED_SECRETS[$secret]}" | cut -d: -f1)
-        local param=$(echo "${REQUIRED_SECRETS[$secret]}" | cut -d: -f2)
-        
-        if [ "$method" = "manual" ]; then
-            echo "${secret}=GENERATE_IN_GITEA_UI" >> "$secrets_file"
-            manual_count=$((manual_count+1))
-        else
-            local value=$(generate_secret_value "$method" "$param" "$secret")
-            echo "${secret}=${value}" >> "$secrets_file"
-            generated_count=$((generated_count+1))
-        fi
-    done
-    echo "" >> "$secrets_file"
-    
-    log_info "Generating chain stack secrets..."
-    echo ""
-    echo "# Chain Stack Secrets" >> "$secrets_file"
-    for secret in N8N_ENCRYPTION_KEY AUTO_ENCRYPTION_KEY CHAIN_N8N_ENCRYPTION_KEY N8N_BASIC_AUTH_PASSWORD CHAIN_N8N_BASIC_AUTH_PASSWORD SEMAPHORE_ADMIN_PASSWORD CHAIN_SEMAPHORE_ADMIN_PASSWORD SEMAPHORE_RUNNER_TOKEN; do
-        local method=$(echo "${REQUIRED_SECRETS[$secret]}" | cut -d: -f1)
-        local param=$(echo "${REQUIRED_SECRETS[$secret]}" | cut -d: -f2)
-        
-        if [ "$method" = "prompt" ]; then
-            echo ""
-            local value=$(generate_secret_value "$method" "$param" "$secret")
-            echo "${secret}=${value}" >> "$secrets_file"
-            prompt_count=$((prompt_count+1))
-            echo ""
-        else
-            local value=$(generate_secret_value "$method" "$param" "$secret")
-            echo "${secret}=${value}" >> "$secrets_file"
-            generated_count=$((generated_count+1))
-        fi
-    done
-    echo "" >> "$secrets_file"
-    
-    log_info "Generating other stack secrets..."
-    echo "# Other Stack Secrets" >> "$secrets_file"
-    for secret in KMPS_CLIENT_SECRET KMPS_NEXTAUTH_SECRET DASH_NEXTAUTH_SECRET NEWS_JWT_SECRET TRACK_APP_SECRET VAULT_ADMIN_TOKEN TRAEFIK_DASHBOARD_AUTH; do
-        local method=$(echo "${REQUIRED_SECRETS[$secret]}" | cut -d: -f1)
-        local param=$(echo "${REQUIRED_SECRETS[$secret]}" | cut -d: -f2)
-        
-        if [ "$method" = "manual" ]; then
-            echo "${secret}=CHANGE_ME_MANUALLY" >> "$secrets_file"
-            manual_count=$((manual_count+1))
-        else
-            local value=$(generate_secret_value "$method" "$param" "$secret")
-            echo "${secret}=${value}" >> "$secrets_file"
-            generated_count=$((generated_count+1))
-        fi
-    done
-    
-    echo ""
-    log_success "Generated ${generated_count} secrets automatically"
-    
-    if [ $prompt_count -gt 0 ]; then
-        log_success "Set ${prompt_count} secrets via interactive prompts"
-    fi
-    
-    if [ $manual_count -gt 0 ]; then
-        log_warning "${manual_count} secrets require manual configuration:"
-        echo ""
-        echo -e "  ${YELLOW}EMAIL_SMTP_PASSWORD${NC} - Your SMTP server password"
-        echo -e "  ${YELLOW}CODE_RUNNER_TOKEN${NC} - Generate in Gitea UI after first setup"
-        echo -e "  ${YELLOW}KMPS_CLIENT_SECRET${NC} - Generate in Keycloak after client setup"
-        echo ""
-    fi
-    
-    log_success "Secrets saved to: $secrets_file"
-    log_warning "Keep this file secure! Add to .gitignore if not already."
-}
-
-secrets_generate_single() {
-    local secret_name=$1
-    local force=${2:-false}
-    
-    if [ -z "$secret_name" ]; then
-        log_error "Secret name required"
-        echo "Usage: kompose secrets generate SECRET_NAME"
+        # Move temp file to original
+        mv "$temp_file" "$SECRETS_ENV_FILE"
+        chmod 600 "$SECRETS_ENV_FILE"
+    elif [ "$update_only" = "false" ]; then
+        # Add new secret at the end
+        echo "${secret_name}=${secret_value}" >> "$SECRETS_ENV_FILE"
+    else
+        log_warning "Secret $secret_name not found in $SECRETS_ENV_FILE"
         return 1
     fi
+}
+
+# Check if secret needs generation
+needs_generation() {
+    local secret_name="$1"
+    local current_value=$(get_secret_value "$secret_name")
+    
+    # Skip if definition says to skip
+    if [ "${SECRET_DEFINITIONS[$secret_name]}" = "skip" ]; then
+        return 1
+    fi
+    
+    # Needs generation if empty or contains placeholder
+    if [ -z "$current_value" ] || [[ "$current_value" =~ CHANGE_ME ]] || [ "$current_value" = "CHANGE_ME_GENERATE_WITH_KOMPOSE" ]; then
+        return 0
+    fi
+    
+    return 1
+}
+
+# Generate a single secret
+generate_single_secret() {
+    local secret_name="$1"
+    local force="${2:-false}"
     
     # Check if secret is defined
-    if [ -z "${REQUIRED_SECRETS[$secret_name]}" ]; then
+    if [ -z "${SECRET_DEFINITIONS[$secret_name]}" ]; then
         log_error "Unknown secret: $secret_name"
         log_info "Use 'kompose secrets list' to see available secrets"
         return 1
     fi
     
-    local method=$(echo "${REQUIRED_SECRETS[$secret_name]}" | cut -d: -f1)
-    local param=$(echo "${REQUIRED_SECRETS[$secret_name]}" | cut -d: -f2)
+    # Skip if it's a manual secret
+    if [ "${SECRET_DEFINITIONS[$secret_name]}" = "skip" ]; then
+        log_warning "$secret_name: Manual configuration required (skipped)"
+        return 0
+    fi
     
-    if [ "$method" = "manual" ]; then
-        log_warning "$secret_name requires manual configuration"
-        log_info "${SECRET_DESCRIPTIONS[$secret_name]}"
+    # Check if already has a value
+    local current_value=$(get_secret_value "$secret_name")
+    if [ -n "$current_value" ] && [[ ! "$current_value" =~ CHANGE_ME ]] && [ "$force" != "true" ]; then
+        log_warning "$secret_name: Already has a value (use --force to overwrite)"
+        return 0
+    fi
+    
+    # Generate new value
+    local new_value=$(generate_secret_value "$secret_name")
+    if [ -z "$new_value" ]; then
+        log_error "$secret_name: Failed to generate"
         return 1
     fi
     
-    echo ""
-    local value=$(generate_secret_value "$method" "$param" "$secret_name")
-    
-    if [ "$method" != "prompt" ]; then
-        echo ""
-        log_info "Generated value for ${CYAN}${secret_name}${NC}:"
-        echo ""
-        echo -e "  ${GREEN}${value}${NC}"
-        echo ""
-    fi
-    
-    log_info "Description: ${SECRET_DESCRIPTIONS[$secret_name]}"
-    echo ""
-    
-    # Ask if user wants to save to secrets.env
-    if [ -f "$(secrets_file_path)" ]; then
-        read -p "Update secrets.env with this value? (y/N): " -r
-        echo ""
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            secrets_set "$secret_name" "$value"
-        fi
+    # Set the value
+    if set_secret_value "$secret_name" "$new_value"; then
+        log_success "$secret_name: Generated successfully"
+        return 0
+    else
+        log_error "$secret_name: Failed to set value"
+        return 1
     fi
 }
 
-# ============================================================================
-# SECRET VALIDATION
-# ============================================================================
-
-secrets_validate() {
-    local stack_filter=${1:-"all"}
-    local secrets_file=$(secrets_file_path)
+# Generate all secrets
+generate_all_secrets() {
+    local force="${1:-false}"
     
-    if [ ! -f "$secrets_file" ]; then
-        log_error "secrets.env not found!"
+    log_info "Generating secrets..."
+    echo ""
+    
+    init_secrets_file || return 1
+    
+    local generated=0
+    local skipped=0
+    local errors=0
+    
+    for secret_name in "${!SECRET_DEFINITIONS[@]}"; do
+        if generate_single_secret "$secret_name" "$force"; then
+            if [ "${SECRET_DEFINITIONS[$secret_name]}" != "skip" ]; then
+                generated=$((generated + 1))
+            else
+                skipped=$((skipped + 1))
+            fi
+        else
+            errors=$((errors + 1))
+        fi
+    done
+    
+    echo ""
+    log_info "Summary: $generated generated, $skipped skipped, $errors errors"
+    
+    if [ $errors -eq 0 ]; then
+        log_success "Secrets generation complete!"
+        return 0
+    else
+        log_warning "Secrets generation completed with errors"
+        return 1
+    fi
+}
+
+# Validate secrets configuration
+validate_secrets() {
+    log_info "Validating secrets configuration..."
+    echo ""
+    
+    if [ ! -f "$SECRETS_ENV_FILE" ]; then
+        log_error "secrets.env not found"
         log_info "Run: kompose secrets generate"
         return 1
     fi
     
-    log_info "Validating secrets configuration..."
-    echo ""
+    local missing=0
+    local placeholders=0
+    local manual=0
+    local valid=0
     
-    # Source the secrets file
-    set -a
-    source "$secrets_file" 2>/dev/null
-    set +a
-    
-    local total_count=0
-    local valid_count=0
-    local missing_count=0
-    local weak_count=0
-    local issues=()
-    
-    for secret_name in "${!REQUIRED_SECRETS[@]}"; do
-        # Filter by stack if requested
-        if [ "$stack_filter" != "all" ]; then
-            local stacks="${SECRET_STACK_MAP[$secret_name]}"
-            if [[ ! ",$stacks," =~ ",$stack_filter," ]]; then
-                continue
+    for secret_name in "${!SECRET_DEFINITIONS[@]}"; do
+        local definition="${SECRET_DEFINITIONS[$secret_name]}"
+        local current_value=$(get_secret_value "$secret_name")
+        
+        if [ "$definition" = "skip" ]; then
+            if [ -z "$current_value" ]; then
+                log_warning "$secret_name: Manual configuration required (empty)"
+                manual=$((manual + 1))
+            else
+                log_info "$secret_name: Manual configuration (set)"
+                valid=$((valid + 1))
             fi
+        elif [ -z "$current_value" ]; then
+            log_error "$secret_name: Missing"
+            missing=$((missing + 1))
+        elif [[ "$current_value" =~ CHANGE_ME ]]; then
+            log_error "$secret_name: Contains placeholder"
+            placeholders=$((placeholders + 1))
+        else
+            log_success "$secret_name: Valid"
+            valid=$((valid + 1))
         fi
-        
-        total_count=$((total_count+1))
-        
-        local value="${!secret_name}"
-        local method=$(echo "${REQUIRED_SECRETS[$secret_name]}" | cut -d: -f1)
-        
-        # Check if secret is set
-        if [ -z "$value" ]; then
-            log_error "✗ $secret_name - NOT SET"
-            issues+=("$secret_name is not set")
-            missing_count=$((missing_count+1))
-            continue
-        fi
-        
-        # Check for placeholder values
-        if [[ "$value" =~ CHANGE_ME|UPDATE_ME|GENERATE|your_|xxx ]]; then
-            log_warning "⚠ $secret_name - PLACEHOLDER VALUE"
-            issues+=("$secret_name contains placeholder value")
-            weak_count=$((weak_count+1))
-            continue
-        fi
-        
-        # Validate based on method
-        case $method in
-            password)
-                if [ ${#value} -lt 12 ]; then
-                    log_warning "⚠ $secret_name - TOO SHORT (${#value} chars)"
-                    issues+=("$secret_name is too short")
-                    weak_count=$((weak_count+1))
-                else
-                    log_success "✓ $secret_name"
-                    valid_count=$((valid_count+1))
-                fi
-                ;;
-            hex)
-                local expected_length=$(echo "${REQUIRED_SECRETS[$secret_name]}" | cut -d: -f2)
-                if [ ${#value} -ne $expected_length ]; then
-                    log_warning "⚠ $secret_name - WRONG LENGTH (expected $expected_length, got ${#value})"
-                    issues+=("$secret_name has wrong length")
-                    weak_count=$((weak_count+1))
-                else
-                    log_success "✓ $secret_name"
-                    valid_count=$((valid_count+1))
-                fi
-                ;;
-            base64|alias)
-                log_success "✓ $secret_name"
-                valid_count=$((valid_count+1))
-                ;;
-            manual)
-                if [ "$value" = "CHANGE_ME_MANUALLY" ]; then
-                    log_warning "⚠ $secret_name - NEEDS MANUAL CONFIGURATION"
-                    issues+=("$secret_name needs manual configuration")
-                    weak_count=$((weak_count+1))
-                else
-                    log_success "✓ $secret_name"
-                    valid_count=$((valid_count+1))
-                fi
-                ;;
-            htpasswd)
-                if [[ ! "$value" =~ : ]]; then
-                    log_error "✗ $secret_name - INVALID FORMAT"
-                    issues+=("$secret_name has invalid htpasswd format")
-                    missing_count=$((missing_count+1))
-                else
-                    log_success "✓ $secret_name"
-                    valid_count=$((valid_count+1))
-                fi
-                ;;
-        esac
     done
     
     echo ""
-    echo "═══════════════════════════════════════════════════════"
-    echo "  Validation Summary"
-    echo "═══════════════════════════════════════════════════════"
-    echo ""
-    echo "  Total Secrets:    $total_count"
-    echo -e "  ${GREEN}Valid:            $valid_count${NC}"
-    echo -e "  ${YELLOW}Weak/Placeholder: $weak_count${NC}"
-    echo -e "  ${RED}Missing:          $missing_count${NC}"
-    echo ""
+    log_info "Summary: $valid valid, $missing missing, $placeholders with placeholders, $manual manual"
     
-    if [ $missing_count -eq 0 ] && [ $weak_count -eq 0 ]; then
-        log_success "✓ All secrets are properly configured!"
+    if [ $missing -eq 0 ] && [ $placeholders -eq 0 ]; then
+        log_success "All secrets are configured!"
         return 0
     else
-        if [ $missing_count -gt 0 ]; then
-            log_error "Some secrets are missing or invalid"
-        fi
-        if [ $weak_count -gt 0 ]; then
-            log_warning "Some secrets need attention"
-        fi
-        
-        echo ""
-        log_info "Issues found:"
-        for issue in "${issues[@]}"; do
-            echo "  • $issue"
-        done
-        echo ""
-        log_info "Run: kompose secrets generate --force"
+        log_error "Some secrets need attention"
+        log_info "Run: kompose secrets generate"
         return 1
     fi
 }
 
-# ============================================================================
-# SECRET LISTING
-# ============================================================================
-
-secrets_list() {
-    local stack_filter=${1:-"all"}
-    local show_values=${2:-false}
+# List all secrets
+list_secrets() {
+    local stack="${1:-all}"
     
-    local secrets_file=$(secrets_file_path)
-    
-    if [ -f "$secrets_file" ]; then
-        set -a
-        source "$secrets_file" 2>/dev/null
-        set +a
-    fi
-    
+    echo -e "${CYAN}╔════════════════════════════════════════════════════════════════╗${NC}"
+    echo -e "${CYAN}║                       Secrets Overview                         ║${NC}"
+    echo -e "${CYAN}╚════════════════════════════════════════════════════════════════╝${NC}"
     echo ""
-    log_info "═══════════════════════════════════════════════════════"
-    if [ "$stack_filter" = "all" ]; then
-        log_info "  All Secrets"
+    
+    if [ "$stack" = "all" ]; then
+        # List all stacks
+        for stack_name in "${!STACK_SECRETS[@]}"; do
+            echo -e "${BLUE}━━━ ${stack_name^^} Stack ━━━${NC}"
+            
+            local secrets_list="${STACK_SECRETS[$stack_name]}"
+            for secret_name in $secrets_list; do
+                local definition="${SECRET_DEFINITIONS[$secret_name]}"
+                local current_value=$(get_secret_value "$secret_name")
+                local status=""
+                
+                if [ "$definition" = "skip" ]; then
+                    if [ -z "$current_value" ]; then
+                        status="${YELLOW}[MANUAL]${NC}"
+                    else
+                        status="${GREEN}[SET]${NC}"
+                    fi
+                elif [ -z "$current_value" ]; then
+                    status="${RED}[MISSING]${NC}"
+                elif [[ "$current_value" =~ CHANGE_ME ]]; then
+                    status="${YELLOW}[PLACEHOLDER]${NC}"
+                else
+                    status="${GREEN}[OK]${NC}"
+                fi
+                
+                printf "  %-40s %s %s\n" "$secret_name" "$status" "(${definition})"
+            done
+            echo ""
+        done
     else
-        log_info "  Secrets for Stack: $stack_filter"
-    fi
-    log_info "═══════════════════════════════════════════════════════"
-    echo ""
-    
-    local current_stack=""
-    local count=0
-    
-    for secret_name in $(echo "${!REQUIRED_SECRETS[@]}" | tr ' ' '\n' | sort); do
-        # Filter by stack if requested
-        local stacks="${SECRET_STACK_MAP[$secret_name]}"
-        if [ "$stack_filter" != "all" ] && [[ ! ",$stacks," =~ ",$stack_filter," ]]; then
-            continue
+        # List specific stack
+        if [ -z "${STACK_SECRETS[$stack]}" ]; then
+            log_error "Unknown stack: $stack"
+            log_info "Available stacks: ${!STACK_SECRETS[@]}"
+            return 1
         fi
         
-        # Print stack header if changed
-        if [ "$stacks" != "$current_stack" ]; then
-            if [ -n "$current_stack" ]; then
-                echo ""
+        echo -e "${BLUE}━━━ ${stack^^} Stack Secrets ━━━${NC}"
+        echo ""
+        
+        local secrets_list="${STACK_SECRETS[$stack]}"
+        for secret_name in $secrets_list; do
+            local definition="${SECRET_DEFINITIONS[$secret_name]}"
+            local current_value=$(get_secret_value "$secret_name")
+            local status=""
+            
+            if [ "$definition" = "skip" ]; then
+                if [ -z "$current_value" ]; then
+                    status="${YELLOW}[MANUAL]${NC}"
+                else
+                    status="${GREEN}[SET]${NC}"
+                fi
+            elif [ -z "$current_value" ]; then
+                status="${RED}[MISSING]${NC}"
+            elif [[ "$current_value" =~ CHANGE_ME ]]; then
+                status="${YELLOW}[PLACEHOLDER]${NC}"
+            else
+                status="${GREEN}[OK]${NC}"
             fi
-            echo "${CYAN}${stacks^^}:${NC}"
-            current_stack="$stacks"
-        fi
-        
-        local value="${!secret_name}"
-        local method=$(echo "${REQUIRED_SECRETS[$secret_name]}" | cut -d: -f1)
-        local status_icon="○"
-        local status_color="$NC"
-        
-        if [ -n "$value" ] && [[ ! "$value" =~ CHANGE_ME|UPDATE_ME|GENERATE|your_|xxx ]]; then
-            status_icon="●"
-            status_color="$GREEN"
-        elif [ -n "$value" ]; then
-            status_icon="◐"
-            status_color="$YELLOW"
-        else
-            status_icon="○"
-            status_color="$RED"
-        fi
-        
-        printf "  ${status_color}${status_icon}${NC} %-30s %s\n" "$secret_name" "${SECRET_DESCRIPTIONS[$secret_name]}"
-        
-        if [ "$show_values" = "true" ] && [ -n "$value" ]; then
-            echo "    ${CYAN}Value:${NC} ${value:0:20}..."
-        fi
-        
-        count=$((count+1))
-    done
-    
-    echo ""
-    echo "${count} secrets listed"
-    echo ""
-    echo "Legend: ${GREEN}●${NC} Set  ${YELLOW}◐${NC} Placeholder  ${RED}○${NC} Missing"
-    echo ""
-    
-    if [ "$show_values" = "false" ]; then
-        log_info "Use --show-values to display secret values"
+            
+            printf "  %-40s %s\n" "$secret_name" "$status"
+            printf "    Type: %s\n" "${definition}"
+            if [ -n "$current_value" ] && [[ ! "$current_value" =~ CHANGE_ME ]]; then
+                printf "    Value: %s\n" "${current_value:0:8}..."
+            fi
+            echo ""
+        done
     fi
 }
 
-# ============================================================================
-# SECRET ROTATION
-# ============================================================================
-
-secrets_rotate() {
-    local secret_name=$1
+# Rotate a secret
+rotate_secret() {
+    local secret_name="$1"
     
     if [ -z "$secret_name" ]; then
         log_error "Secret name required"
-        echo "Usage: kompose secrets rotate SECRET_NAME"
-        return 1
-    fi
-    
-    if [ -z "${REQUIRED_SECRETS[$secret_name]}" ]; then
-        log_error "Unknown secret: $secret_name"
-        return 1
-    fi
-    
-    local method=$(echo "${REQUIRED_SECRETS[$secret_name]}" | cut -d: -f1)
-    
-    if [ "$method" = "manual" ]; then
-        log_error "$secret_name requires manual configuration, cannot auto-rotate"
+        log_info "Usage: kompose secrets rotate SECRET_NAME"
         return 1
     fi
     
     log_warning "Rotating secret: $secret_name"
-    echo ""
-    log_info "${SECRET_DESCRIPTIONS[$secret_name]}"
-    echo ""
+    log_warning "This will generate a new value and update secrets.env"
     
-    # Get affected stacks
-    local stacks="${SECRET_STACK_MAP[$secret_name]}"
-    log_warning "This will affect stacks: ${YELLOW}${stacks}${NC}"
-    echo ""
-    
-    read -p "Continue with rotation? (y/N): " -r
-    echo ""
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        log_info "Aborted"
+    read -p "Continue? (yes/no): " confirm
+    if [[ "$confirm" != "yes" ]]; then
+        log_info "Rotation cancelled"
         return 0
     fi
     
-    # Backup first
-    backup_secrets_file
-    echo ""
+    # Backup current value
+    local old_value=$(get_secret_value "$secret_name")
+    if [ -n "$old_value" ]; then
+        log_info "Backing up old value..."
+        backup_secrets "before-rotate-${secret_name}"
+    fi
     
     # Generate new value
-    local param=$(echo "${REQUIRED_SECRETS[$secret_name]}" | cut -d: -f2)
-    local new_value=$(generate_secret_value "$method" "$param")
-    
-    # Update secrets.env
-    secrets_set "$secret_name" "$new_value"
-    
-    echo ""
-    log_success "Secret rotated successfully"
-    echo ""
-    log_warning "Remember to restart affected stacks:"
-    echo ""
-    for stack in $(echo "$stacks" | tr ',' ' '); do
-        echo "  ./kompose.sh restart $stack"
-    done
-    echo ""
-}
-
-secrets_set() {
-    local secret_name=$1
-    local value=$2
-    local secrets_file=$(secrets_file_path)
-    
-    if [ ! -f "$secrets_file" ]; then
-        log_error "secrets.env not found"
-        return 1
-    fi
-    
-    # Check if secret exists in file
-    if grep -q "^${secret_name}=" "$secrets_file"; then
-        # Update existing
-        sed -i.bak "s|^${secret_name}=.*|${secret_name}=${value}|" "$secrets_file"
-        log_success "Updated $secret_name in secrets.env"
-    else
-        # Add new
-        echo "${secret_name}=${value}" >> "$secrets_file"
-        log_success "Added $secret_name to secrets.env"
-    fi
-}
-
-# ============================================================================
-# SECRET EXPORT/IMPORT
-# ============================================================================
-
-secrets_export() {
-    local output_file=${1:-"secrets-export.json"}
-    local secrets_file=$(secrets_file_path)
-    
-    if [ ! -f "$secrets_file" ]; then
-        log_error "secrets.env not found"
-        return 1
-    fi
-    
-    log_warning "Exporting secrets to: $output_file"
-    log_warning "This file will contain sensitive data!"
-    echo ""
-    
-    read -p "Continue? (y/N): " -r
-    echo ""
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        log_info "Aborted"
+    if generate_single_secret "$secret_name" "true"; then
+        log_success "Secret rotated successfully"
+        log_warning "Remember to restart affected services!"
+        
+        # Show which stacks use this secret
+        echo ""
+        log_info "This secret is used by:"
+        for stack_name in "${!STACK_SECRETS[@]}"; do
+            if [[ "${STACK_SECRETS[$stack_name]}" =~ $secret_name ]]; then
+                echo "  - $stack_name"
+            fi
+        done
+        
         return 0
+    else
+        log_error "Failed to rotate secret"
+        return 1
+    fi
+}
+
+# Backup secrets.env
+backup_secrets() {
+    local suffix="${1:-$(date +%Y%m%d_%H%M%S)}"
+    
+    if [ ! -f "$SECRETS_ENV_FILE" ]; then
+        log_error "No secrets.env file to backup"
+        return 1
     fi
     
-    # Source secrets
-    set -a
-    source "$secrets_file" 2>/dev/null
-    set +a
+    mkdir -p "$SECRETS_BACKUP_DIR"
     
-    # Create JSON export
+    local backup_file="${SECRETS_BACKUP_DIR}/secrets.env.${suffix}"
+    cp "$SECRETS_ENV_FILE" "$backup_file"
+    chmod 600 "$backup_file"
+    
+    log_success "Secrets backed up to: $backup_file"
+    return 0
+}
+
+# Export secrets to JSON
+export_secrets() {
+    local output_file="${1:-secrets.json}"
+    local include_values="${2:-false}"
+    
+    if [ ! -f "$SECRETS_ENV_FILE" ]; then
+        log_error "No secrets.env file to export"
+        return 1
+    fi
+    
+    log_info "Exporting secrets to $output_file..."
+    
     echo "{" > "$output_file"
-    echo "  \"exported_at\": \"$(date -Iseconds)\"," >> "$output_file"
-    echo "  \"secrets\": {" >> "$output_file"
+    echo '  "secrets": {' >> "$output_file"
     
     local first=true
-    for secret_name in $(echo "${!REQUIRED_SECRETS[@]}" | tr ' ' '\n' | sort); do
-        local value="${!secret_name}"
-        if [ -n "$value" ]; then
-            if [ "$first" = false ]; then
-                echo "," >> "$output_file"
-            fi
-            printf "    \"%s\": \"%s\"" "$secret_name" "$value" >> "$output_file"
+    for secret_name in "${!SECRET_DEFINITIONS[@]}"; do
+        local definition="${SECRET_DEFINITIONS[$secret_name]}"
+        local current_value=$(get_secret_value "$secret_name")
+        
+        if [ "$first" = true ]; then
             first=false
+        else
+            echo "," >> "$output_file"
         fi
+        
+        echo -n "    \"$secret_name\": {" >> "$output_file"
+        echo -n " \"type\": \"${definition}\"" >> "$output_file"
+        
+        if [ "$include_values" = "true" ] && [ -n "$current_value" ]; then
+            echo -n ", \"value\": \"$current_value\"" >> "$output_file"
+        fi
+        
+        echo -n " }" >> "$output_file"
     done
     
     echo "" >> "$output_file"
-    echo "  }" >> "$output_file"
+    echo "  }," >> "$output_file"
+    echo "  \"generated\": \"$(date -Iseconds)\"," >> "$output_file"
+    echo "  \"version\": \"1.0\"" >> "$output_file"
     echo "}" >> "$output_file"
     
-    log_success "Secrets exported to: $output_file"
-    log_warning "Keep this file secure!"
+    chmod 600 "$output_file"
+    log_success "Secrets exported to $output_file"
 }
 
 # ============================================================================
-# SECRETS COMMAND HANDLER
+# COMMAND HANDLER
 # ============================================================================
 
 handle_secrets_command() {
-    local subcmd=${1:-list}
+    local subcommand="$1"
     shift
     
-    # Parse options
-    local FORCE=false
-    local SHOW_VALUES=false
-    local STACK_FILTER="all"
-    
-    while [ $# -gt 0 ]; do
-        case $1 in
-            -f|--force)
-                FORCE=true
-                shift
-                ;;
-            -s|--stack)
-                STACK_FILTER="$2"
-                shift 2
-                ;;
-            --show-values)
-                SHOW_VALUES=true
-                shift
-                ;;
-            *)
-                break
-                ;;
-        esac
-    done
-    
-    case $subcmd in
-        generate|gen)
-            if [ $# -gt 0 ]; then
-                secrets_generate_single "$1" "$FORCE"
+    case $subcommand in
+        generate)
+            local secret_name="${1:-}"
+            local force=false
+            
+            # Parse options
+            while [ $# -gt 0 ]; do
+                case $1 in
+                    -f|--force)
+                        force=true
+                        shift
+                        ;;
+                    *)
+                        secret_name="$1"
+                        shift
+                        ;;
+                esac
+            done
+            
+            if [ -z "$secret_name" ]; then
+                generate_all_secrets "$force"
             else
-                secrets_generate_all "$FORCE"
+                generate_single_secret "$secret_name" "$force"
             fi
             ;;
-        validate|check)
-            secrets_validate "$STACK_FILTER"
+            
+        validate)
+            validate_secrets
             ;;
-        list|ls)
-            secrets_list "$STACK_FILTER" "$SHOW_VALUES"
+            
+        list)
+            local stack="${1:-all}"
+            list_secrets "$stack"
             ;;
+            
         rotate)
-            if [ $# -eq 0 ]; then
+            local secret_name="$1"
+            if [ -z "$secret_name" ]; then
                 log_error "Secret name required"
-                echo "Usage: kompose secrets rotate SECRET_NAME"
+                log_info "Usage: kompose secrets rotate SECRET_NAME"
                 exit 1
             fi
-            secrets_rotate "$1"
+            rotate_secret "$secret_name"
             ;;
+            
         set)
-            if [ $# -lt 2 ]; then
+            local secret_name="$1"
+            local secret_value="$2"
+            
+            if [ -z "$secret_name" ] || [ -z "$secret_value" ]; then
                 log_error "Secret name and value required"
-                echo "Usage: kompose secrets set SECRET_NAME VALUE"
+                log_info "Usage: kompose secrets set SECRET_NAME VALUE"
                 exit 1
             fi
-            secrets_set "$1" "$2"
+            
+            if set_secret_value "$secret_name" "$secret_value"; then
+                log_success "Secret $secret_name updated"
+            else
+                log_error "Failed to update secret"
+                exit 1
+            fi
             ;;
+            
         backup)
-            backup_secrets_file
+            backup_secrets "$1"
             ;;
+            
         export)
-            secrets_export "$1"
+            local output_file="${1:-secrets.json}"
+            local include_values=false
+            
+            if [ "$2" = "--with-values" ]; then
+                log_warning "Exporting with values - keep this file secure!"
+                include_values=true
+            fi
+            
+            export_secrets "$output_file" "$include_values"
             ;;
-        help|-h|--help)
-            cat << EOF
-Secrets Management Commands:
-
-  ./kompose.sh secrets <command> [options]
-
-Commands:
-  generate [NAME]    Generate all secrets or a specific secret
-  validate           Validate secrets configuration
-  list              List all secrets and their status
-  rotate NAME        Rotate a specific secret (generate new value)
-  set NAME VALUE     Set a specific secret value
-  backup            Create backup of secrets.env
-  export [FILE]      Export secrets to JSON file
-
-Options:
-  -f, --force        Force operation without confirmation
-  -s, --stack STACK  Filter secrets by stack
-  --show-values      Show actual secret values (use with caution)
-
-Examples:
-  # Generate all secrets
-  kompose secrets generate
-
-  # Generate specific secret
-  kompose secrets generate OAUTH2_COOKIE_SECRET
-
-  # Validate secrets
-  kompose secrets validate
-
-  # List secrets for a specific stack
-  kompose secrets list -s auth
-
-  # Rotate a secret
-  kompose secrets rotate DB_PASSWORD
-
-  # Set a secret manually
-  kompose secrets set KMPS_CLIENT_SECRET abc123xyz
-
-EOF
-            ;;
+            
         *)
-            log_error "Unknown secrets command: $subcmd"
+            log_error "Unknown secrets command: $subcommand"
             echo ""
-            echo "Available commands: generate, validate, list, rotate, set, backup, export, help"
+            echo "Available commands:"
+            echo "  generate [SECRET]  - Generate all secrets or specific secret"
+            echo "  validate           - Validate secrets configuration"
+            echo "  list [STACK]       - List all secrets or secrets for a specific stack"
+            echo "  rotate SECRET      - Rotate (regenerate) a specific secret"
+            echo "  set SECRET VALUE   - Set a specific secret value"
+            echo "  backup [SUFFIX]    - Backup secrets.env file"
+            echo "  export [FILE]      - Export secrets metadata to JSON"
+            echo ""
+            echo "Options:"
+            echo "  -f, --force        - Force operation (overwrite existing secrets)"
+            echo "  --with-values      - Include secret values in export (use with caution)"
             exit 1
             ;;
     esac
