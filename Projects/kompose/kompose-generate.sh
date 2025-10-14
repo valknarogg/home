@@ -715,7 +715,7 @@ handle_generate_command() {
         echo "  kompose generate list           # List custom stacks"
         echo "  kompose generate show myapp     # Show stack info"
         echo "  kompose generate delete myapp   # Delete stack"
-        exit 1
+        return 1
     fi
     
     local subcmd=$1

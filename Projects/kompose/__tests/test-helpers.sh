@@ -186,6 +186,49 @@ assert_directory_exists() {
     fi
 }
 
+assert_true() {
+    local command="$1"
+    local test_name="$2"
+    
+    TESTS_RUN=$((TESTS_RUN+1))
+    
+    set +e
+    eval "$command"
+    local result=$?
+    set -e
+    
+    if [ $result -eq 0 ]; then
+        log_pass "$test_name"
+        return 0
+    else
+        log_fail "$test_name"
+        echo "  Command failed: $command"
+        echo "  Exit code: $result"
+        return 1
+    fi
+}
+
+assert_false() {
+    local command="$1"
+    local test_name="$2"
+    
+    TESTS_RUN=$((TESTS_RUN+1))
+    
+    set +e
+    eval "$command"
+    local result=$?
+    set -e
+    
+    if [ $result -ne 0 ]; then
+        log_pass "$test_name"
+        return 0
+    else
+        log_fail "$test_name"
+        echo "  Command should have failed: $command"
+        return 1
+    fi
+}
+
 # ============================================================================
 # SNAPSHOT TESTING
 # ============================================================================
@@ -305,6 +348,19 @@ setup_test_env() {
     
     # Clean temp directory
     rm -rf "${TEMP_DIR}"/*
+    mkdir -p "${TEMP_DIR}"
+    
+    # Create minimal .env file if it doesn't exist (needed by some commands)
+    if [ ! -f "${KOMPOSE_ROOT}/.env" ] && [ ! -f "${KOMPOSE_ROOT}/.env.local" ]; then
+        log_info "Creating minimal .env for testing..."
+        cat > "${KOMPOSE_ROOT}/.env.test" << 'EOF'
+# Minimal test environment configuration
+TIMEZONE=Europe/Amsterdam
+NETWORK_NAME=kompose
+NODE_ENV=test
+ENVIRONMENT=test
+EOF
+    fi
     
     log_info "Test environment ready"
 }
@@ -400,6 +456,7 @@ container_is_healthy() {
 export -f log_test log_pass log_fail log_skip log_info log_warning log_error log_success log_section
 export -f assert_equals assert_contains assert_not_contains assert_exit_code
 export -f assert_file_exists assert_directory_exists
+export -f assert_true assert_false
 export -f normalize_output create_snapshot update_snapshot compare_snapshot
 export -f run_kompose run_kompose_quiet capture_output
 export -f setup_test_env cleanup_test_env print_test_summary
