@@ -616,3 +616,161 @@ EOF
             ;;
     esac
 }
+
+# ============================================================================
+# STACK UTILITY FUNCTIONS
+# ============================================================================
+# These functions are used by kompose-stack.sh for internal operations
+
+# Export environment variables for a stack
+# This loads .env files and exports variables to the shell
+export_stack_env() {
+    local stack="$1"
+    
+    # Load root .env file if it exists
+    if [ -f "${STACKS_ROOT}/.env" ]; then
+        set -a
+        source "${STACKS_ROOT}/.env"
+        set +a
+    fi
+    
+    # Load domain.env if it exists
+    if [ -f "${STACKS_ROOT}/domain.env" ]; then
+        set -a
+        source "${STACKS_ROOT}/domain.env"
+        set +a
+    fi
+    
+    # Load secrets.env if it exists
+    if [ -f "${STACKS_ROOT}/secrets.env" ]; then
+        set -a
+        source "${STACKS_ROOT}/secrets.env"
+        set +a
+    fi
+    
+    # Determine stack directory
+    local stack_dir="${STACKS_ROOT}/${stack}"
+    if [ ! -d "$stack_dir" ] || [ ! -f "${stack_dir}/${COMPOSE_FILE}" ]; then
+        stack_dir="${STACKS_ROOT}/+custom/${stack}"
+    fi
+    
+    # Load stack-specific .env if it exists
+    if [ -f "${stack_dir}/.env" ]; then
+        set -a
+        source "${stack_dir}/.env"
+        set +a
+    fi
+}
+
+# Validate environment variables for a stack
+validate_stack_env() {
+    local stack="$1"
+    local has_errors=false
+    
+    # Check if stack has defined variables
+    if [ -z "${ENV_VARS[$stack]}" ]; then
+        # Stack doesn't have predefined variables, skip validation
+        return 0
+    fi
+    
+    # Export environment to check variables
+    export_stack_env "$stack" > /dev/null 2>&1
+    
+    # Check required variables
+    while IFS= read -r line; do
+        [ -z "$line" ] && continue
+        
+        local parsed=$(parse_env_line "$line")
+        local var_name=$(echo "$parsed" | cut -d'|' -f1)
+        local required=$(echo "$parsed" | cut -d'|' -f4)
+        
+        if [ "$required" = "yes" ]; then
+            # Check if variable is set and not empty
+            if [ -z "${!var_name}" ]; then
+                if [ "$has_errors" = false ]; then
+                    echo ""
+                    log_error "Missing required environment variables for stack: $stack"
+                    echo ""
+                    has_errors=true
+                fi
+                echo -e "  ${RED}✗${NC} ${YELLOW}$var_name${NC} - not set"
+            fi
+        fi
+    done <<< "${ENV_VARS[$stack]}"
+    
+    if [ "$has_errors" = true ]; then
+        echo ""
+        log_info "Run 'kompose env list $stack' to see all required variables"
+        log_info "Run 'kompose env generate $stack' to create .env.example file"
+        return 1
+    fi
+    
+    return 0
+}
+
+# Show environment variables for a stack
+show_stack_env() {
+    local stack="$1"
+    
+    # Export environment to get current values
+    export_stack_env "$stack" > /dev/null 2>&1
+    
+    echo ""
+    echo -e "${CYAN}Environment configuration for stack: ${MAGENTA}$stack${NC}"
+    echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+    echo ""
+    
+    if [ -z "${ENV_VARS[$stack]}" ]; then
+        log_warning "No predefined variables for this stack"
+        echo ""
+        log_info "Showing all exported variables matching stack name..."
+        echo ""
+        
+        # Show variables that start with the stack name (uppercase)
+        local stack_upper=$(echo "$stack" | tr '[:lower:]' '[:upper:]')
+        env | grep "^${stack_upper}_" | sort | while IFS='=' read -r var_name var_value; do
+            echo -e "  ${YELLOW}$var_name${NC} = $var_value"
+        done
+        echo ""
+        return 0
+    fi
+    
+    # Show defined variables with their current values
+    while IFS= read -r line; do
+        [ -z "$line" ] && continue
+        
+        local parsed=$(parse_env_line "$line")
+        local var_name=$(echo "$parsed" | cut -d'|' -f1)
+        local default_value=$(echo "$parsed" | cut -d'|' -f2)
+        local description=$(echo "$parsed" | cut -d'|' -f3)
+        local required=$(echo "$parsed" | cut -d'|' -f4)
+        
+        # Get current value
+        local current_value="${!var_name}"
+        
+        # Determine status
+        local status
+        if [ -n "$current_value" ]; then
+            status="${GREEN}✓ SET${NC}"
+        elif [ "$required" = "yes" ]; then
+            status="${RED}✗ MISSING${NC}"
+        else
+            status="${YELLOW}○ UNSET${NC}"
+        fi
+        
+        echo -e "${YELLOW}$var_name${NC} $status"
+        
+        if [ -n "$current_value" ]; then
+            # Mask sensitive values
+            if [[ $var_name =~ PASSWORD|SECRET|TOKEN|KEY ]]; then
+                echo -e "  ${CYAN}Value:${NC} ${MAGENTA}[MASKED]${NC}"
+            else
+                echo -e "  ${CYAN}Value:${NC} $current_value"
+            fi
+        elif [ -n "$default_value" ]; then
+            echo -e "  ${CYAN}Default:${NC} $default_value"
+        fi
+        
+        echo ""
+    done <<< "${ENV_VARS[$stack]}"
+}
