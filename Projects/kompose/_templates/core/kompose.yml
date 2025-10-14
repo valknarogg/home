@@ -1,0 +1,572 @@
+# ============================================================================
+# Kompose Template Configuration - Core Stack
+# ============================================================================
+# This file defines all environment variables and secrets used by the stack
+# Used by kompose-generate.sh to create a complete, working stack
+# ============================================================================
+
+name: core
+description: Core infrastructure services - PostgreSQL, Redis, MQTT Broker
+version: 1.0.0
+
+# ============================================================================
+# Environment Variables
+# ============================================================================
+environment:
+  # Project Configuration
+  - name: CORE_COMPOSE_PROJECT_NAME
+    default: core
+    description: Core stack project name
+    required: yes
+  
+  # PostgreSQL Configuration
+  - name: CORE_POSTGRES_IMAGE
+    default: postgres:16-alpine
+    description: PostgreSQL Docker image
+    required: no
+  
+  - name: CORE_DB_HOST
+    default: core_postgres
+    description: PostgreSQL host (container name)
+    required: yes
+  
+  - name: CORE_DB_PORT
+    default: 5432
+    description: PostgreSQL port
+    required: yes
+  
+  - name: CORE_DB_NAME
+    default: kompose
+    description: Main database name
+    required: yes
+  
+  - name: DB_USER
+    default: kompose
+    description: PostgreSQL database user
+    required: yes
+  
+  - name: CORE_POSTGRES_MAX_CONNECTIONS
+    default: 100
+    description: Maximum PostgreSQL connections
+    required: no
+  
+  - name: CORE_POSTGRES_SHARED_BUFFERS
+    default: 256MB
+    description: PostgreSQL shared memory buffers
+    required: no
+  
+  # Redis Configuration
+  - name: CORE_REDIS_IMAGE
+    default: redis:7-alpine
+    description: Redis Docker image
+    required: no
+  
+  - name: CORE_REDIS_HOST
+    default: core_redis
+    description: Redis host (container name)
+    required: yes
+  
+  - name: CORE_REDIS_PORT
+    default: 6379
+    description: Redis port
+    required: yes
+  
+  # MQTT/Mosquitto Configuration
+  - name: CORE_MOSQUITTO_IMAGE
+    default: eclipse-mosquitto:2
+    description: MQTT broker Docker image
+    required: no
+  
+  - name: CORE_MQTT_PORT
+    default: 1883
+    description: MQTT broker port
+    required: yes
+  
+  - name: CORE_MQTT_WS_PORT
+    default: 9001
+    description: MQTT WebSocket port
+    required: no
+  
+  # Redis Commander (Web UI) Configuration
+  - name: CORE_REDIS_COMMANDER_IMAGE
+    default: rediscommander/redis-commander:latest
+    description: Redis Commander Docker image
+    required: no
+  
+  - name: CORE_REDIS_API_PORT
+    default: 8081
+    description: Redis Commander web UI port
+    required: no
+  
+  - name: CORE_REDIS_API_USER
+    default: admin
+    description: Redis Commander web UI username
+    required: yes
+  
+  - name: SUBDOMAIN_CORE_REDIS_API
+    default: redis
+    description: Redis Commander subdomain
+    required: no
+  
+  # Network Configuration
+  - name: NETWORK_NAME
+    default: kompose
+    description: Docker network name for inter-service communication
+    required: yes
+  
+  # Traefik Configuration
+  - name: TRAEFIK_ENABLED_CORE_REDIS_API
+    default: false
+    description: Enable Traefik routing for Redis Commander
+    required: no
+  
+  # System Configuration
+  - name: TIMEZONE
+    default: Europe/Amsterdam
+    description: System timezone for containers
+    required: no
+  
+  # Domain Configuration
+  - name: PROTOCOL
+    default: https
+    description: Protocol (http or https)
+    required: yes
+  
+  - name: ROOT_DOMAIN
+    default: ""
+    description: Root domain for all services (e.g., example.com)
+    required: yes
+
+# ============================================================================
+# Secrets
+# ============================================================================
+secrets:
+  # Shared Database Secret
+  - name: DB_PASSWORD
+    description: PostgreSQL password for database connections
+    required: yes
+    type: password
+    length: 32
+    stacks:
+      - core
+      - auth
+      - chain
+      - code
+      - kmps
+      - link
+      - track
+      - watch
+      - news
+  
+  # Redis Password (Optional - for Redis Commander)
+  - name: REDIS_PASSWORD
+    description: Redis password (optional, leave empty for no password)
+    required: no
+    type: password
+    length: 32
+    stacks:
+      - core
+    notes: Currently Redis is running without password authentication
+  
+  # Redis Commander Password
+  - name: CORE_REDIS_API_PASSWORD
+    description: Redis Commander web UI password
+    required: yes
+    type: password
+    length: 24
+    stacks:
+      - core
+
+# ============================================================================
+# Dependencies
+# ============================================================================
+dependencies:
+  # Required stacks that must be running
+  required: []  # Core has no dependencies - it's the foundation
+  
+  # Optional stacks that enhance functionality
+  optional:
+    - proxy  # Traefik for Redis Commander web access
+
+# ============================================================================
+# Ports
+# ============================================================================
+ports:
+  # PostgreSQL (internal only by default)
+  - container: 5432
+    description: PostgreSQL database port (internal)
+    exposed: false
+    notes: Uncomment in compose.yaml to expose externally
+  
+  # Redis (internal only by default)
+  - container: 6379
+    description: Redis cache port (internal)
+    exposed: false
+    notes: Uncomment in compose.yaml to expose externally
+  
+  # MQTT Broker
+  - container: 1883
+    host: 1883
+    description: MQTT broker port (exposed)
+    exposed: true
+    notes: Required for IoT devices to connect
+  
+  # MQTT WebSocket
+  - container: 9001
+    host: 9001
+    description: MQTT WebSocket port (exposed)
+    exposed: true
+    notes: For web-based MQTT clients
+  
+  # Redis Commander
+  - container: 8081
+    host: 8081
+    description: Redis Commander web UI (exposed)
+    exposed: true
+    notes: Web interface for Redis management
+
+# ============================================================================
+# Volumes
+# ============================================================================
+volumes:
+  - name: postgres_data
+    description: PostgreSQL database files
+    path: /var/lib/postgresql/data
+    backup: yes
+    
+  - name: redis_data
+    description: Redis persistence files
+    path: /data
+    backup: yes
+    
+  - name: mosquitto_data
+    description: Mosquitto persistent data
+    path: /mosquitto/data
+    backup: yes
+    
+  - name: mosquitto_logs
+    description: Mosquitto log files
+    path: /mosquitto/log
+    backup: no
+
+# ============================================================================
+# Health Checks
+# ============================================================================
+healthchecks:
+  postgres:
+    test: 'pg_isready -U kompose'
+    interval: 30s
+    timeout: 10s
+    retries: 3
+    start_period: 40s
+  
+  redis:
+    test: 'redis-cli --raw incr ping'
+    interval: 30s
+    timeout: 10s
+    retries: 3
+    start_period: 20s
+  
+  mosquitto:
+    test: "mosquitto_sub -t '$$SYS/#' -C 1 -i healthcheck -W 3"
+    interval: 30s
+    timeout: 10s
+    retries: 3
+    start_period: 20s
+  
+  redis-api:
+    test: 'wget --spider -q http://localhost:8081'
+    interval: 30s
+    timeout: 10s
+    retries: 3
+    start_period: 20s
+
+# ============================================================================
+# Notes & Documentation
+# ============================================================================
+notes: |
+  # Core Stack - Infrastructure Foundation
+  
+  The core stack provides essential infrastructure services that other stacks
+  depend on. It should be the first stack to start and the last to stop.
+  
+  ## Components
+  
+  ### PostgreSQL
+  - Central relational database for all kompose services
+  - Automatically creates databases for all stacks on first run
+  - Includes initialization script that creates databases for:
+    - kompose (main)
+    - keycloak (auth)
+    - gitea (code)
+    - n8n (chain)
+    - semaphore (chain)
+    - letterspace (news)
+  
+  ### Redis
+  - In-memory cache and session store
+  - Used by OAuth2 Proxy for session management
+  - High-performance key-value storage
+  - Persistence enabled for data durability
+  
+  ### Mosquitto MQTT Broker
+  - IoT message broker using MQTT protocol
+  - Supports standard MQTT (port 1883)
+  - Supports WebSocket connections (port 9001)
+  - Configured for anonymous access (change for production)
+  - Used by home automation (home stack)
+  
+  ### Redis Commander (Optional)
+  - Web-based Redis management interface
+  - View and edit Redis keys
+  - Real-time monitoring
+  - Access at http://redis.yourdomain.com or http://localhost:8081
+  
+  ## Setup Instructions
+  
+  1. **Generate the stack:**
+     ```bash
+     ./kompose-generate.sh core
+     ```
+  
+  2. **Create Docker network (if not exists):**
+     ```bash
+     docker network create kompose
+     ```
+  
+  3. **Start the core stack:**
+     ```bash
+     docker compose -f core/compose.yaml up -d
+     ```
+  
+  4. **Verify services are running:**
+     ```bash
+     docker compose -f core/compose.yaml ps
+     ```
+  
+  5. **Check database initialization:**
+     ```bash
+     docker logs core_postgres | grep "database"
+     ```
+  
+  ## Database Management
+  
+  ### List all databases:
+  ```bash
+  docker exec -it core_postgres psql -U kompose -c "\l"
+  ```
+  
+  ### Connect to a specific database:
+  ```bash
+  docker exec -it core_postgres psql -U kompose -d keycloak
+  ```
+  
+  ### Create a new database manually:
+  ```bash
+  docker exec -it core_postgres psql -U kompose -c "CREATE DATABASE mydb;"
+  docker exec -it core_postgres psql -U kompose -c "GRANT ALL PRIVILEGES ON DATABASE mydb TO kompose;"
+  ```
+  
+  ## Redis Management
+  
+  ### Access Redis CLI:
+  ```bash
+  docker exec -it core_redis redis-cli
+  ```
+  
+  ### Common Redis commands:
+  ```bash
+  # List all keys
+  KEYS *
+  
+  # Get a key value
+  GET mykey
+  
+  # Set a key value
+  SET mykey "value"
+  
+  # Delete a key
+  DEL mykey
+  
+  # Get database info
+  INFO
+  ```
+  
+  ### Access Redis Commander Web UI:
+  - Local: http://localhost:8081
+  - With Traefik: https://redis.yourdomain.com
+  - Username: admin
+  - Password: [from CORE_REDIS_API_PASSWORD]
+  
+  ## MQTT Broker Management
+  
+  ### Test MQTT connection:
+  ```bash
+  # Subscribe to test topic
+  docker exec -it core_mqtt mosquitto_sub -t "test/topic" -v
+  
+  # Publish to test topic (in another terminal)
+  docker exec -it core_mqtt mosquitto_pub -t "test/topic" -m "Hello MQTT"
+  ```
+  
+  ### Monitor all MQTT messages:
+  ```bash
+  docker exec -it core_mqtt mosquitto_sub -t "#" -v
+  ```
+  
+  ### Check broker statistics:
+  ```bash
+  docker exec -it core_mqtt mosquitto_sub -t '$SYS/#' -v
+  ```
+  
+  ## Backup and Restore
+  
+  ### Backup PostgreSQL:
+  ```bash
+  ./kompose.sh db backup -d all --timestamp
+  ```
+  
+  ### Restore PostgreSQL:
+  ```bash
+  ./kompose.sh db restore -f backups/database/backup-TIMESTAMP.sql
+  ```
+  
+  ### Backup Redis:
+  ```bash
+  docker exec core_redis redis-cli SAVE
+  docker cp core_redis:/data/dump.rdb ./backups/redis-$(date +%Y%m%d-%H%M%S).rdb
+  ```
+  
+  ## Troubleshooting
+  
+  ### PostgreSQL won't start
+  - Check if port 5432 is available: `netstat -an | grep 5432`
+  - Check logs: `docker logs core_postgres`
+  - Verify DB_PASSWORD is set in secrets.env
+  - Check volume permissions: `docker volume inspect core_postgres_data`
+  
+  ### Redis won't start
+  - Check if port 6379 is available: `netstat -an | grep 6379`
+  - Check logs: `docker logs core_redis`
+  - Verify Redis data volume: `docker volume inspect core_redis_data`
+  
+  ### MQTT broker connection issues
+  - Verify ports 1883 and 9001 are accessible
+  - Check firewall rules
+  - Review configuration: `docker exec core_mqtt cat /mosquitto/config/mosquitto.conf`
+  - Check logs: `docker logs core_mqtt`
+  
+  ### Redis Commander can't connect
+  - Verify Redis is running: `docker ps | grep redis`
+  - Check REDIS_PASSWORD if Redis auth is enabled
+  - Verify network connectivity: `docker network inspect kompose`
+  
+  ## Security Considerations
+  
+  ### PostgreSQL Security
+  - Always use strong DB_PASSWORD (auto-generated by kompose)
+  - Don't expose port 5432 externally unless necessary
+  - Use SSL/TLS for external connections
+  - Regularly update to latest PostgreSQL image
+  
+  ### Redis Security
+  - Consider enabling Redis password authentication
+  - Don't expose port 6379 externally unless necessary
+  - Use Redis ACLs for multi-tenant scenarios
+  - Enable SSL/TLS for production
+  
+  ### MQTT Security
+  - Change `allow_anonymous` to `false` in production
+  - Configure password authentication
+  - Set up Access Control Lists (ACL)
+  - Use TLS/SSL for encrypted connections
+  - Consider using certificates for client authentication
+  
+  ### Redis Commander Security
+  - Always set a strong CORE_REDIS_API_PASSWORD
+  - Use Traefik with OAuth2 Proxy for additional authentication
+  - Don't expose port 8081 directly to the internet
+  - Enable HTTPS via Traefik
+  
+  ## Performance Tuning
+  
+  ### PostgreSQL Performance
+  - Adjust CORE_POSTGRES_MAX_CONNECTIONS based on workload
+  - Tune CORE_POSTGRES_SHARED_BUFFERS (typically 25% of RAM)
+  - Monitor using: `docker stats core_postgres`
+  - Consider additional tuning via postgresql.conf
+  
+  ### Redis Performance
+  - Redis is already optimized for performance
+  - Monitor memory usage: `docker exec core_redis redis-cli INFO memory`
+  - Adjust maxmemory policy if needed
+  - Consider Redis persistence options (RDB vs AOF)
+  
+  ## Monitoring and Metrics
+  
+  ### Health Check Endpoints
+  - PostgreSQL: `docker exec core_postgres pg_isready`
+  - Redis: `docker exec core_redis redis-cli ping`
+  - Mosquitto: Check $SYS/# topics
+  - Redis Commander: http://localhost:8081/ping
+  
+  ### Resource Usage
+  ```bash
+  docker stats core_postgres core_redis core_mqtt core_redis_api
+  ```
+  
+  ## Integration with Other Stacks
+  
+  ### Stacks that depend on PostgreSQL:
+  - auth (Keycloak database)
+  - code (Gitea database)
+  - chain (n8n and Semaphore databases)
+  - news (Letterspace database)
+  
+  ### Stacks that depend on Redis:
+  - auth (OAuth2 Proxy sessions)
+  - (any stack using Redis for caching)
+  
+  ### Stacks that depend on MQTT:
+  - home (Home Assistant, IoT devices)
+  
+  ## Database Initialization Details
+  
+  The postgres/init/01-init-databases.sh script automatically creates:
+  - kompose - Main application database
+  - keycloak - Authentication service database
+  - gitea - Git repository database
+  - n8n - Workflow automation database
+  - semaphore - Ansible automation database
+  - letterspace - Newsletter service database
+  
+  To add a new database to auto-initialization:
+  1. Edit `postgres/init/01-init-databases.sh`
+  2. Add your database creation SQL
+  3. Restart the stack (database will be created on next init)
+  
+  ## Advanced Configuration
+  
+  ### Custom PostgreSQL Configuration
+  Add a custom postgresql.conf:
+  ```yaml
+  volumes:
+    - ./postgres/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+  command: postgres -c config_file=/etc/postgresql/postgresql.conf
+  ```
+  
+  ### Custom Redis Configuration
+  Add a custom redis.conf:
+  ```yaml
+  volumes:
+    - ./redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+  command: redis-server /usr/local/etc/redis/redis.conf
+  ```
+  
+  ### Custom MQTT Configuration
+  Edit `mosquitto/config/mosquitto.conf` to customize:
+  - Authentication settings
+  - Access control lists
+  - Persistence options
+  - Logging levels
+  - Network listeners

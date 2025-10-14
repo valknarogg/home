@@ -1,0 +1,32 @@
+# Core Stack - Git Ignore
+
+# Environment files with secrets
+.env.local
+.env.production
+secrets.env
+
+# Database dumps and backups
+*.sql
+*.sql.gz
+*.dump
+backups/
+
+# Mosquitto runtime files
+mosquitto/data/*
+mosquitto/log/*
+!mosquitto/data/.gitkeep
+!mosquitto/log/.gitkeep
+
+# Redis runtime files
+redis/data/*
+!redis/data/.gitkeep
+
+# PostgreSQL runtime files
+postgres/data/*
+!postgres/data/.gitkeep
+
+# Temporary files
+*.tmp
+*.log
+.DS_Store
+Thumbs.db

@@ -1,0 +1,139 @@
+name: ${CORE_COMPOSE_PROJECT_NAME}
+
+services:
+  # PostgreSQL - Central Database
+  postgres:
+    image: ${CORE_POSTGRES_IMAGE:-postgres:16-alpine}
+    container_name: ${CORE_COMPOSE_PROJECT_NAME}_postgres
+    restart: unless-stopped
+    environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
+      POSTGRES_USER: ${DB_USER:-kompose}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${CORE_DB_NAME:-kompose}
+      # Performance tuning
+      POSTGRES_MAX_CONNECTIONS: ${CORE_POSTGRES_MAX_CONNECTIONS:-100}
+      POSTGRES_SHARED_BUFFERS: ${CORE_POSTGRES_SHARED_BUFFERS:-256MB}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-kompose}"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - kompose_network
+    # PostgreSQL is internal only - no port exposure by default
+    # Uncomment to expose for external access
+    # ports:
+    #   - "${CORE_DB_PORT:-5432}:5432"
+
+  # Redis - Cache & Session Store
+  redis:
+    image: ${CORE_REDIS_IMAGE:-redis:7-alpine}
+    container_name: ${CORE_COMPOSE_PROJECT_NAME}_redis
+    restart: unless-stopped
+    environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - kompose_network
+    # Redis is internal only - no port exposure by default
+    # Uncomment to expose for external access
+    # ports:
+    #   - "${CORE_REDIS_PORT:-6379}:6379"
+
+  # Mosquitto - MQTT Broker
+  mosquitto:
+    image: ${CORE_MOSQUITTO_IMAGE:-eclipse-mosquitto:2}
+    container_name: ${CORE_COMPOSE_PROJECT_NAME}_mqtt
+    restart: unless-stopped
+    environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
+    volumes:
+      - ./mosquitto/config:/mosquitto/config:ro
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_logs:/mosquitto/log
+    healthcheck:
+      test: ["CMD-SHELL", "mosquitto_sub -t '$$SYS/#' -C 1 -i healthcheck -W 3 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - kompose_network
+    # MQTT ports - expose for IoT devices
+    ports:
+      - "${CORE_MQTT_PORT:-1883}:1883"
+      - "${CORE_MQTT_WS_PORT:-9001}:9001"
+
+  # Redis API (Optional - Web UI for Redis)
+  redis-api:
+    image: ${CORE_REDIS_COMMANDER_IMAGE:-rediscommander/redis-commander:latest}
+    container_name: ${CORE_COMPOSE_PROJECT_NAME}_redis_api
+    restart: unless-stopped
+    environment:
+      TZ: ${TIMEZONE:-Europe/Amsterdam}
+      REDIS_HOSTS: local:${CORE_COMPOSE_PROJECT_NAME}_redis:6379:0:${REDIS_PASSWORD}
+      HTTP_USER: ${CORE_REDIS_API_USER:-admin}
+      HTTP_PASSWORD: ${CORE_REDIS_API_PASSWORD}
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8081"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    networks:
+      - kompose_network
+    ports:
+      - "${CORE_REDIS_API_PORT:-8081}:8081"
+    depends_on:
+      redis:
+        condition: service_healthy
+    labels:
+      # Traefik enabled/disabled per service
+      - 'traefik.enable=${TRAEFIK_ENABLED_CORE_REDIS_API:-false}'
+      
+      # HTTP to HTTPS redirect (only for production when PROTOCOL=https)
+      - 'traefik.http.middlewares.${CORE_COMPOSE_PROJECT_NAME}-redis-api-redirect-web-secure.redirectscheme.scheme=${PROTOCOL}'
+      - 'traefik.http.routers.${CORE_COMPOSE_PROJECT_NAME}-redis-api-web.middlewares=${CORE_COMPOSE_PROJECT_NAME}-redis-api-redirect-web-secure'
+      - 'traefik.http.routers.${CORE_COMPOSE_PROJECT_NAME}-redis-api-web.rule=Host(`${SUBDOMAIN_CORE_REDIS_API}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}`)'
+      - 'traefik.http.routers.${CORE_COMPOSE_PROJECT_NAME}-redis-api-web.entrypoints=web'
+      
+      # Secure configuration (HTTPS in production, HTTP in local)
+      - 'traefik.http.routers.${CORE_COMPOSE_PROJECT_NAME}-redis-api-web-secure.rule=Host(`${SUBDOMAIN_CORE_REDIS_API}${ROOT_DOMAIN:+.${ROOT_DOMAIN}}`)'
+      - 'traefik.http.routers.${CORE_COMPOSE_PROJECT_NAME}-redis-api-web-secure.tls.certresolver=${PROTOCOL:+resolver}'
+      - 'traefik.http.routers.${CORE_COMPOSE_PROJECT_NAME}-redis-api-web-secure.tls=${PROTOCOL:+true}'
+      - 'traefik.http.routers.${CORE_COMPOSE_PROJECT_NAME}-redis-api-web-secure.entrypoints=web-secure'
+      
+      # Middlewares
+      - 'traefik.http.middlewares.${CORE_COMPOSE_PROJECT_NAME}-redis-api-web-secure-compress.compress=true'
+      - 'traefik.http.routers.${CORE_COMPOSE_PROJECT_NAME}-redis-api-web-secure.middlewares=${CORE_COMPOSE_PROJECT_NAME}-redis-api-web-secure-compress'
+      
+      # Load balancer configuration
+      - 'traefik.http.services.${CORE_COMPOSE_PROJECT_NAME}-redis-api-web-secure.loadbalancer.server.port=8081'
+      - 'traefik.docker.network=${NETWORK_NAME:-kompose}'
+
+volumes:
+  postgres_data:
+    name: ${CORE_COMPOSE_PROJECT_NAME}_postgres_data
+  redis_data:
+    name: ${CORE_COMPOSE_PROJECT_NAME}_redis_data
+  mosquitto_data:
+    name: ${CORE_COMPOSE_PROJECT_NAME}_mosquitto_data
+  mosquitto_logs:
+    name: ${CORE_COMPOSE_PROJECT_NAME}_mosquitto_logs
+
+networks:
+  kompose_network:
+    name: ${NETWORK_NAME:-kompose}
+    external: true
