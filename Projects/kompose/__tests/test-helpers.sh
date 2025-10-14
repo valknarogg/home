@@ -346,33 +346,46 @@ setup_test_env() {
     # Ensure snapshot directory exists
     mkdir -p "${SNAPSHOT_DIR}"
     
-    # Clean temp directory
-    rm -rf "${TEMP_DIR}"/*
+    # Clean and create temp directory
+    rm -rf "${TEMP_DIR}"
     mkdir -p "${TEMP_DIR}"
     
-    # Create minimal .env file if it doesn't exist (needed by some commands)
-    if [ ! -f "${KOMPOSE_ROOT}/.env" ]; then
-        log_info "Creating minimal .env for testing..."
-        cat > "${KOMPOSE_ROOT}/.env" << 'EOF'
-# Minimal test environment configuration
+    # Create test sandbox structure
+    mkdir -p "${TEMP_DIR}/+custom"
+    mkdir -p "${TEMP_DIR}/_docs/content/5.stacks/+custom"
+    mkdir -p "${TEMP_DIR}/__tests/generated"
+    mkdir -p "${TEMP_DIR}/backups"
+    
+    # Create minimal .env file in temp directory
+    log_info "Creating test .env file..."
+    cat > "${TEMP_DIR}/.env" << 'EOF'
+# Test environment configuration
 TIMEZONE=Europe/Amsterdam
 NETWORK_NAME=kompose
 NODE_ENV=test
 ENVIRONMENT=test
 EOF
+    
+    # Also create in kompose root if needed for non-isolated tests
+    if [ ! -f "${KOMPOSE_ROOT}/.env" ]; then
+        cp "${TEMP_DIR}/.env" "${KOMPOSE_ROOT}/.env"
     fi
     
     log_info "Test environment ready"
+    log_info "Test sandbox: ${TEMP_DIR}"
 }
 
 cleanup_test_env() {
     log_info "Cleaning up test environment..."
     
-    # Remove temp files
-    rm -rf "${TEMP_DIR}"/*
+    # Clean entire temp directory
+    if [ -d "${TEMP_DIR}" ]; then
+        rm -rf "${TEMP_DIR}"
+        log_info "Removed temp directory: ${TEMP_DIR}"
+    fi
     
-    # Don't remove .env as it might be needed for other tests
-    # Tests should handle their own state
+    # Don't remove .env from KOMPOSE_ROOT as it might be needed for other tests
+    # Individual test suites should handle their own specific cleanup
     
     log_info "Cleanup complete"
 }

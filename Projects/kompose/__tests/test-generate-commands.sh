@@ -2,14 +2,19 @@
 
 # test-generate-commands.sh - Tests for generate command
 # Tests the stack generator functionality
+#
+# NOTE: Generate command tests interact with actual project directories
+# because kompose generate uses STACKS_ROOT which points to the real project.
+# Test artifacts are created in the actual project and cleaned up after each test.
+# For true isolation, these should be run as integration tests (-i flag).
 
 source "$(dirname "$0")/test-helpers.sh"
 
-# Test data
+# Test data - use actual project directories since generate command uses STACKS_ROOT
 TEST_STACK_NAME="testapp"
-TEST_CUSTOM_DIR="+custom"
-TEST_DOCS_DIR="_docs/content/5.stacks/+custom"
-TEST_GENERATED_DIR="__tests/generated"
+TEST_CUSTOM_DIR="${KOMPOSE_ROOT}/+custom"
+TEST_DOCS_DIR="${KOMPOSE_ROOT}/_docs/content/5.stacks/+custom"
+TEST_GENERATED_DIR="${KOMPOSE_ROOT}/__tests/generated"
 
 # ============================================================================
 # SETUP AND TEARDOWN
@@ -18,12 +23,17 @@ TEST_GENERATED_DIR="__tests/generated"
 setup_generate_tests() {
     log_test "Setting up generate tests..."
     
-    # Ensure directories exist
+    # Ensure test directories exist
     mkdir -p "$TEST_CUSTOM_DIR"
-    mkdir -p "$TEST_DOCS_DIR"
+    mkdir -p "$TEST_DOCS_DIR" 
     mkdir -p "$TEST_GENERATED_DIR"
     
-    # Clean up any existing test stack
+    # Clean up any existing test stack from previous runs
+    cleanup_test_stack
+}
+
+cleanup_test_stack() {
+    # Remove test stack and all related files
     if [ -d "${TEST_CUSTOM_DIR}/${TEST_STACK_NAME}" ]; then
         rm -rf "${TEST_CUSTOM_DIR}/${TEST_STACK_NAME}"
     fi
@@ -32,22 +42,25 @@ setup_generate_tests() {
     fi
     if [ -f "${TEST_GENERATED_DIR}/test-${TEST_STACK_NAME}.sh" ]; then
         rm -f "${TEST_GENERATED_DIR}/test-${TEST_STACK_NAME}.sh"
+    fi
+    
+    # Also clean up the alternative test stack name
+    if [ -d "${TEST_CUSTOM_DIR}/my-test-app" ]; then
+        rm -rf "${TEST_CUSTOM_DIR}/my-test-app"
+    fi
+    if [ -f "${TEST_DOCS_DIR}/my-test-app.md" ]; then
+        rm -f "${TEST_DOCS_DIR}/my-test-app.md"
+    fi
+    if [ -f "${TEST_GENERATED_DIR}/test-my-test-app.sh" ]; then
+        rm -f "${TEST_GENERATED_DIR}/test-my-test-app.sh"
     fi
 }
 
 teardown_generate_tests() {
     log_test "Cleaning up generate tests..."
     
-    # Remove test stack if it exists
-    if [ -d "${TEST_CUSTOM_DIR}/${TEST_STACK_NAME}" ]; then
-        rm -rf "${TEST_CUSTOM_DIR}/${TEST_STACK_NAME}"
-    fi
-    if [ -f "${TEST_DOCS_DIR}/${TEST_STACK_NAME}.md" ]; then
-        rm -f "${TEST_DOCS_DIR}/${TEST_STACK_NAME}.md"
-    fi
-    if [ -f "${TEST_GENERATED_DIR}/test-${TEST_STACK_NAME}.sh" ]; then
-        rm -f "${TEST_GENERATED_DIR}/test-${TEST_STACK_NAME}.sh"
-    fi
+    # Clean up all test artifacts
+    cleanup_test_stack
 }
 
 # ============================================================================
