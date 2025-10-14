@@ -9,6 +9,17 @@
 # IMPORTANT: Never commit secrets!
 secrets.env
 
+# Active environment files (user-specific)
+.env
+domain.env
+
+# Keep templates (for version control)
+!.env.local
+!.env.production
+!domain.env.local
+!domain.env.production
+!secrets.env.template
+
 # Auto-generated stack environment files (created by kompose-env.sh)
 **/.env.generated
 

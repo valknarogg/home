@@ -492,7 +492,7 @@ generate_environment_files() {
     
     # Generate .env.example files for all stacks
     log_info "Creating .env.example files for each stack..."
-    if command -v handle_env_command &> /dev/null 2>&1; then
+    if declare -f handle_env_command &> /dev/null; then
         handle_env_command "generate" "all" "--force" 2>&1 | grep -E "(Generated|SUCCESS|Skipped)" || true
     else
         log_warning "Environment generation not available yet"
