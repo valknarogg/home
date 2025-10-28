@@ -1,0 +1,5 @@
+fail_fast: false
+default_stages: [pre-commit]
+repos:
+  - repo: local
+    hooks: []

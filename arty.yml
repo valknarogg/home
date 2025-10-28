@@ -1,0 +1,65 @@
+name: "Valknar's home"
+version: "1.0.0"
+description: "Valknar's home repository"
+author: "valknar@pivoine.art"
+license: "MIT"
+
+envs:
+  dev:
+  prod:
+
+
+references:
+- url: git@github.com:butter-sh/butter-sh.github.io.git
+  into: Projects/butter-sh
+  env: dev
+- url: git@github.com:valknarogg/home-pictures.git
+  into: Bilder
+  env: dev
+- url: git@github.com:valknarogg/home-videos.git
+  into: Videos
+  ref: main
+  env: dev
+- url: git@github.com:valknarogg/home-music.git
+  into: Musik
+  ref: main
+  env: dev
+- url: git@github.com:valknarogg/docker-compose.git
+  into: Projects/docker-compose
+  env:
+  - dev
+  - prod
+- url: git@github.com:valknarogg/pivoine.art.git
+  into: Projects/pivoine.art
+  ref: main
+  env: dev
+- url: git@github.com:valknarxxx/sexy.pivoine.art.git
+  into: Projects/sexy.pivoine.art
+  env: dev
+- url: git@github.com:valknarness/awesome.git
+  into: Projects/node.js/awesome
+  env:
+  - dev
+  - prod
+- url: git@github.com:valknarness/awesome-app.git
+  into: Projects/node.js/awesome-app
+  env: dev
+- url: https://github.com/nvm-sh/nvm.git
+  into: .nvm
+- url: https://github.com/moovweb/gvm.git
+  into: .gvm
+- url: https://github.com/rbenv/rbenv.git
+  into: .rbenv
+- url: https://github.com/pyenv/pyenv.git
+  into: .pyenv
+- url: https://github.com/ohmyzsh/ohmyzsh.git
+  into: .oh-my-zsh
+- url: https://github.com/romkatv/powerlevel10k.git
+  into: .oh-my-zsh/custom/themes/powerlevel10k
+- url: https://github.com/zsh-users/zsh-autosuggestions.git
+  into: .oh-my-zsh/custom/plugins/zsh-autosuggestions
+- url: https://github.com/zsh-users/zsh-syntax-highlighting.git
+  into: .oh-my-zsh/custom/plugins/zsh-syntax-highlighting
+
+scripts:
+  debug: echo "$ARTY_BIN_DIR" && echo "$ARTY_LIBS_DIR" && echo "$ARTY_HOME"

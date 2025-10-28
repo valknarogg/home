@@ -1,0 +1,16 @@
+[user]
+	name = Sebastian Krüger
+	email = valknar@pivoine.art
+[filter "lfs"]
+	clean = git-lfs clean -- %f
+	smudge = git-lfs smudge -- %f
+	process = git-lfs filter-process
+	required = true
+[core]
+	editor = nano
+[init]
+	defaultBranch = main
+[alias]
+  	squash-all = "!f(){ git reset $(git commit-tree \"HEAD^{tree}\" \"$@\");};f"
+[push]
+	autoSetupRemote = true
