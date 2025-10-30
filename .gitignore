@@ -39,9 +39,6 @@
 !/.github/
 !/.github/**
 
-!/.init/
-!/.init/**
-
 !.vscode/
 !.vscode/settings.json
 !.vscode/tasks.json

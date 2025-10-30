@@ -387,13 +387,15 @@ This repository uses an **inverted `.gitignore`** pattern:
 !CLAUDE.md
 !README.md
 !.gitignore
-!.init/**
+!.zshrc
 !arty.yml
 !playbook.yml
 ...
 ```
 
 **Why?** To track only essential dotfiles and configurations while ignoring cache, logs, and user data. Your home directory becomes a git repository without the chaos.
+
+**Note**: The `.init/` directory is NOT tracked in git - it exists locally only for shell initialization. This keeps your shell configuration private and machine-specific.
 
 ---
 

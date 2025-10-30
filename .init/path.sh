@@ -64,3 +64,4 @@ fi
 if [ -d "$HOME/Projects/kompose" ] ; then
     export PATH="$PATH:$HOME/Projects/kompose"
 fi
+export PATH="$PATH:/home/valknar/Projects/zed/universal-lsp/target/release"

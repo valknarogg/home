@@ -9,11 +9,17 @@ This is a personal home directory repository managed as a git repository with se
 ## Key Architecture
 
 ### Initialization System
-Shell initialization is managed through `.init/init.sh`, which sources modular configuration:
-- `.init/path.sh` - PATH environment setup for all language toolchains
-- `.init/alias.sh` - Custom shell aliases
-- `.init/functions.sh` - Custom shell functions for deployment and media processing
-- `.init/export.sh`, `.init/source.sh`, `.init/eval.sh` - Additional environment setup
+Shell initialization is managed through `.init/init.sh`, which sources modular configuration in this order:
+1. `.init/path.sh` - PATH environment setup for all language toolchains (Node, Python, Ruby, Rust, Go, Flatpak)
+2. `.init/export.sh` - Environment variable exports
+3. `.init/alias.sh` - Custom shell aliases (ri, g0-g2, rs, ss, yt)
+4. `.init/source.sh` - Source language version managers (nvm, rbenv, pyenv)
+5. `.init/functions.sh` - Custom shell functions for deployment and media processing
+6. `.init/links.sh` - Symbolic link setup
+7. `.init/eval.sh` - Commands requiring eval (rbenv init, pyenv init)
+8. `.init/trap.sh` - Shell trap handlers
+9. `.init/start.sh` - Startup commands
+10. `.init/bin/` - Custom executable scripts
 
 ### Arty Configuration
 `arty.yml` defines the repository structure using Arty (artifact/repository manager):
@@ -25,14 +31,29 @@ Shell initialization is managed through `.init/init.sh`, which sources modular c
 `playbook.yml` is an Ansible playbook for system setup:
 - Installs and configures language runtimes (Node, Python, Ruby, Rust, Go)
 - Sets up Docker, PostgreSQL 18, and development tools
-- Configures Zsh with Oh-My-Zsh and Powerlevel10k theme
+- Configures Zsh with Oh-My-Zsh and Powerlevel10k theme for user and root
 - Manages system packages via apt
+
+Available Ansible tags:
+- `base` - Base packages (make, build-essential, git, curl, wget, rsync, imagemagick, ffmpeg, yt-dlp, fzf)
+- `node` - Node.js via nvm, corepack, and pnpm packages
+- `python` - Python via pyenv, pip packages, and pre-commit setup
+- `ruby` - Ruby via rbenv, bundler, and bundle install
+- `rust` - Rust via rustup with required system packages
+- `zsh` - Zsh shell configuration for user
+- `oh-my-posh` - Oh-My-Posh prompt for root
+- `postgres` - PostgreSQL 18 from official PGDG repository
+- `docker` - Docker Engine with user group membership
+- `flatpak` - Flatpak with Flathub repository
+- `github` - GitHub CLI (gh)
+- `fonts` - Font cache update
 
 ### Git Selective Tracking
 The `.gitignore` uses an inverted pattern (ignore everything, then selectively allow):
 - Tracks only specific dotfiles and configuration files
-- Allows `.github/`, `.init/`, `.vscode/` directories
+- Allows `.github/`, `.vscode/` directories
 - Excludes logs, databases, and temporary files
+- **Note**: The `.init/` directory is NOT tracked in git - it exists locally only
 
 ## Development Environment
 
@@ -95,31 +116,81 @@ rubocop
 pnpm eslint
 ```
 
-### Utility Functions
-Available shell functions from `.init/functions.sh`:
+### Utility Functions & Scripts
+
+Shell functions from `.init/functions.sh`:
+
+**Deployment functions** (internal use, deploy to remote server via rsync):
+- `_site_deploy_jekyll <site>` - Build Jekyll site and deploy to remote
+- `_site_deploy_nuxt <site>` - Build Nuxt site and deploy to remote
+- `_site_deploy_static <site>` - Deploy static files to remote
+- `_site_run_jekyll <site>` - Run Jekyll dev server with livereload
+- `_site_run_nuxt <site>` - Run Nuxt dev server
+- `_site_run_static <site>` - Serve static files locally on port 8000
+
+**Media processing functions**:
 - `batch_file_sequence <prefix> <extension>` - Rename files with sequence numbers
-- `batch_image_webp` - Convert images to WebP format
+- `batch_image_webp` - Convert JPG/PNG images to WebP format
 - `batch_video_x264` - Convert videos to x264 codec
-- `rs` - Rsync with sudo on remote (alias for complex rsync command)
-- `ss` - Serve current directory on port 8000
-- `yt <url>` - Download YouTube video as MP3
+
+**Git/home management functions** (internal):
+- `_home_push [message]` - Commit and push home repository changes
+- `_home_pull` - Pull home repository (stashes/unstashes changes, handles `.last_pwd`)
+
+Shell scripts in `.init/bin/`:
+- `artifact_github_download.sh <repo> [-n name] [-o output]` - Download GitHub Actions artifacts
+- `mime_mp4_gif.sh [options] <input.mp4> [output.gif]` - Advanced MP4 to animated GIF converter with keyframe extraction and interpolation algorithms
+- `doc_bash_generate.sh [options] <executables>` - Auto-generate README.md documentation with animated GIFs:
+  - Supports glob patterns for multiple executables
+  - Parses `--help` output to extract usage, options, and examples
+  - Records asciinema demos and converts to animated GIFs
+  - Custom demos via `.demo` files (place next to executable)
+  - Output formats: Markdown with collapsible sections, embedded GIFs, table of contents
+  - Dependencies: asciinema, agg (for GIF generation, optional with `--no-gif`)
+  - Example: `doc_bash_generate.sh -t "My Tools" -o docs/README.md *.sh`
+
+**CSS Color Utilities** (pure bash implementations using only `bc`):
+- `css_color_palette.sh <color> [options]` - Generate comprehensive color palettes with multiple harmony types:
+  - Palette types: monochromatic, analogous, complementary, split-complementary, triadic, tetradic
+  - Complete color scales: 50-950 (11 shades) following yamada-colors format
+  - Style variations: shades, tints, tones, all
+  - Light/dark mode support
+  - Output formats: YAML (default), JSON
+  - Interactive mode with colored terminal preview
+  - Example: `css_color_palette.sh "#3498db" -p triadic -o palette.json`
+
+- `css_color_filter.sh <color> [options]` - Generate CSS filter values to transform black elements into any target color:
+  - Uses SPSA (Simultaneous Perturbation Stochastic Approximation) optimization
+  - Generates filter combinations: invert, sepia, saturate, hue-rotate, brightness, contrast
+  - Supports hex colors (#FF5733) or RGB (255,87,51)
+  - Interactive mode with accuracy metrics
+  - Clipboard support for quick copying
+  - Note: Takes 2-5 minutes per color due to optimization algorithm
+  - Example: `css_color_filter.sh "#FF5733" -c` (copies result to clipboard)
 
 ## Projects Structure
 
-The `Projects/` directory contains development projects:
-- `butter-sh/` - Butter shell projects
-- `docker-compose/` - Docker compose configurations
-- `pivoine.art/` - Jekyll-based art portfolio site
-- `docs.pivoine.art/` - Documentation site
-- `sexy.pivoine.art/` - Includes Rust package (`packages/buttplug/`)
-- `node.js/` - Node.js applications (awesome, awesome-app, email-pour-vous, webshot)
+Projects are managed by Arty and cloned into `Projects/` or `repos/`:
+- **butter-sh/** - Butter shell GitHub pages site
+- **docker-compose/** - Docker compose configurations (both dev/prod envs)
+- **pivoine.art/** - Jekyll-based art portfolio site
+- **sexy.pivoine.art/** - Contains Rust package (`packages/buttplug/`)
+- **node.js/** - Node.js applications:
+  - `awesome/` - Main Node.js app (dev/prod)
+  - `awesome-app/` - Companion app (dev only)
+
+Personal media directories (dev env only):
+- **Bilder/** - Pictures (from home-pictures repo)
+- **Videos/** - Videos (from home-videos repo)
+- **Musik/** - Music (from home-music repo)
 
 ## Package Management
 
 ### Node.js
 - **Package manager**: pnpm (enabled via corepack)
-- **Global packages**: Installed to `~/node_modules/`
+- **Global packages**: Installed to `~/node_modules/`, available via `~/node_modules/.bin/`
 - **PM2**: Configured via `ecosystem.config.js` for GitHub Copilot language server
+- **Dependencies**: playwright (dev dependency)
 
 ### Python
 - **Installer**: pip
@@ -130,8 +201,9 @@ The `Projects/` directory contains development projects:
 
 ## Important Notes
 
-- This repository uses selective git tracking - most files are ignored by default
-- Shell must source `.init/init.sh` for full environment setup (automatically done in `.zshrc`)
-- Language runtimes are version-managed and installed via Ansible
-- Docker requires user to be in `docker` group (managed by Ansible)
-- The `.last_pwd` file tracks the last working directory for shell navigation
+- **Selective Git Tracking**: This repository uses an inverted `.gitignore` pattern - everything is ignored by default (`*`), then specific files/directories are explicitly allowed (`!CLAUDE.md`, `!.zshrc`, etc.). When adding new tracked files, you must explicitly allow them in `.gitignore`. The `.init/` directory is NOT tracked in git - it exists locally only for shell initialization.
+- **Shell Initialization**: Shell must source `.init/init.sh` for full environment setup (automatically done in `.zshrc`). Use `ri` alias to reinitialize without restarting shell.
+- **Language Runtimes**: All language versions are managed by version managers (nvm, rbenv, pyenv, gvm) and installed via Ansible playbook. Version files (`.nvmrc`, `.ruby-version`, `.python-version`) specify the versions.
+- **Docker**: User must be in `docker` group (managed by Ansible). May require logout/login after Ansible provisioning.
+- **Working Directory**: `.last_pwd` tracks the last working directory for shell navigation across sessions.
+- **Arty Repository Manager**: `arty.yml` manages git subrepositories. Use `pnpm arty sync --env dev` to clone/update all dev repositories, or `--env prod` for production only.

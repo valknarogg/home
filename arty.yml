@@ -10,6 +10,11 @@ envs:
 
 
 references:
+- url: git@github.com:valknarogg/bin.git
+  into: bin
+  env:
+  - dev
+  - prod
 - url: git@github.com:butter-sh/butter-sh.github.io.git
   into: Projects/butter-sh
   env: dev
